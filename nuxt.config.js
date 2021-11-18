@@ -18,7 +18,8 @@ export default {
       { name: 'format-detection', content: 'telephone=no' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+      { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Work+Sans:wght@300;400;500;600&display=swap' }
     ]
   },
 
@@ -71,7 +72,10 @@ export default {
           success: colors.green.accent3
         }
       }
-    }
+    },
+    // need tree shaking to use custom variables
+    // https://github.com/vuetifyjs/vuetify/issues/8169
+    treeShake: true
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
