@@ -34,7 +34,7 @@
                   cols="12"
                   sm="5"
                 >
-                  <p class="text-body  font-weight-medium white--text">
+                  <p class="text-body  font-weight-normal white--text">
                     <br /><br />
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Semper viverra nam libero justo laoreet. Nisl rhoncus mattis rhoncus urna neque viverra. Nec feugiat in fermentum posuere urna. Felis donec et odio pellentesque diam volutpat commodo sed egestas.
                     <br /><br />
@@ -42,7 +42,7 @@
                   </p>
                   <br /><br />
 
-                  <h4 class="font-weight-medium text-body white--text">
+                  <h4 class="font-weight-normal text-body white--text">
                     Contact us at <a class="white--text" href="mailto:post@ctoroundtable.no">post@ctoroundtable.no</a>
                   </h4>
 
