@@ -18,10 +18,10 @@
             flat
             height="60vh"
           >
-            <h1>Welcome to CTO Roundtable</h1>
+            <h1 class="text-h4 text-uppercase">CTO Roundtable</h1>
 
-            <h4>
-              Contact us at post@ctoroundtable.no
+            <h4 class="text-subtitle-1">
+              Contact us at <a href="mailto:post@ctoroundtable.no">post@ctoroundtable.no</a>
             </h4>
           </v-card>
         </v-col>
