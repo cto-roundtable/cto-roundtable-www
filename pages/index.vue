@@ -6,8 +6,8 @@
       gradient="rgba(0, 0, 0, 0.5),rgba(0, 0, 0, 0.5)"
     >
       <v-container
-        style="height: 100%"
-      
+        fluid
+        style="width: 100%; height: 100%; overflow-y: scroll;"      
       >
         <v-row
           justify="center"
@@ -24,7 +24,7 @@
                   cols="12"
                   sm="10"
                 >
-                  <h1 class="text-h3 font-weight-medium white--text" style="line-height:1.5">
+                  <h1 class="text-h4 text-md-h3 font-weight-medium white--text" style="line-height:1.5">
                     There's a knowledge gap in your startup.
                     <br />
                     We want to close it.
@@ -37,7 +37,7 @@
                   sm="10"
                   lg="5"
                 >
-                  <p class="text-body  font-weight-normal white--text" style="line-height:1.5">
+                  <p class="text-body font-weight-normal white--text" style="line-height:1.5">
                   <br />
                   Ideas are cheap, execution is everything.  But without the right knowledge, execution can be an uphill battle.  We believe that funding should come with insights and advice to guide you through product development and scaling.  
                   <br /><br />
