@@ -3,7 +3,7 @@
     <v-img
       src="coding-1.jpg"
       style="height: 100vh;"
-      gradient="rgba(0, 0, 0, 0.5),rgba(0, 0, 0, 0.5)"
+      gradient="rgba(0, 0, 0, 0.4),rgba(0, 0, 0, 0.4)"
     >
       <v-container
         fluid
