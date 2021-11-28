@@ -24,23 +24,26 @@
                   cols="12"
                   sm="10"
                 >
-                  <h1 class="text-h2 font-weight-medium white--text" style="line-height:1.25">
-                    There's a knowledge gap in your startup.<br />We want to close it.
+                  <h1 class="text-h3 font-weight-medium white--text" style="line-height:1.5">
+                    There's a knowledge gap in your startup.
+                    <br />
+                    We want to close it.
                   </h1>
                 </v-col>
                 <v-col cols="12" xs="0" sm="1" />
                 <v-col cols="12" xs="0" sm="1" />
                 <v-col
                   cols="12"
-                  sm="5"
+                  sm="10"
+                  lg="5"
                 >
-                  <p class="text-body  font-weight-normal white--text">
-                    <br /><br />
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Semper viverra nam libero justo laoreet. Nisl rhoncus mattis rhoncus urna neque viverra. Nec feugiat in fermentum posuere urna. Felis donec et odio pellentesque diam volutpat commodo sed egestas.
-                    <br /><br />
-                    Vel risus commodo viverra maecenas accumsan lacus vel facilisis. Turpis egestas maecenas pharetra convallis posuere morbi leo urna molestie. Feugiat nisl pretium fusce id velit. Vulputate enim nulla aliquet porttitor lacus luctus accumsan tortor. Cras fermentum odio eu feugiat pretium nibh ipsum.          
-                  </p>
+                  <p class="text-body  font-weight-normal white--text" style="line-height:1.5">
+                  <br />
+                  Ideas are cheap, execution is everything.  But without the right knowledge, execution can be an uphill battle.  We believe that funding should come with insights and advice to guide you through product development and scaling.  
                   <br /><br />
+                  That's why we formed CTO Roundtable Invest, to provide a combination of funding and experience to help you navigate building a company.  We're looking for early-stage companies to invest in.
+                  </p>
+                  <br />
 
                   <h4 class="font-weight-normal text-body white--text">
                     Contact us at <a class="white--text" href="mailto:post@ctoroundtable.no">post@ctoroundtable.no</a>
