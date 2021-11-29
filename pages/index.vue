@@ -39,9 +39,9 @@
                 >
                   <p class="text-body font-weight-normal white--text" style="line-height:1.5">
                   <br />
-                  Ideas are cheap, execution is everything.  But without the right knowledge, execution can be an uphill battle.  We believe that funding should come with insights and advice to guide you through product development and scaling.  
+                  Ideas are cheap, execution is everything.  But without the right knowledge, execution can be an uphill battle.  We believe that funding should come together with knowledge, with the insights needed to build a successful product and scale.  
                   <br /><br />
-                  That's why we formed CTO Roundtable Invest, to provide a combination of funding and experience to help you navigate building a company.  We're looking for early-stage companies to invest in.
+                  That's why we formed CTO Roundtable Invest, to provide a combination of funding and experience that we see as critical for startups.  We're looking for early-stage companies to invest in.
                   </p>
                   <br />
 
