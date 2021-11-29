@@ -1,5 +1,5 @@
 <template>
-  <div style="background-color: #172724;">
+  <div style="background-color: #111;">
     <v-img
       src="coding-1.jpg"
       style="height: 100vh;"
@@ -65,3 +65,4 @@
     </v-img>
   </div>
 </template>
+
