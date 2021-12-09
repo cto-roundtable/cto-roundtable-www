@@ -1,11 +1,12 @@
 <template>
-  <div style="background-color: #111;">
+  <div style="background-color: #111;" v-cloak>
     <v-img
       src="coding-1.jpg"
       style="height: 100vh;"
       gradient="rgba(0, 0, 0, 0.4),rgba(0, 0, 0, 0.4)"
     >
       <v-container
+        v-cloak
         fluid
         style="width: 100%; height: 100%; overflow-y: auto;"      
       >
@@ -66,3 +67,8 @@
   </div>
 </template>
 
+<style scoped>
+[v-cloak] {
+  display: none;
+}
+</style>
