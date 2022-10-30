@@ -94,7 +94,7 @@ export default {
           url: 'https://tise.com'
         },
         {
-          description: 'Erik Axel has a strong interest in how to go to marked quickly in a startup and how to support this goal with the right technical choices. Previously he worked at McKinsey where he worked across multiple industries but focusing on banking & insurance',
+          description: 'Erik Axel has a strong interest in how to go to marked quickly in a startup and how to support this goal with the right technical choices. Previously he worked at McKinsey where he worked across multiple industries but focusing on banking & insurance.',
           expertise: 'Software engineering, Product development, Ruby on Rails',
           linkedIn: 'https://www.linkedin.com/in/erikaxel',
           name: 'Erik Axel Nielsen',
@@ -204,7 +204,7 @@ export default {
           url: ''
         },
         {
-          description: 'Snorre is a co-founder and CTO of Diwala. He has a global team across Africa and Asia working on the future of identity. He is currently residing in Norway Oslo as the only team member in Norway. He has a keen interest in blockchain and decentralization. And have connections to African, Norwegian and US investors',
+          description: 'Snorre is a co-founder and CTO of Diwala. He has a global team across Africa and Asia working on the future of identity. He is currently residing in Norway Oslo as the only team member in Norway. He has a keen interest in blockchain and decentralization. And have connections to African, Norwegian and US investors.',
           expertise: 'Blockchain, decentralization, GCP, Identity',
           linkedIn: 'https://www.linkedin.com/in/vongohren',
           name: 'Snorre Lothar von Gohren',
@@ -214,7 +214,7 @@ export default {
           url: 'https://www.diwala.io'
         },
         {
-          description: 'Stian has an academic background in robotics, algorithms and machine learning. He belives well designed products and services, that solve real problems for real people, are far more impactful than fancy algorithms with doubtful use cases. Stian is allergic to consultants.',
+          description: 'Stian has an academic background in robotics, algorithms and machine learning. He believes well designed products and services, that solve real problems for real people, are far more impactful than fancy algorithms with doubtful use cases. Stian is allergic to consultants.',
           expertise: '',
           linkedIn: 'https://www.linkedin.com/in/stianlp',
           name: 'Stian Lind Petlund',
