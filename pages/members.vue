@@ -90,7 +90,7 @@ export default {
           name: 'Axel Franck Næss',
           photoUrl: 'https://media-exp1.licdn.com/dms/image/C4E03AQFyjZY_fxnbqw/profile-displayphoto-shrink_800_800/0/1629966074919?e=1658361600&v=beta&t=J6TblJbvZzL3bv2kOD46fM9F5fLnq3Uu9gtcAVV_wx4',
           role: 'Co-founder & CTO/CPO, Tise',
-          twitter: 'https://twitter.com/erikaxel',
+          twitter: '',
           url: 'https://tise.com'
         },
         {
@@ -100,7 +100,7 @@ export default {
           name: 'Erik Axel Nielsen',
           photoUrl: 'https://media-exp1.licdn.com/dms/image/C5103AQFKVu_0XT5xXw/profile-displayphoto-shrink_800_800/0/1516253352014?e=1658361600&v=beta&t=JXiljrT79aL3zxQqc85NAa_A80BkxlSh9EZCba3X92s',
           role: 'Co-founder & CTO, Luca Regnskap',
-          twitter: '',
+          twitter: 'https://twitter.com/erikaxel',
           url: 'https://www.lucaregnskap.no'
         },
         {
