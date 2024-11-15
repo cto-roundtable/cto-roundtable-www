@@ -1,16 +1,26 @@
   <template>
     <v-app>
       <v-main>
-        <Nuxt />
+        <div class="landing-page">
+          <Nuxt />
+        </div>
       </v-main>
     </v-app>
   </template>
 
 
 <style>
+.landing-page {
+  background-color: #111;
+  color: #fff;
+  height: 100vh; /* Ensures full viewport height */
+}
+
+
 .full-height {
   height: 100%; /* Centers content within the viewport */
 }
+
 
 .logo {
   margin: 0 auto;

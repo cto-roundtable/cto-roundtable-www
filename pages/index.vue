@@ -1,5 +1,4 @@
 <template>
-  <div class="landing-page">
     <v-container fluid class="text-center">
       <v-row justify="center" class="full-height">
         <v-col class="top-spacing" cols="12" md="8">
@@ -9,9 +8,18 @@
             class="mb-9"
             contain
           />
-          <p class="subtitle-1 mt-3">
+          <p class="mt-3" style="font-size: 1.5rem;">
             Empowering technology leaders through network, community and investing
           </p>
+          <v-btn
+            color="secondary"
+            large
+            class="mt-6"
+            to="/portfolio"
+          >
+            Portfolio
+          </v-btn>
+
           <v-btn
             color="primary"
             large
@@ -26,7 +34,6 @@
         </v-col>
       </v-row>
     </v-container>
-  </div>
 </template>
 
 <script lang="ts">
@@ -40,12 +47,6 @@ export default {
 </script>
 
 <style scoped>
-.landing-page {
-  background-color: #111;
-  color: #fff;
-  height: 100vh; /* Ensures full viewport height */
-}
-
 .top-spacing {
   margin-top: 5rem;
 }
