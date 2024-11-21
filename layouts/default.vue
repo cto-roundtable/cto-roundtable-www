@@ -2,6 +2,9 @@
     <v-app>
       <v-main>
         <div class="landing-page">
+          <v-btn icon class="home-icon" to="/">
+            <v-icon style="color: white;">mdi-home</v-icon>
+          </v-btn>
           <Nuxt />
         </div>
       </v-main>
@@ -13,7 +16,14 @@
 .landing-page {
   background-color: #111;
   color: #fff;
-  height: 100vh; /* Ensures full viewport height */
+  height: 100%; /* Ensures full viewport height */
+}
+
+.home-icon {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  color: white;
 }
 
 

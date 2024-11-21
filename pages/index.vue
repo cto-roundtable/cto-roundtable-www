@@ -8,16 +8,17 @@
             class="mb-9"
             contain
           />
-          <p class="mt-3" style="font-size: 1.5rem;">
+          <p class="mt-3" style="font-size: 18px;">
             Empowering technology leaders through network, community and investing
           </p>
           <v-btn
             color="secondary"
             large
             class="mt-6"
-            to="/portfolio"
+            to="/investment"
+            style="margin-right: 15px;"
           >
-            Portfolio
+            Investment
           </v-btn>
 
           <v-btn
