@@ -3,9 +3,9 @@
 // The variables you want to modify
 // $font-size-root: 20px;
 
-$heading-font-family: "Montserrat", sans-serif;
-$body-font-family: "Work Sans", sans-serif;
-// $font-size-root: 14px;
+$heading-font-family: "Arial", sans-serif;
+$body-font-family: "Arial", sans-serif;
+$font-size-root: 14px;
 
 $headings: (
 	'body': (
@@ -17,6 +17,10 @@ $headings: (
 		'text-transform': false
 	)
 );
+
+body {
+  background-color: #111;
+}
 
 
 @import '~vuetify/src/styles/styles.sass';
