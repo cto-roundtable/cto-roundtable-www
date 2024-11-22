@@ -56,14 +56,11 @@ export default defineComponent({
           ...member,
         }
       });
-      console.log(data);
       return data
     }
   },
   methods: {
     async fetchData() {
-
-      console.log(process.env.membersToken);
       const memberTableUrl =
         'https://coda.io/apis/v1/docs/QGamW4-aCG/tables/grid-jIgM45_t5e/rows';
       const config = {
