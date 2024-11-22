@@ -56,7 +56,6 @@ export default defineComponent({
           ...member,
         }
       });
-      console.log(data);
       return data
     }
   },
