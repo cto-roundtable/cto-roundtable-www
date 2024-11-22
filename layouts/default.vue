@@ -43,7 +43,7 @@ h1 {
 
 h2 {
   margin-top: 2rem;
-  font-size: 2.5rem;
+  font-size: 29px;
   margin-bottom: 1rem;
 }
 

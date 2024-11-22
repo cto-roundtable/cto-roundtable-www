@@ -6,7 +6,9 @@
             How we invest
           </h2>
           <p class="mt-3" style="font-size: 18px;">
-            We invest in technological advance companies that have a clear vision and a strong team on technology and product.
+            We invest in early-stage tech companies with a clear vision and strong product teams
+            <br />
+            We enter with an angel size investment
           </p>
           <h2 class="font-weight-bold">
             Our portfolio
