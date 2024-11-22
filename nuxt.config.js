@@ -1,4 +1,5 @@
 import colors from 'vuetify/es5/util/colors'
+import 'dotenv/config'
 
 export default {
   // Target: https://go.nuxtjs.dev/config-target
@@ -47,8 +48,7 @@ export default {
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
     // https://go.nuxtjs.dev/content
-    '@nuxt/content',
-    '@nuxtjs/dotenv',
+    '@nuxt/content'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
@@ -81,5 +81,10 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+  },
+
+  env: {
+    membersToken: process.env.CODA_MEMBERS_TOKEN || '',
+    portfolioToken: process.env.CODA_PORTFOLIO_COMPANIES || ''
   }
 }

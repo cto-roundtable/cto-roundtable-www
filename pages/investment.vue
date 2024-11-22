@@ -57,7 +57,7 @@ export default defineComponent({
       const memberTableUrl = 'https://coda.io/apis/v1/docs/fhpDktia_b/tables/table-G3AtyhOQl-/rows';
       const config = {
         headers: {
-          Authorization: `Bearer ${process.env.CODA_PORTFOLIO_COMPANIES}`
+          Authorization: `Bearer ${process.env.portfolioToken}`
         }
       };
       try {
