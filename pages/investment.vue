@@ -6,7 +6,9 @@
             How we invest
           </h2>
           <p class="mt-3" style="font-size: 18px;">
-            We invest in technological advance companies that have a clear vision and a strong team on technology and product.
+            We invest in early-stage tech companies with a clear vision and strong product teams
+            <br />
+            We enter with an angel size investment
           </p>
           <h2 class="font-weight-bold">
             Our portfolio
@@ -22,6 +24,7 @@
                   md="2"
                   class="d-flex justify-center"
                 >
+                  <div v-if="loading" class="skeleton-loader"></div>
                   <div class="text-center">
                     <a
                       :href="data.link"
@@ -49,7 +52,8 @@ export default defineComponent({
   name: 'AboutPage',
   data() {
     return {
-      data: []
+      data: Array.from({ length: 11 }, (_, index) => index + 1),
+      loading: true
     };
   },
   methods: {
@@ -77,10 +81,11 @@ export default defineComponent({
         const sortData = mappedData.sort((a:any, b:any) => {
           return  new Date(a.created).getTime() - new Date(b.created).getTime()
         });
-
         this.data = mappedData;
       } catch (error) {
         console.error('Error fetching data:', error);
+      } finally {
+        this.loading = false;
       }
     }
   },
@@ -93,5 +98,28 @@ export default defineComponent({
 <style scoped>
 .transparent-list {
   background-color: transparent;
+}
+
+/* Skeleton loader styles */
+.skeleton-loader {
+  width: 100%;
+  height: 15px; /* Adjust the height as needed */
+  background-color: #313030;
+  margin: 10px 0;
+  border-radius: 4px;
+  animation: pulse 0.9s infinite ease-in-out;
+}
+
+/* Pulse animation */
+@keyframes pulse {
+  0% {
+    background-color: #313030;
+  }
+  50% {
+      background-color: #494848;
+  }
+  100% {
+      background-color: #343333;
+  }
 }
 </style>

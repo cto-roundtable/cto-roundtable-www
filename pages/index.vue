@@ -9,23 +9,22 @@
             contain
           />
           <p class="mt-3" style="font-size: 18px;">
-            Empowering technology leaders through network, community and investing
+            A Norwegian community of CTOs focused on sharing knowledge and supporting each other. We also invest in and guide early-stage tech companies and exceptional technical leaders to help them succeed
           </p>
           <v-btn
-            color="secondary"
             large
             class="mt-6"
             to="/investment"
-            style="margin-right: 15px;"
+            style="margin-right: 15px; background-color: black; border: 1px solid white; color: white"
           >
-            Investment
+            Investments
           </v-btn>
 
           <v-btn
-            color="primary"
             large
             href="mailto:post@ctoroundtable.no"
             class="mt-6"
+            style="background-color: white;"
           >
             Contact Us
           </v-btn>

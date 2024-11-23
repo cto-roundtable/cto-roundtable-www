@@ -1,7 +1,7 @@
 <template>
   <div class="who-are-we">
     <h2 class="font-weight-bold">
-      Who are we
+      Who we are
     </h2>
     <div v-if="data.length">
       <!-- Current Members -->
