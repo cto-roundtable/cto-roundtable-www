@@ -2,11 +2,16 @@
     <v-container fluid class="text-center">
       <v-row justify="center" class="full-height">
         <v-col class="top-spacing" cols="12" md="8">
-          <v-img
-            src="ctoroundtablelogo.svg"
+          <nuxt-img 
+            src="ctoroundtablelogo.svg" 
             alt="CTO Network Logo"
-            class="mb-9"
-            contain
+            placeholder
+            width="300"
+            height="180"
+            class="logo"
+            fit="contain"
+            preload
+            loading="lazy"
           />
           <p class="mt-3" style="font-size: 18px;">
             A Norwegian community of CTOs focused on sharing knowledge and supporting each other. We also invest in and guide early-stage tech companies and exceptional technical leaders to help them succeed
