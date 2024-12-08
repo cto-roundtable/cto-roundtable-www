@@ -67,7 +67,11 @@ export default {
     theme: {
       dark: false,
       themes: {
+        light: {
+          background: '#111' // Set background to dark
+        },
         dark: {
+          background: '#111',
           primary: colors.blue.darken2,
           accent: colors.grey.darken3,
           secondary: colors.amber.darken3,
