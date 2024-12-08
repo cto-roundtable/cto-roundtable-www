@@ -13,7 +13,7 @@
             preload
             loading="lazy"
           />
-          <p class="mt-3" style="font-size: 18px;">
+          <p class="mt-3" style="font-size: 18px; max-width: 1000px; margin: 0 auto;">
             A Norwegian community of CTOs focused on sharing knowledge and supporting each other. We also invest in and guide early-stage tech companies and exceptional technical leaders to help them succeed
           </p>
           <v-btn
