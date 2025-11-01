@@ -30,6 +30,7 @@ export default {
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
+    { src: '~/plugins/posthog.client.js', mode: 'client' }
   ],
   image: {
     // Options
@@ -93,6 +94,8 @@ export default {
 
   env: {
     membersToken: process.env.CODA_MEMBERS_TOKEN || '',
-    portfolioToken: process.env.CODA_PORTFOLIO_COMPANIES || ''
+    portfolioToken: process.env.CODA_PORTFOLIO_COMPANIES || '',
+    posthogToken: process.env.POSTHOG_TOKEN || '',
+    posthogHost: process.env.POSTHOG_HOST || 'https://eu.i.posthog.com'
   }
 }

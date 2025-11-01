@@ -19,6 +19,7 @@
     "dotenv": "^16.4.5",
     "nuxt": "2.18.1",
     "postcss": "8.4.49",
+    "posthog-js": "^1.283.0",
     "vuetify": "2.6.12"
   },
   "devDependencies": {
