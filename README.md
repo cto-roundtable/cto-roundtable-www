@@ -1,5 +1,15 @@
 # cto-roundtable-www
 
+## Hosting
+Currently it lives under ownership of one member, and is automatically picked up when merging to main.
+
+We dont have any feedbackloop on it, so you would just have to verify manually when merged.
+
+It is hosted under render, contact infrastructure@ctoroundtable.no if you want to do something about it
+
+Make sure it works locally, and it should work in the cloud!
+
+
 ## Build Setup
 
 ```bash
