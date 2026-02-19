@@ -97,15 +97,14 @@
   </v-container>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-  name: 'PrivacyPage',
-});
+<script setup lang="ts">
 </script>
 
 <style scoped>
+.top-spacing {
+  margin-top: 3rem;
+}
+
 .privacy-content {
   text-align: left;
   line-height: 1.8;
@@ -164,4 +163,3 @@ export default defineComponent({
   margin-top: 0.75rem;
 }
 </style>
-

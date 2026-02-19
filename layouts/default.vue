@@ -1,36 +1,33 @@
-  <template>
-    <v-app>
-      <v-main>
-        <div class="landing-page">
-          <v-btn icon class="home-icon" to="/">
-            <v-icon style="color: white;">mdi-home</v-icon>
-          </v-btn>
-          <Nuxt />
-        </div>
-      </v-main>
-    </v-app>
-  </template>
-
+<template>
+  <v-app>
+    <v-main>
+      <div class="landing-page">
+        <v-btn icon to="/" class="home-icon">
+          <v-icon color="white">mdi-home</v-icon>
+        </v-btn>
+        <slot />
+      </div>
+    </v-main>
+  </v-app>
+</template>
 
 <style>
 .landing-page {
   background-color: #111;
   color: #fff;
-  height: 100%; /* Ensures full viewport height */
+  min-height: 100vh;
 }
 
 .home-icon {
   position: absolute;
   top: 16px;
   left: 16px;
-  color: white;
+  z-index: 10;
 }
-
 
 .full-height {
-  height: 100%; /* Centers content within the viewport */
+  min-height: 100vh;
 }
-
 
 .logo {
   margin: 0 auto;
