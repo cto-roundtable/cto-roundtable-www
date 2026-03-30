@@ -85,4 +85,4 @@ gcloud run revisions list --service cto-roundtable-www --region europe-north1
 
 **Note**: Nuxt runtime config reads env vars with `NUXT_` prefix in production. `DATABASE_URL` in `.env` becomes `NUXT_DATABASE_URL` in Cloud Run.
 
-**No CI/CD pipeline yet** — deploys are manual via `gcloud`. Render is legacy (still connected to main but has wrong secrets).
+**CI/CD**: Cloud Build auto-deploys on push to `main` (trigger: `www-deploy-on-push`). Render is legacy (still connected to main but has wrong secrets).

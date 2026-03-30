@@ -1,0 +1,38 @@
+# Cloud Build pipeline: build Docker image + deploy to Cloud Run
+# Triggered on push to main via Cloud Build GitHub trigger
+
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '${_IMAGE}'
+      - '.'
+
+  # Push to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '${_IMAGE}'
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'cto-roundtable-www'
+      - '--image'
+      - '${_IMAGE}'
+      - '--region'
+      - 'europe-north1'
+
+substitutions:
+  _IMAGE: 'europe-north1-docker.pkg.dev/cto-roundtable/ctoroundtable/www:${COMMIT_SHA}'
+
+images:
+  - '${_IMAGE}'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
