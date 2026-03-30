@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nuxt dev",
+    "dev": "openlogs nuxt dev",
     "build": "nuxt build",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
@@ -14,19 +14,21 @@
     "format": "biome format --write ."
   },
   "dependencies": {
-    "nuxt": "^3.16.0",
-    "posthog-js": "^1.283.0",
-    "vue": "^3.5.0",
-    "vue-router": "^4.5.0",
-    "vuetify": "^3.8.0"
+    "@neondatabase/serverless": "^1.0.2",
+    "nuxt": "^4.4.2",
+    "posthog-js": "^1.364.1",
+    "vue": "^3.5.31",
+    "vue-router": "^4.6.4",
+    "vuetify": "^3.12.4"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.3",
-    "@mdi/font": "^7.4.0",
-    "@nuxt/image": "^1.9.0",
-    "sass-embedded": "^1.83.0",
-    "typescript": "^5.7.0",
-    "vuetify-nuxt-module": "^0.18.0"
+    "@biomejs/biome": "^2.4.9",
+    "@mdi/font": "^7.4.47",
+    "@nuxt/image": "^1.11.0",
+    "openlogs": "^0.0.2",
+    "sass-embedded": "^1.98.0",
+    "typescript": "^5.9.3",
+    "vuetify-nuxt-module": "^0.19.5"
   },
   "volta": {
     "node": "22.13.0"

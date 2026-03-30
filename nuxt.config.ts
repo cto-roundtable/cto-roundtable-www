@@ -1,5 +1,5 @@
 export default defineNuxtConfig({
-  compatibilityDate: '2025-01-01',
+  compatibilityDate: '2026-03-28',
 
   app: {
     head: {
@@ -47,17 +47,12 @@ export default defineNuxtConfig({
   image: {},
 
   runtimeConfig: {
+    databaseUrl: process.env.DATABASE_URL || '',
     public: {
-      membersToken: process.env.CODA_MEMBERS_TOKEN || '',
-      portfolioToken: process.env.CODA_PORTFOLIO_COMPANIES || '',
       posthogToken: process.env.POSTHOG_TOKEN || '',
       posthogHost: process.env.POSTHOG_HOST || 'https://eu.i.posthog.com',
     },
   },
 
-  nitro: {
-    output: {
-      publicDir: 'dist',
-    },
-  },
+  nitro: {},
 })

@@ -13,27 +13,35 @@
         <h2 class="font-weight-bold">
           Our portfolio
         </h2>
-        <div v-if="portfolioData.length">
+        <div v-if="pending" class="d-flex justify-center my-4">
+          <v-row>
+            <v-col v-for="n in 6" :key="n" cols="6" sm="4" md="2">
+              <div class="skeleton-loader" />
+            </v-col>
+          </v-row>
+        </div>
+        <div v-else-if="data?.investments.length">
           <v-container>
             <v-row>
               <v-col
-                v-for="(item, index) in portfolioData"
+                v-for="(item, index) in data.investments"
                 :key="index"
                 cols="6"
                 sm="4"
                 md="2"
                 class="d-flex justify-center"
               >
-                <div v-if="loading" class="skeleton-loader" />
-                <div v-else class="text-center">
+                <div class="text-center">
                   <a
-                    :href="item.link"
+                    v-if="item.url"
+                    :href="item.url"
                     target="_blank"
                     class="company-link"
                     style="color: white;"
                   >
                     {{ item.company }}
                   </a>
+                  <span v-else style="color: white;">{{ item.company }}</span>
                 </div>
               </v-col>
             </v-row>
@@ -45,42 +53,7 @@
 </template>
 
 <script setup lang="ts">
-const config = useRuntimeConfig()
-const portfolioData = ref<any[]>([])
-const loading = ref(true)
-
-async function fetchData() {
-  const tableUrl = 'https://coda.io/apis/v1/docs/fhpDktia_b/tables/table-G3AtyhOQl-/rows'
-  try {
-    const response = await $fetch<{ items: any[] }>(tableUrl, {
-      headers: {
-        Authorization: `Bearer ${config.public.portfolioToken}`,
-      },
-    })
-
-    const linkKey = 'c-3iXTxDH3zG'
-    const companyKey = 'c-MwD-eRXsBE'
-    const investorKey = 'c-wXm5l004Nc'
-    const mappedData = response.items
-      .map((item: any) => ({
-        created: item.createdAt,
-        link: item.values[linkKey],
-        company: item.values[companyKey],
-        investor: item.values[investorKey],
-      }))
-      .sort((a: any, b: any) => new Date(a.created).getTime() - new Date(b.created).getTime())
-
-    portfolioData.value = mappedData
-  } catch (error) {
-    console.error('Error fetching data:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-onMounted(() => {
-  fetchData()
-})
+const { data, pending } = useFetch('/api/investments')
 </script>
 
 <style scoped>
