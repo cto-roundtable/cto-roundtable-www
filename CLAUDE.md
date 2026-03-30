@@ -1,12 +1,13 @@
 # CTO Roundtable Website
 
 ## Stack
-- **Framework**: Nuxt 3 (Vue 3, TypeScript)
+- **Framework**: Nuxt 4 (Vue 3, TypeScript)
 - **UI**: Vuetify 3, custom dark theme (#111 background)
 - **Database**: Neon Serverless Postgres via `@neondatabase/serverless`
 - **Analytics**: PostHog
-- **Deployment**: Render (auto-deploys on merge to main)
+- **Deployment**: Google Cloud Run (europe-north1) via Artifact Registry
 - **Linting**: Biome
+- **Design**: Pencil.dev (`design/design.pen`)
 
 ## Development
 
@@ -42,11 +43,11 @@ Database credentials and sensitive tokens live in **private** `runtimeConfig` (n
 - `server/utils/db.ts` — Neon connection helper
 - `server/api/members.get.ts` — GET /api/members (from Postgres)
 
-### Client pages
-- `pages/index.vue` — Home page, uses `WhoAreWe` component
-- `pages/investment.vue` — Portfolio companies (still fetches from Coda API)
-- `pages/members.vue` — Legacy hardcoded member list
-- `components/WhoAreWe.vue` — Member list, calls `/api/members`
+### Client pages (in `app/`)
+- `app/pages/index.vue` — Home page, uses `WhoAreWe` component
+- `app/pages/investment.vue` — Portfolio companies
+- `app/pages/members.vue` — Legacy hardcoded member list
+- `app/components/WhoAreWe.vue` — Member list with two-line layout, calls `/api/members`
 
 ### Data sources
 - **Members**: Neon Postgres (`persons`, `memberships`, `organizations` tables)
@@ -60,3 +61,28 @@ Database credentials and sensitive tokens live in **private** `runtimeConfig` (n
 | `POSTHOG_TOKEN` | Public | PostHog analytics |
 
 See `.env.example` for template.
+
+## Deployment (Google Cloud Run)
+
+The site runs on Cloud Run in `europe-north1`, project `cto-roundtable`.
+
+```bash
+# Build and push Docker image to Artifact Registry
+gcloud builds submit --tag europe-north1-docker.pkg.dev/cto-roundtable/ctoroundtable/www:latest
+
+# Deploy new revision
+gcloud run deploy cto-roundtable-www \
+  --image europe-north1-docker.pkg.dev/cto-roundtable/ctoroundtable/www:latest \
+  --region europe-north1
+
+# Check current revision
+gcloud run revisions list --service cto-roundtable-www --region europe-north1
+```
+
+**Secrets** are managed via Google Secret Manager and injected as env vars:
+- `www-database-url` → `NUXT_DATABASE_URL`
+- `www-posthog-token` → `NUXT_PUBLIC_POSTHOG_TOKEN`
+
+**Note**: Nuxt runtime config reads env vars with `NUXT_` prefix in production. `DATABASE_URL` in `.env` becomes `NUXT_DATABASE_URL` in Cloud Run.
+
+**No CI/CD pipeline yet** — deploys are manual via `gcloud`. Render is legacy (still connected to main but has wrong secrets).
