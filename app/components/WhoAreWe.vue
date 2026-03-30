@@ -30,35 +30,35 @@
       </ClientOnly>
       <ul class="current-members">
         <li v-for="item in currentMembers" :key="item.name" class="member-item">
-          <span class="name">{{ item.name }}</span>
-          <!-- Detailed display when any position has a role title -->
-          <template v-if="item.hasDetailedPositions">
-            <span class="company"> - </span>
-            <span v-for="(pos, index) in item.positions" :key="index" class="company">
-              <span v-if="!pos.isCurrent" class="former-label">Former </span>
-              <span v-if="pos.roleTitle">{{ pos.roleTitle }}, </span>
+          <div class="name">{{ item.name }}</div>
+          <div v-if="item.isMultiRole" class="positions">
+            <div v-for="(pos, index) in item.currentPositions" :key="'c'+index" class="position-line">
+              <span v-if="pos.roleTitle" class="role">{{ pos.roleTitle }}, </span>
               <a v-if="pos.url" :href="pos.url" target="_blank">{{ pos.org }}</a>
               <span v-else>{{ pos.org }}</span>
-              <span v-if="index < item.positions.length - 1"> · </span>
-            </span>
-          </template>
-          <!-- Fallback: original display -->
-          <template v-else>
-            <span class="company"> - {{ !item.company ? "Ex CTO: " : "" }}</span>
-            <span v-if="item.company" class="company">
-              <a :href="item.url" target="_blank">
-                {{ item.company }}
-              </a>
-            </span>
-            <span v-else class="company">
-              <span v-for="(company, index) in item.formerCompanies" :key="index">
-                <a :href="item.url.split(',')[index]" target="_blank">
-                  {{ company.trim() }}
-                </a>
-                <span v-if="index < item.formerCompanies.length - 1">, </span>
+            </div>
+            <div v-for="(pos, index) in item.formerPositions" :key="'f'+index" class="position-line former">
+              <span class="former-label">Former: </span>
+              <span v-if="pos.roleTitle">{{ pos.roleTitle }}, </span>
+              <a v-if="pos.url" :href="pos.url" target="_blank" class="former-link">{{ pos.org }}</a>
+              <span v-else class="former-link">{{ pos.org }}</span>
+            </div>
+          </div>
+          <div v-else class="positions">
+            <template v-if="item.currentPositions.length">
+              <span v-if="item.currentPositions[0].roleTitle" class="role">{{ item.currentPositions[0].roleTitle }}, </span>
+              <a v-if="item.currentPositions[0].url" :href="item.currentPositions[0].url" target="_blank">{{ item.currentPositions[0].org }}</a>
+              <span v-else>{{ item.currentPositions[0].org }}</span>
+            </template>
+            <template v-else-if="item.formerPositions.length">
+              <span class="former-label">Former: </span>
+              <span v-for="(pos, index) in item.formerPositions" :key="'f'+index">
+                <a v-if="pos.url" :href="pos.url" target="_blank" class="former-link">{{ pos.org }}</a>
+                <span v-else class="former-link">{{ pos.org }}</span>
+                <span v-if="index < item.formerPositions.length - 1">, </span>
               </span>
-            </span>
-          </template>
+            </template>
+          </div>
         </li>
       </ul>
     </div>
@@ -113,11 +113,17 @@ function pickSort(key: string) {
 }
 
 const currentMembers = computed(() => {
-  return (data.value?.members || []).map((member) => ({
-    onlyFormerCTO: !member.company,
-    hasDetailedPositions: member.positions?.some((p) => p.roleTitle) ?? false,
-    ...member,
-  }))
+  return (data.value?.members || []).map((member) => {
+    const current = (member.positions || []).filter((p) => p.isCurrent)
+    const former = (member.positions || []).filter((p) => !p.isCurrent)
+    const totalRoles = current.length + former.length
+    return {
+      ...member,
+      currentPositions: current,
+      formerPositions: former,
+      isMultiRole: totalRoles > 1,
+    }
+  })
 })
 </script>
 
@@ -126,39 +132,58 @@ const currentMembers = computed(() => {
   background-color: #111;
   color: #fff;
   padding: 1rem;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Work Sans', Arial, sans-serif;
 }
 
-.current-members,
-.former-ctos ul {
+.current-members {
   list-style: none;
   padding: 0;
 }
 
 .member-item {
-  margin: 0.5rem 0;
-  font-size: 1rem;
-  line-height: 1.5;
+  margin: 0.6rem 0;
+  text-align: center;
 }
 
 .name {
   font-weight: bold;
-  display: inline-block;
+  font-size: 1rem;
 }
 
-.company {
+.positions {
+  font-size: 0.85rem;
   font-style: italic;
-  color: #bbb;
+  color: #888;
+  margin-top: 2px;
 }
 
-.company a {
-  font-style: italic;
-  color: #bbb;
+.positions a {
+  color: #888;
   text-decoration: underline;
 }
 
+.role {
+  color: #888;
+}
+
 .former-label {
-  opacity: 0.7;
+  color: #555;
+}
+
+.former-link {
+  color: #555;
+}
+
+a.former-link {
+  text-decoration: underline;
+}
+
+.position-line {
+  line-height: 1.4;
+}
+
+.position-line.former {
+  color: #555;
 }
 
 .skeleton-list {

@@ -77,7 +77,9 @@ export default defineEventHandler(async (event) => {
   return {
     sort: strategy.key,
     members: sorted.map((person) => {
-      const current = person.positions.filter((p) => p.type === 'employee' || p.type === 'founder')
+      const current = person.positions
+        .filter((p) => p.type === 'employee' || p.type === 'founder')
+        .sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0))
       const former = person.positions.filter((p) => p.type === 'former_employee')
       const primary = person.positions.find((p) => p.is_primary)
 

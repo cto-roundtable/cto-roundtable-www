@@ -2,7 +2,7 @@
   <v-app>
     <v-main>
       <div class="landing-page">
-        <v-btn icon to="/" class="home-icon">
+        <v-btn icon variant="text" to="/" class="home-icon">
           <v-icon color="white">mdi-home</v-icon>
         </v-btn>
         <slot />

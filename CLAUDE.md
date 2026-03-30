@@ -57,8 +57,6 @@ Database credentials and sensitive tokens live in **private** `runtimeConfig` (n
 | Variable | Scope | Purpose |
 |----------|-------|---------|
 | `DATABASE_URL` | Server only | Neon Postgres connection string |
-| `CODA_MEMBERS_TOKEN` | Public (legacy) | Coda API — no longer used for members |
-| `CODA_PORTFOLIO_COMPANIES` | Public | Coda API for portfolio page |
 | `POSTHOG_TOKEN` | Public | PostHog analytics |
 
 See `.env.example` for template.

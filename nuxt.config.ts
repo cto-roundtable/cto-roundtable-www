@@ -49,16 +49,10 @@ export default defineNuxtConfig({
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL || '',
     public: {
-      membersToken: process.env.CODA_MEMBERS_TOKEN || '',
-      portfolioToken: process.env.CODA_PORTFOLIO_COMPANIES || '',
       posthogToken: process.env.POSTHOG_TOKEN || '',
       posthogHost: process.env.POSTHOG_HOST || 'https://eu.i.posthog.com',
     },
   },
 
-  nitro: {
-    output: {
-      publicDir: 'dist',
-    },
-  },
+  nitro: {},
 })
