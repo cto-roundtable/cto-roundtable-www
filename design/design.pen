@@ -1,0 +1,2065 @@
+{
+  "version": "2.9",
+  "children": [
+    {
+      "type": "frame",
+      "id": "a4FXh",
+      "x": 0,
+      "y": 0,
+      "name": "── DESIGN SYSTEM ──",
+      "width": 800,
+      "fill": "#1a1a1a",
+      "layout": "vertical",
+      "gap": 40,
+      "padding": 48,
+      "children": [
+        {
+          "type": "frame",
+          "id": "6neCC",
+          "name": "colSec",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "HJ3M6",
+              "fill": "#FFFFFF",
+              "content": "Colors",
+              "fontFamily": "Montserrat",
+              "fontSize": 20,
+              "fontWeight": "bold"
+            },
+            {
+              "type": "frame",
+              "id": "cMrrZ",
+              "name": "colRow",
+              "gap": 12,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "rBNFG",
+                  "name": "bg",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 4,
+                      "id": "68lVq",
+                      "fill": "#111111",
+                      "width": 60,
+                      "height": 40,
+                      "stroke": {
+                        "thickness": 1,
+                        "fill": "#333333"
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "b5U9U",
+                      "fill": "#888888",
+                      "content": "Background\n#111111",
+                      "textAlign": "center",
+                      "fontFamily": "Work Sans",
+                      "fontSize": 9,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "tsA2j",
+                  "name": "fg",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 4,
+                      "id": "SxX00",
+                      "fill": "#FFFFFF",
+                      "width": 60,
+                      "height": 40
+                    },
+                    {
+                      "type": "text",
+                      "id": "7X8iZ",
+                      "fill": "#888888",
+                      "content": "Foreground\n#FFFFFF",
+                      "textAlign": "center",
+                      "fontFamily": "Work Sans",
+                      "fontSize": 9,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "BLz6d",
+                  "name": "mt",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 4,
+                      "id": "i66vO",
+                      "fill": "#BBBBBB",
+                      "width": 60,
+                      "height": 40
+                    },
+                    {
+                      "type": "text",
+                      "id": "pECIf",
+                      "fill": "#888888",
+                      "content": "Muted\n#BBBBBB",
+                      "textAlign": "center",
+                      "fontFamily": "Work Sans",
+                      "fontSize": 9,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "LSYiv",
+                  "name": "hn",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 4,
+                      "id": "mQkPF",
+                      "fill": "#555555",
+                      "width": 60,
+                      "height": 40
+                    },
+                    {
+                      "type": "text",
+                      "id": "psis3",
+                      "fill": "#888888",
+                      "content": "Hint\n#555555",
+                      "textAlign": "center",
+                      "fontFamily": "Work Sans",
+                      "fontSize": 9,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "L1N18",
+                  "name": "lk",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 4,
+                      "id": "uopOM",
+                      "fill": "#CCCCCC",
+                      "width": 60,
+                      "height": 40
+                    },
+                    {
+                      "type": "text",
+                      "id": "oCH6p",
+                      "fill": "#888888",
+                      "content": "Link\n#CCCCCC",
+                      "textAlign": "center",
+                      "fontFamily": "Work Sans",
+                      "fontSize": 9,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "01loc",
+          "name": "typeSec",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "QkYv9",
+              "fill": "#FFFFFF",
+              "content": "Typography",
+              "fontFamily": "Montserrat",
+              "fontSize": 20,
+              "fontWeight": "bold"
+            },
+            {
+              "type": "text",
+              "id": "1J1W5",
+              "fill": "#FFFFFF",
+              "content": "CTO ROUNDTABLE",
+              "fontFamily": "Montserrat",
+              "fontSize": 32,
+              "fontWeight": "bold"
+            },
+            {
+              "type": "text",
+              "id": "L1WYv",
+              "fill": "#FFFFFF",
+              "content": "Page Heading — Montserrat Bold 29px",
+              "fontFamily": "Montserrat",
+              "fontSize": 29,
+              "fontWeight": "bold"
+            },
+            {
+              "type": "text",
+              "id": "6FQcE",
+              "fill": "#CCCCCC",
+              "content": "Body — Work Sans 18px",
+              "fontFamily": "Work Sans",
+              "fontSize": 18,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "KKUw6",
+              "fill": "#FFFFFF",
+              "content": "Member Name — Work Sans Bold 15px",
+              "fontFamily": "Work Sans",
+              "fontSize": 15,
+              "fontWeight": "bold"
+            },
+            {
+              "type": "text",
+              "id": "3gG5p",
+              "fill": "#BBBBBB",
+              "content": "Company Link — Work Sans Italic 15px underline",
+              "fontFamily": "Work Sans",
+              "fontSize": 15,
+              "fontWeight": "normal",
+              "fontStyle": "italic"
+            },
+            {
+              "type": "text",
+              "id": "9ru1p",
+              "fill": "#555555",
+              "content": "Sort Hint — Work Sans 11px",
+              "fontFamily": "Work Sans",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Rdq8o",
+          "name": "compSec",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "text",
+              "id": "ZCt85",
+              "fill": "#FFFFFF",
+              "content": "Components",
+              "fontFamily": "Montserrat",
+              "fontSize": 20,
+              "fontWeight": "bold"
+            },
+            {
+              "type": "frame",
+              "id": "AcLyC",
+              "name": "Button/Dark",
+              "reusable": true,
+              "fill": "#000000",
+              "cornerRadius": 4,
+              "stroke": {
+                "thickness": 1,
+                "fill": "#FFFFFF"
+              },
+              "padding": [
+                14,
+                32
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ruYfR",
+                  "fill": "#FFFFFF",
+                  "content": "BUTTON",
+                  "fontFamily": "Work Sans",
+                  "fontSize": 14,
+                  "fontWeight": "600",
+                  "letterSpacing": 0.5
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "1rwJq",
+              "name": "Button/Light",
+              "reusable": true,
+              "fill": "#FFFFFF",
+              "cornerRadius": 4,
+              "padding": [
+                14,
+                32
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "QeLzU",
+                  "fill": "#111111",
+                  "content": "BUTTON",
+                  "fontFamily": "Work Sans",
+                  "fontSize": 14,
+                  "fontWeight": "600",
+                  "letterSpacing": 0.5
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "JYpsk",
+              "name": "MemberRow",
+              "reusable": true,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "38tBA",
+                  "fill": "#FFFFFF",
+                  "content": "Name",
+                  "fontFamily": "Work Sans",
+                  "fontSize": 15,
+                  "fontWeight": "bold"
+                },
+                {
+                  "type": "text",
+                  "id": "RS2A1",
+                  "fill": "#BBBBBB",
+                  "content": " - ",
+                  "fontFamily": "Work Sans",
+                  "fontSize": 15,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "CNmgJ",
+                  "fill": "#BBBBBB",
+                  "content": "Company",
+                  "fontFamily": "Work Sans",
+                  "fontSize": 15,
+                  "fontWeight": "normal",
+                  "fontStyle": "italic"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "YAa1d",
+              "name": "SortHint",
+              "reusable": true,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "XK8IR",
+                  "fill": "#555555",
+                  "content": "Sorted by name",
+                  "fontFamily": "Work Sans",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "TGEZ8",
+          "name": "logoSec",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "fz2jE",
+              "fill": "#FFFFFF",
+              "content": "Logo",
+              "fontFamily": "Montserrat",
+              "fontSize": 20,
+              "fontWeight": "bold"
+            },
+            {
+              "type": "frame",
+              "id": "hRNgi",
+              "name": "Logo",
+              "reusable": true,
+              "width": 300,
+              "height": 180,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "./ctoroundtablelogo.png",
+                "mode": "fit"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "lNpIO",
+      "x": 900,
+      "y": 0,
+      "name": "── HOMEPAGE (current) ──",
+      "width": 1440,
+      "height": 2200,
+      "fill": "#111111",
+      "layout": "none",
+      "children": [
+        {
+          "type": "icon_font",
+          "id": "fGZpS",
+          "x": 20,
+          "y": 20,
+          "width": 28,
+          "height": 28,
+          "iconFontName": "home",
+          "iconFontFamily": "Material Symbols Outlined",
+          "fill": "#FFFFFF"
+        },
+        {
+          "type": "frame",
+          "id": "LWOwt",
+          "x": 240,
+          "y": 80,
+          "name": "cnt",
+          "width": 960,
+          "layout": "vertical",
+          "gap": 24,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "CHxTL",
+              "width": 300,
+              "height": 180,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "./ctoroundtablelogo.png",
+                "mode": "fit"
+              },
+              "layout": "vertical",
+              "justifyContent": "center",
+              "alignItems": "center"
+            },
+            {
+              "type": "text",
+              "id": "PrJ4L",
+              "fill": "#CCCCCC",
+              "textGrowth": "fixed-width",
+              "width": 750,
+              "content": "A Norwegian community of CTOs focused on sharing knowledge and supporting each other. We also invest in and guide early-stage tech companies and exceptional technical leaders to help them succeed",
+              "lineHeight": 1.7,
+              "textAlign": "center",
+              "fontFamily": "Work Sans",
+              "fontSize": 18,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "UOP5F",
+              "name": "br",
+              "gap": 16,
+              "padding": [
+                8,
+                0
+              ],
+              "children": [
+                {
+                  "id": "z9Gqc",
+                  "type": "ref",
+                  "ref": "AcLyC",
+                  "width": "fit_content",
+                  "y": 8,
+                  "height": "fit_content",
+                  "descendants": {
+                    "ruYfR": {
+                      "content": "INVESTMENTS",
+                      "x": 32,
+                      "y": 14
+                    }
+                  }
+                },
+                {
+                  "id": "TTJZI",
+                  "type": "ref",
+                  "ref": "1rwJq",
+                  "width": "fit_content",
+                  "x": 186,
+                  "y": 8,
+                  "height": "fit_content",
+                  "descendants": {
+                    "QeLzU": {
+                      "content": "CONTACT US",
+                      "x": 32,
+                      "y": 14
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ClWXV",
+              "name": "who",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 8,
+              "padding": [
+                32,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "qHHTM",
+                  "fill": "#FFFFFF",
+                  "content": "Who we are",
+                  "fontFamily": "Montserrat",
+                  "fontSize": 29,
+                  "fontWeight": "bold"
+                },
+                {
+                  "id": "45bLD",
+                  "type": "ref",
+                  "ref": "YAa1d",
+                  "x": 437,
+                  "y": 75,
+                  "width": "fit_content",
+                  "height": "fit_content"
+                },
+                {
+                  "type": "frame",
+                  "id": "uAUEI",
+                  "name": "Members",
+                  "layout": "vertical",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "H4YTa",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "y": 0,
+                      "x": 68.5,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Amr Abdelwahab"
+                        },
+                        "RS2A1": {
+                          "x": 127
+                        },
+                        "CNmgJ": {
+                          "content": "Alfred",
+                          "x": 145
+                        }
+                      }
+                    },
+                    {
+                      "id": "G3Qse",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 72,
+                      "y": 26,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Anneli Aune"
+                        },
+                        "RS2A1": {
+                          "x": 89
+                        },
+                        "CNmgJ": {
+                          "content": "Dreamknit",
+                          "x": 107
+                        }
+                      }
+                    },
+                    {
+                      "id": "JaE6r",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "y": 52,
+                      "x": 15,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Atle Myhrer Knudtzon"
+                        },
+                        "RS2A1": {
+                          "x": 163
+                        },
+                        "CNmgJ": {
+                          "content": "We are learning",
+                          "x": 181
+                        }
+                      }
+                    },
+                    {
+                      "id": "YuFgo",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 64,
+                      "y": 78,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Axel Franck"
+                        },
+                        "RS2A1": {
+                          "content": " - Ex CTO: ",
+                          "x": 88
+                        },
+                        "CNmgJ": {
+                          "content": "Tise",
+                          "x": 169
+                        }
+                      }
+                    },
+                    {
+                      "id": "qfwQS",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 73.5,
+                      "y": 104,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Benedicte Raae"
+                        },
+                        "RS2A1": {
+                          "x": 116
+                        },
+                        "CNmgJ": {
+                          "content": "Whee!",
+                          "x": 134
+                        }
+                      }
+                    },
+                    {
+                      "id": "8XkoL",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 30,
+                      "y": 130,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Bjørn Viggo Andersen"
+                        },
+                        "RS2A1": {
+                          "x": 158
+                        },
+                        "CNmgJ": {
+                          "content": "Lynova Labs",
+                          "x": 176
+                        }
+                      }
+                    },
+                    {
+                      "id": "iETAh",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 29.5,
+                      "y": 156,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Boris Kourtoukov"
+                        },
+                        "RS2A1": {
+                          "x": 128
+                        },
+                        "CNmgJ": {
+                          "content": "Ordinary Objects",
+                          "x": 146
+                        }
+                      }
+                    },
+                    {
+                      "id": "krwfl",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 41,
+                      "y": 182,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Christer-André Fagerslett"
+                        },
+                        "RS2A1": {
+                          "x": 190
+                        },
+                        "CNmgJ": {
+                          "content": "Egos",
+                          "x": 208
+                        }
+                      }
+                    },
+                    {
+                      "id": "S83O5",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 89.5,
+                      "y": 208,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Deep Singh"
+                        },
+                        "RS2A1": {
+                          "x": 83
+                        },
+                        "CNmgJ": {
+                          "content": "Sanna",
+                          "x": 101
+                        }
+                      }
+                    },
+                    {
+                      "id": "axFqA",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 56,
+                      "y": 234,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Erik Åsberg"
+                        },
+                        "RS2A1": {
+                          "x": 85
+                        },
+                        "CNmgJ": {
+                          "content": "Esmartsystems",
+                          "x": 103
+                        }
+                      }
+                    },
+                    {
+                      "id": "dafJq",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 58.5,
+                      "y": 260,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Erik Axel Nielsen"
+                        },
+                        "RS2A1": {
+                          "x": 125
+                        },
+                        "CNmgJ": {
+                          "content": "Lucalabs",
+                          "x": 143
+                        }
+                      }
+                    },
+                    {
+                      "id": "lucuQ",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 47.5,
+                      "y": 286,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Espen Fevolden"
+                        },
+                        "RS2A1": {
+                          "x": 116
+                        },
+                        "CNmgJ": {
+                          "content": "Pilea Insights",
+                          "x": 134
+                        }
+                      }
+                    },
+                    {
+                      "id": "gnx6l",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 64.5,
+                      "y": 312,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Fredrik Anfinsen"
+                        },
+                        "RS2A1": {
+                          "x": 123
+                        },
+                        "CNmgJ": {
+                          "content": "Cognite",
+                          "x": 141
+                        }
+                      }
+                    },
+                    {
+                      "id": "wOqMN",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 19.5,
+                      "y": 338,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Frode Tobias Bjerke"
+                        },
+                        "RS2A1": {
+                          "content": " - Ex CTO: ",
+                          "x": 146
+                        },
+                        "CNmgJ": {
+                          "content": "Unacast",
+                          "x": 227
+                        }
+                      }
+                    },
+                    {
+                      "id": "cb5H0",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 38,
+                      "y": 364,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Gard Rimestad"
+                        },
+                        "RS2A1": {
+                          "content": " - Ex CTO: ",
+                          "x": 110
+                        },
+                        "CNmgJ": {
+                          "content": "Unleash",
+                          "x": 191
+                        }
+                      }
+                    },
+                    {
+                      "id": "YXgEL",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 21,
+                      "y": 390,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Gjermund Bjaanes"
+                        },
+                        "RS2A1": {
+                          "content": " - Ex CTO: ",
+                          "x": 135
+                        },
+                        "CNmgJ": {
+                          "content": "Empower",
+                          "x": 216
+                        }
+                      }
+                    },
+                    {
+                      "id": "3ThdO",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 28.5,
+                      "y": 416,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Herman Schistad"
+                        },
+                        "RS2A1": {
+                          "x": 128
+                        },
+                        "CNmgJ": {
+                          "content": "Pareto Securities",
+                          "x": 146
+                        }
+                      }
+                    },
+                    {
+                      "id": "637VW",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "y": 442,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Ho Quoc Phuong Nguyen"
+                        },
+                        "RS2A1": {
+                          "x": 182
+                        },
+                        "CNmgJ": {
+                          "content": "Physical Robotics",
+                          "x": 200
+                        }
+                      }
+                    },
+                    {
+                      "id": "ELZ6F",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 65,
+                      "y": 468,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Håkon Græsberg"
+                        },
+                        "RS2A1": {
+                          "x": 123
+                        },
+                        "CNmgJ": {
+                          "content": "Wepost",
+                          "x": 141
+                        }
+                      }
+                    },
+                    {
+                      "id": "T0LaD",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 83,
+                      "y": 494,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Ingrid Kindem"
+                        },
+                        "RS2A1": {
+                          "x": 104
+                        },
+                        "CNmgJ": {
+                          "content": "Livity",
+                          "x": 122
+                        }
+                      }
+                    },
+                    {
+                      "id": "iuJqT",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 36.5,
+                      "y": 520,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "James Larsen"
+                        },
+                        "RS2A1": {
+                          "content": " - Ex CTO: ",
+                          "x": 103
+                        },
+                        "CNmgJ": {
+                          "content": "Farmable",
+                          "x": 184
+                        }
+                      }
+                    },
+                    {
+                      "id": "XvAPL",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 72.5,
+                      "y": 546,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Jimmy Byrum"
+                        },
+                        "RS2A1": {
+                          "x": 103
+                        },
+                        "CNmgJ": {
+                          "content": "Variable",
+                          "x": 121
+                        }
+                      }
+                    },
+                    {
+                      "id": "af3Cu",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 17.5,
+                      "y": 572,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Johannes Berggren"
+                        },
+                        "RS2A1": {
+                          "content": " - Ex CTO: ",
+                          "x": 143
+                        },
+                        "CNmgJ": {
+                          "content": "Learnlink",
+                          "x": 224
+                        }
+                      }
+                    },
+                    {
+                      "id": "Eo1yG",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 59,
+                      "y": 598,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Jonas Dammen"
+                        },
+                        "RS2A1": {
+                          "x": 115
+                        },
+                        "CNmgJ": {
+                          "content": "Catchwise",
+                          "x": 133
+                        }
+                      }
+                    },
+                    {
+                      "id": "JuTMi",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 76.5,
+                      "y": 624,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Jonas Feiring"
+                        },
+                        "RS2A1": {
+                          "x": 99
+                        },
+                        "CNmgJ": {
+                          "content": "FC Quiz",
+                          "x": 117
+                        }
+                      }
+                    },
+                    {
+                      "id": "uqpFa",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 53,
+                      "y": 650,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Kristian Hasselknippe"
+                        },
+                        "RS2A1": {
+                          "x": 163
+                        },
+                        "CNmgJ": {
+                          "content": "Midio",
+                          "x": 181
+                        }
+                      }
+                    },
+                    {
+                      "id": "vL3Bq",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 91.5,
+                      "y": 676,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Lars Vagnes"
+                        },
+                        "RS2A1": {
+                          "x": 89
+                        },
+                        "CNmgJ": {
+                          "content": "Simli",
+                          "x": 107
+                        }
+                      }
+                    },
+                    {
+                      "id": "X8HSN",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 75.5,
+                      "y": 702,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Martin Sahlen"
+                        },
+                        "RS2A1": {
+                          "x": 104
+                        },
+                        "CNmgJ": {
+                          "content": "Alvin AI",
+                          "x": 122
+                        }
+                      }
+                    },
+                    {
+                      "id": "QrDNY",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 95,
+                      "y": 728,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Martin Skow"
+                        },
+                        "RS2A1": {
+                          "x": 94
+                        },
+                        "CNmgJ": {
+                          "content": "Riff",
+                          "x": 112
+                        }
+                      }
+                    },
+                    {
+                      "id": "dfz4Z",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 81.5,
+                      "y": 754,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Nicolai Heum"
+                        },
+                        "RS2A1": {
+                          "x": 99
+                        },
+                        "CNmgJ": {
+                          "content": "Enode",
+                          "x": 117
+                        }
+                      }
+                    },
+                    {
+                      "id": "VDt93",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 50.5,
+                      "y": 780,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Nicolay Thafvelin"
+                        },
+                        "RS2A1": {
+                          "x": 128
+                        },
+                        "CNmgJ": {
+                          "content": "Vev Design",
+                          "x": 146
+                        }
+                      }
+                    },
+                    {
+                      "id": "zILV4",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 65,
+                      "y": 806,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Oliver Stenbom"
+                        },
+                        "RS2A1": {
+                          "x": 115
+                        },
+                        "CNmgJ": {
+                          "content": "Endform",
+                          "x": 133
+                        }
+                      }
+                    },
+                    {
+                      "id": "viWqg",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 12,
+                      "y": 832,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Patrick Skjennum"
+                        },
+                        "RS2A1": {
+                          "content": " - ",
+                          "x": 132
+                        },
+                        "CNmgJ": {
+                          "content": "Qondor, Vaskeladden",
+                          "x": 150
+                        }
+                      }
+                    },
+                    {
+                      "id": "oBRG2",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 53,
+                      "y": 858,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Peder Aaby"
+                        },
+                        "RS2A1": {
+                          "content": " - Ex CTO: ",
+                          "x": 84
+                        },
+                        "CNmgJ": {
+                          "content": "Sparkel",
+                          "x": 165
+                        }
+                      }
+                    },
+                    {
+                      "id": "yp1WK",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 73,
+                      "y": 884,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Petter Samuelsen"
+                        },
+                        "RS2A1": {
+                          "x": 132
+                        },
+                        "CNmgJ": {
+                          "content": "Carl",
+                          "x": 150
+                        }
+                      }
+                    },
+                    {
+                      "id": "R2jdm",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 65.5,
+                      "y": 910,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Quimay Vivas"
+                        },
+                        "RS2A1": {
+                          "x": 99
+                        },
+                        "CNmgJ": {
+                          "content": "Open Mind",
+                          "x": 117
+                        }
+                      }
+                    },
+                    {
+                      "id": "xPVP6",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 10,
+                      "y": 936,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Rebecca Wiborg Seyfarth"
+                        },
+                        "RS2A1": {
+                          "content": " - Ex CTO: ",
+                          "x": 187
+                        },
+                        "CNmgJ": {
+                          "content": "Völur",
+                          "x": 268
+                        }
+                      }
+                    },
+                    {
+                      "id": "tQbFu",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 51,
+                      "y": 962,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Reza Shamshirgaran"
+                        },
+                        "RS2A1": {
+                          "x": 151
+                        },
+                        "CNmgJ": {
+                          "content": "Preppio",
+                          "x": 169
+                        }
+                      }
+                    },
+                    {
+                      "id": "abO5I",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 78.5,
+                      "y": 988,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Ruben Schmidt"
+                        },
+                        "RS2A1": {
+                          "x": 114
+                        },
+                        "CNmgJ": {
+                          "content": "Heist",
+                          "x": 132
+                        }
+                      }
+                    },
+                    {
+                      "id": "anm1z",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 97,
+                      "y": 1014,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Sahil Bajaj"
+                        },
+                        "RS2A1": {
+                          "x": 78
+                        },
+                        "CNmgJ": {
+                          "content": "Seen",
+                          "x": 96
+                        }
+                      }
+                    },
+                    {
+                      "id": "y8W95",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 77.5,
+                      "y": 1040,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Simen Bakken"
+                        },
+                        "RS2A1": {
+                          "x": 106
+                        },
+                        "CNmgJ": {
+                          "content": "Relynk",
+                          "x": 124
+                        }
+                      }
+                    },
+                    {
+                      "id": "wYuww",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 53.5,
+                      "y": 1066,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Snorre L.v.G Edwin"
+                        },
+                        "RS2A1": {
+                          "content": " - ",
+                          "x": 139
+                        },
+                        "CNmgJ": {
+                          "content": "Pengefix",
+                          "x": 157
+                        }
+                      }
+                    },
+                    {
+                      "id": "HsEdq",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 26,
+                      "y": 1092,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Stian Lind Petlund"
+                        },
+                        "RS2A1": {
+                          "content": " - Ex CTO: ",
+                          "x": 138
+                        },
+                        "CNmgJ": {
+                          "content": "Dagens",
+                          "x": 219
+                        }
+                      }
+                    },
+                    {
+                      "id": "ZVDqN",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 52.5,
+                      "y": 1118,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Stian Weie"
+                        },
+                        "RS2A1": {
+                          "content": " - Ex CTO: ",
+                          "x": 79
+                        },
+                        "CNmgJ": {
+                          "content": "Playpuls",
+                          "x": 160
+                        }
+                      }
+                    },
+                    {
+                      "id": "x7hin",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 71,
+                      "y": 1144,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Sverre Simonsen"
+                        },
+                        "RS2A1": {
+                          "x": 125
+                        },
+                        "CNmgJ": {
+                          "content": "Roest",
+                          "x": 143
+                        }
+                      }
+                    },
+                    {
+                      "id": "xQ7Y4",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 53,
+                      "y": 1170,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Tomas Fagerbekk"
+                        },
+                        "RS2A1": {
+                          "x": 131
+                        },
+                        "CNmgJ": {
+                          "content": "Konfidens",
+                          "x": 149
+                        }
+                      }
+                    },
+                    {
+                      "id": "K3EYp",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 48,
+                      "y": 1196,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Tomas Veiden"
+                        },
+                        "RS2A1": {
+                          "content": " - Ex CTO: ",
+                          "x": 102
+                        },
+                        "CNmgJ": {
+                          "content": "Spring",
+                          "x": 183
+                        }
+                      }
+                    },
+                    {
+                      "id": "98I8V",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 72,
+                      "y": 1222,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Øystein Ellingbø"
+                        },
+                        "RS2A1": {
+                          "x": 121
+                        },
+                        "CNmgJ": {
+                          "content": "Ardoq",
+                          "x": 139
+                        }
+                      }
+                    },
+                    {
+                      "id": "nFYmE",
+                      "type": "ref",
+                      "ref": "JYpsk",
+                      "width": "fit_content",
+                      "x": 91.5,
+                      "y": 1248,
+                      "height": "fit_content",
+                      "descendants": {
+                        "38tBA": {
+                          "content": "Ýmir Egilson"
+                        },
+                        "RS2A1": {
+                          "x": 92
+                        },
+                        "CNmgJ": {
+                          "content": "Aevy",
+                          "x": 110
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "npfln",
+      "x": 2440,
+      "y": 0,
+      "name": "── INVESTMENTS PAGE (current) ──",
+      "width": 1440,
+      "height": 900,
+      "fill": "#111111",
+      "layout": "none",
+      "children": [
+        {
+          "type": "icon_font",
+          "id": "HXhX9",
+          "x": 20,
+          "y": 20,
+          "width": 28,
+          "height": 28,
+          "iconFontName": "home",
+          "iconFontFamily": "Material Symbols Outlined",
+          "fill": "#FFFFFF"
+        },
+        {
+          "type": "frame",
+          "id": "Cv21U",
+          "x": 170,
+          "y": 80,
+          "name": "cnt",
+          "width": 1100,
+          "layout": "vertical",
+          "gap": 24,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "CeT5i",
+              "fill": "#FFFFFF",
+              "content": "How we invest",
+              "fontFamily": "Montserrat",
+              "fontSize": 29,
+              "fontWeight": "bold"
+            },
+            {
+              "type": "text",
+              "id": "Fh8uD",
+              "fill": "#CCCCCC",
+              "textGrowth": "fixed-width",
+              "width": 800,
+              "content": "We invest in early-stage tech companies with a clear vision and strong product teams\nWe enter with an angel size investment",
+              "lineHeight": 1.7,
+              "textAlign": "center",
+              "fontFamily": "Work Sans",
+              "fontSize": 18,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "text",
+              "id": "dNmwv",
+              "fill": "#FFFFFF",
+              "content": "Our portfolio",
+              "fontFamily": "Montserrat",
+              "fontSize": 29,
+              "fontWeight": "bold"
+            },
+            {
+              "type": "frame",
+              "id": "3hlnb",
+              "name": "Portfolio Grid",
+              "width": 1000,
+              "layout": "vertical",
+              "gap": 32,
+              "padding": [
+                16,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "G3jyf",
+                  "name": "r1",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "G0IDh",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "JBW0N",
+                          "fill": "#FFFFFF",
+                          "content": "Sparkel",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "9rsVP",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "kCFdd",
+                          "fill": "#FFFFFF",
+                          "content": "Simli",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "HaJzc",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YvNDz",
+                          "fill": "#FFFFFF",
+                          "content": "Preppio",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "BJPKI",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "f5Ls5",
+                          "fill": "#FFFFFF",
+                          "content": "Relynk",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "4QIAa",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "llVyC",
+                          "fill": "#FFFFFF",
+                          "content": "Ordinary objects",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "CQbcJ",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "pRJiQ",
+                          "fill": "#FFFFFF",
+                          "content": "Konfidens",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "nsGPw",
+                  "name": "r2",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "vL5u2",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "DGH78",
+                          "fill": "#FFFFFF",
+                          "content": "Midio",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "b7Zt4",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "Ji8aI",
+                          "fill": "#FFFFFF",
+                          "content": "Catchwise",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "YO5Jb",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "3V0u9",
+                          "fill": "#FFFFFF",
+                          "content": "Physical Robotics",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "NJo2U",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "IdoIs",
+                          "fill": "#FFFFFF",
+                          "content": "Dreamknit",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "TIq5S",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "MckIi",
+                          "fill": "#FFFFFF",
+                          "content": "Aevy",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "bC0PJ",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "GNuRS",
+                          "fill": "#FFFFFF",
+                          "content": "Pilea Insights",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "tjmmS",
+                  "name": "r3",
+                  "width": "fill_container",
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "L9W1p",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ChmOC",
+                          "fill": "#FFFFFF",
+                          "content": "Open mind",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "8oJzc",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "HBLpb",
+                          "fill": "#FFFFFF",
+                          "content": "Livity",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dqSzo",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "9Czqk",
+                          "fill": "#FFFFFF",
+                          "content": "Get Circular",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "9QBxm",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "YpyDJ",
+                          "fill": "#FFFFFF",
+                          "content": "TeamAlfred",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "jCGu3",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "OG1NH",
+                          "fill": "#FFFFFF",
+                          "content": "Egos",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "tOXlf",
+                      "width": 150,
+                      "justifyContent": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "0WAHj",
+                          "fill": "#FFFFFF",
+                          "content": "WePost",
+                          "fontFamily": "Work Sans",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "8kS28",
+                  "name": "r4",
+                  "width": "fill_container",
+                  "gap": 80,
+                  "justifyContent": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Y124B",
+                      "fill": "#FFFFFF",
+                      "content": "Sanna",
+                      "fontFamily": "Work Sans",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "9667D",
+                      "fill": "#FFFFFF",
+                      "content": "Soolv",
+                      "fontFamily": "Work Sans",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "EKM9c",
+                      "fill": "#FFFFFF",
+                      "content": "Altek AI",
+                      "fontFamily": "Work Sans",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
