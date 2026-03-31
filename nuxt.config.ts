@@ -7,6 +7,7 @@ export default defineNuxtConfig({
       title: 'CTO Roundtable Invest',
       htmlAttrs: {
         lang: 'en',
+        style: 'background-color:#111',
       },
       meta: [
         { charset: 'utf-8' },
@@ -21,15 +22,20 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Work+Sans:wght@300;400;500;600&display=swap',
+          href: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Work+Sans:wght@300;400;500;600&display=optional',
         },
       ],
     },
   },
 
+  css: ['vuetify/dist/vuetify.min.css'],
+
   modules: ['vuetify-nuxt-module', '@nuxt/image'],
 
   vuetify: {
+    moduleOptions: {
+      styles: 'none',
+    },
     vuetifyOptions: {
       theme: {
         defaultTheme: 'light',
