@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="text-center">
     <v-row justify="center" class="full-height">
-      <v-col class="top-spacing" cols="12" md="8">
+      <v-col cols="12" md="8" style="padding-top: 5rem">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           xml:space="preserve"
@@ -50,8 +50,3 @@ function openMail() {
 }
 </script>
 
-<style scoped>
-.top-spacing {
-  margin-top: 5rem;
-}
-</style>

@@ -18,6 +18,16 @@ export default defineNuxtConfig({
         },
         { name: 'format-detection', content: 'telephone=no' },
       ],
+      style: [
+        {
+          children: `
+            .v-application { display: flex }
+            .v-application__wrap { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 100dvh }
+            .v-main { flex: 1 0 auto; transition: none }
+            .landing-page { background-color: #111; color: #fff; min-height: 100vh }
+          `,
+        },
+      ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
         {
