@@ -90,8 +90,8 @@
 
               <h3 class="font-weight-bold mt-4 mb-2">Hva pensjonering innebærer</h3>
               <ul>
-                <li>Du beholder tilgang til Slack, men flyttes til en pensjonert-rolle.</li>
-                <li>Du er velkommen på samlinger når det passer, men uten forventning om jevnlig oppmøte.</li>
+                <li>Du beholder tilgang til Slack, men mister tilgang til private kanaler og flyttes til en pensjonert-rolle.</li>
+                <li>Du kan ikke delta på roundtable-samlinger, men er velkommen på sosiale arrangementer.</li>
                 <li>Du har ikke stemmerett på årsmøte.</li>
                 <li>Du kan når som helst søke styret om gjenopptak av aktivt medlemskap.</li>
               </ul>
