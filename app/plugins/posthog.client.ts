@@ -38,7 +38,7 @@ export default defineNuxtPlugin(() => {
           capture: () => {},
           identify: () => {},
           reset: () => {},
-        },
+        } as unknown as typeof posthog,
       },
     }
   }

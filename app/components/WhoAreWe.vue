@@ -46,9 +46,9 @@
           </div>
           <div v-else class="positions">
             <template v-if="item.currentPositions.length">
-              <span v-if="item.currentPositions[0].roleTitle" class="role">{{ item.currentPositions[0].roleTitle }}, </span>
-              <a v-if="item.currentPositions[0].url" :href="item.currentPositions[0].url" target="_blank">{{ item.currentPositions[0].org }}</a>
-              <span v-else>{{ item.currentPositions[0].org }}</span>
+              <span v-if="item.currentPositions[0]!.roleTitle" class="role">{{ item.currentPositions[0]!.roleTitle }}, </span>
+              <a v-if="item.currentPositions[0]!.url" :href="item.currentPositions[0]!.url" target="_blank">{{ item.currentPositions[0]!.org }}</a>
+              <span v-else>{{ item.currentPositions[0]!.org }}</span>
             </template>
             <template v-else-if="item.formerPositions.length">
               <span class="former-label">Former: </span>

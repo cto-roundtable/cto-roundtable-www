@@ -13,6 +13,24 @@
         <h2 class="font-weight-bold">
           Our portfolio
         </h2>
+        <span v-if="data?.investments.length" class="sort-hint" @click="showSort = true">{{ sortLabel }}</span>
+        <ClientOnly>
+          <v-dialog v-model="showSort" max-width="300">
+            <v-card color="#222" class="pa-4">
+              <v-card-title class="text-white text-body-1 pa-0 mb-3">Sort portfolio by</v-card-title>
+              <v-btn
+                v-for="opt in sortOptions"
+                :key="opt.key"
+                block
+                variant="tonal"
+                class="mb-2 text-white"
+                @click="pickSort(opt.key)"
+              >
+                {{ opt.label }}
+              </v-btn>
+            </v-card>
+          </v-dialog>
+        </ClientOnly>
         <div v-if="pending" class="d-flex justify-center my-4">
           <v-row>
             <v-col v-for="n in 6" :key="n" cols="6" sm="4" md="2">
@@ -53,10 +71,45 @@
 </template>
 
 <script setup lang="ts">
-const { data, pending } = useFetch('/api/investments')
+const sortOptions = [
+  { key: 'name', label: 'Name' },
+  { key: 'date', label: 'Date invested' },
+]
+
+const activeSort = ref<string | null>(null)
+const showSort = ref(false)
+
+const { data, pending, refresh } = useFetch('/api/investments', {
+  query: computed(() => activeSort.value ? { sort: activeSort.value } : {}),
+})
+
+const sortLabel = computed(() => {
+  const serverSort = data.value?.sort
+  const opt = sortOptions.find((o) => o.key === serverSort)
+  return opt ? `Sorted by ${opt.label.toLowerCase()}` : ''
+})
+
+function pickSort(key: string) {
+  activeSort.value = key
+  showSort.value = false
+  refresh()
+}
 </script>
 
 <style scoped>
+.sort-hint {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: #555;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  transition: color 0.2s;
+}
+
+.sort-hint:hover {
+  color: #888;
+}
+
 .top-spacing {
   margin-top: 3rem;
 }

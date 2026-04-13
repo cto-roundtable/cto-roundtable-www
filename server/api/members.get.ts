@@ -1,11 +1,15 @@
 function companyOf(row: any): string {
-  return row.positions?.map((p: any) => p.org).join(', ') || row.name || ''
+  const current = row.positions?.filter((p: any) => p.type === 'employee' || p.type === 'founder')
+  const former = row.positions?.filter((p: any) => p.type === 'former_employee')
+  const primary = current?.find((p: any) => p.is_primary)
+  const best = primary || current?.[0] || former?.[0]
+  return best?.org || row.name || ''
 }
 
 function shuffle<T>(arr: T[]): T[] {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+    ;[arr[i]!, arr[j]!] = [arr[j]!, arr[i]!]
   }
   return arr
 }
@@ -71,8 +75,8 @@ export default defineEventHandler(async (event) => {
   const requested = typeof query.sort === 'string' && validSorts.has(query.sort)
     ? sortStrategies.find((s) => s.key === query.sort)!
     : null
-  const strategy = requested || sortStrategies[Math.floor(Math.random() * sortStrategies.length)]
-  const sorted = strategy.key === 'random' ? shuffle([...persons]) : [...persons].sort(strategy.fn)
+  const strategy = requested || sortStrategies[Math.floor(Math.random() * sortStrategies.length)]!
+  const sorted = strategy!.key === 'random' ? shuffle([...persons]) : [...persons].sort(strategy!.fn)
 
   return {
     sort: strategy.key,

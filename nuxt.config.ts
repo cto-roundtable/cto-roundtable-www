@@ -20,7 +20,7 @@ export default defineNuxtConfig({
       ],
       style: [
         {
-          children: `
+          innerHTML: `
             .v-application { display: flex }
             .v-application__wrap { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 100dvh }
             .v-main { flex: 1 0 auto; transition: none }
