@@ -64,6 +64,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     databaseUrl: process.env.DATABASE_URL || '',
+    resendApiKey: process.env.RESEND_API_KEY || '',
+    sessionSecret: process.env.SESSION_SECRET || '',
     public: {
       posthogToken: process.env.POSTHOG_TOKEN || '',
       posthogHost: process.env.POSTHOG_HOST || 'https://eu.i.posthog.com',
