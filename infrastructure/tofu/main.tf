@@ -45,6 +45,20 @@ resource "google_secret_manager_secret" "posthog_token" {
   }
 }
 
+resource "google_secret_manager_secret" "resend_api_key" {
+  secret_id = "www-resend-api-key"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret" "session_secret" {
+  secret_id = "www-session-secret"
+  replication {
+    auto {}
+  }
+}
+
 # Grant the service account access to secrets
 resource "google_secret_manager_secret_iam_member" "database_url" {
   secret_id = google_secret_manager_secret.database_url.id
@@ -54,6 +68,18 @@ resource "google_secret_manager_secret_iam_member" "database_url" {
 
 resource "google_secret_manager_secret_iam_member" "posthog_token" {
   secret_id = google_secret_manager_secret.posthog_token.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.www.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "resend_api_key" {
+  secret_id = google_secret_manager_secret.resend_api_key.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.www.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "session_secret" {
+  secret_id = google_secret_manager_secret.session_secret.id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.www.email}"
 }
@@ -118,12 +144,34 @@ resource "google_cloud_run_v2_service" "www" {
           }
         }
       }
+
+      env {
+        name = "NUXT_RESEND_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.resend_api_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "NUXT_SESSION_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.session_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
     }
   }
 
   depends_on = [
     google_secret_manager_secret.database_url,
     google_secret_manager_secret.posthog_token,
+    google_secret_manager_secret.resend_api_key,
+    google_secret_manager_secret.session_secret,
   ]
 }
 
