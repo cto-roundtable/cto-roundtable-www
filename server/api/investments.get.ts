@@ -13,14 +13,15 @@ export default defineEventHandler(async (event) => {
     SELECT
       o.name AS company,
       o.website AS url,
-      ng.name AS fund,
-      i.amount_nok,
-      i.invested_at
+      STRING_AGG(DISTINCT ng.name, ', ' ORDER BY ng.name) AS fund,
+      SUM(i.amount_nok) AS amount_nok,
+      MIN(i.invested_at) AS invested_at
     FROM investments i
     INNER JOIN pipeline_deals pd ON i.deal_id = pd.id
     INNER JOIN organizations o ON pd.organization_id = o.id
     INNER JOIN network_groups ng ON i.group_id = ng.id
-    ORDER BY i.invested_at ASC
+    GROUP BY pd.id, o.name, o.website
+    ORDER BY MIN(i.invested_at) ASC
   `
 
   const sortKey = typeof query.sort === 'string' && validSorts.has(query.sort) ? query.sort : 'date'
