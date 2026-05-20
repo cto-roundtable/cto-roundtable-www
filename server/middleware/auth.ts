@@ -3,7 +3,7 @@ export default defineEventHandler((event) => {
   // The /member page itself handles auth client-side via the session endpoint
   // This middleware adds session data to the event context for server routes
   const url = getRequestURL(event)
-  if (!url.pathname.startsWith('/api/member')) return
+  if (!url.pathname.startsWith('/api/member/')) return
 
   const session = verifySession(event)
   if (!session) {
