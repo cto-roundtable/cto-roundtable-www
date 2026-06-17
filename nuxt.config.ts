@@ -3,8 +3,8 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      titleTemplate: '%s - CTO Roundtable Invest',
-      title: 'CTO Roundtable Invest',
+      // titleTemplate is set in app.vue (a function, which nuxt.config can't serialize)
+      title: 'CTO Roundtable',
       htmlAttrs: {
         lang: 'en',
         style: 'background-color:#111',
