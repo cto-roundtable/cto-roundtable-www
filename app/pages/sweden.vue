@@ -14,11 +14,16 @@
         <section class="block">
           <h2>What we are building</h2>
           <p>
-            A room of CTOs who can talk openly about the real stuff: the hard technical calls,
-            the team problems, the things you cannot post on LinkedIn. One company hosts, there
-            is food and a beer (or something alcohol-free), one company presents, and the rest
-            of us dig into it for a few hours. No sales pitches, no panels, no audience. Just
-            peers.
+            A room of CTOs who meet to talk shop and share knowledge, roughly six times a year.
+            One company hosts (a meeting room with space for 8 to 12 people is enough, no big
+            budget needed), someone puts their own tech on the grill, and the rest of us ask
+            questions and help work through the hard problems. It is low-threshold show and tell,
+            not a polished sales pitch. No panels, no audience. Just peers.
+          </p>
+          <p>
+            And it is about half social, half technical. The dinner and the beer (or something
+            alcohol-free) matter as much as the deep dive. These are the things you cannot post
+            on LinkedIn, talked about openly between people who trust each other.
           </p>
         </section>
 
@@ -26,22 +31,31 @@
           <h2>Our principles</h2>
           <ul>
             <li>
-              <strong>Intimacy over scale.</strong> We deliberately keep the room small. This is
-              not a 300-person community where nobody dares to speak. It is the kind of group
-              where you can share everything and grab a beer afterwards.
+              <strong>Close relationships over a big network.</strong> Deep relationships give
+              better support, safety and more valuable conversations. We prioritise a tight
+              community, not just a large network. Social meetups matter as much as the technical
+              ones. This is a network for lasting relationships, where we grow together over time.
             </li>
             <li>
-              <strong>Swedish first, with a small bridge to Norway.</strong> The Stockholm chapter
-              is its own thing, run locally, with its own private space. There is a light bridge
-              to the Norwegian network for cross-pollination and dealflow, but it stays separate
-              so neither side dilutes the other.
+              <strong>Sharing, openness and support.</strong> We share generously: experience,
+              know-how, problems and solutions, including the times we failed. We operate under
+              Chatham House rules, built on trust and respect. We cheer each other on, and we want
+              the Swedish startup scene to grow.
+            </li>
+            <li>
+              <strong>Engage. You get out what you put in.</strong> Be active on Slack and in the
+              meetings. We use Slack as the daily home base to stay in touch. Offer help, and do
+              not be afraid to ask for it yourself.
             </li>
             <li>
               <strong>CTOs only.</strong> The Stockholm room is for sitting CTOs. Everyone carries
               real technical ownership, and that is what keeps the conversation honest and useful.
             </li>
             <li>
-              <strong>Trust first.</strong> What is said in the room stays in the room.
+              <strong>Swedish first, with a small bridge to Norway.</strong> The Stockholm chapter
+              is its own thing, run locally, with its own private space. There is a light bridge
+              to the Norwegian network for cross-pollination and dealflow, but it stays separate
+              so neither side dilutes the other.
             </li>
           </ul>
         </section>
