@@ -143,7 +143,27 @@
 </template>
 
 <script setup lang="ts">
-useHead({ title: 'Sweden' })
+// Override the global "%s - CTO Roundtable Invest" template: this page is the
+// network, not the investment arm. Set Sweden-specific title + OG/social meta.
+useHead({
+  title: 'CTO Roundtable Sweden',
+  titleTemplate: '%s',
+})
+
+useSeoMeta({
+  title: 'CTO Roundtable Sweden',
+  ogTitle: 'CTO Roundtable Sweden',
+  description:
+    'Register your interest in a small, tight-knit network of Stockholm CTOs. A Swedish chapter built on the Norwegian CTO Roundtable model.',
+  ogDescription:
+    'Register your interest in a small, tight-knit network of Stockholm CTOs. A Swedish chapter built on the Norwegian CTO Roundtable model.',
+  ogType: 'website',
+  ogUrl: 'https://www.ctoroundtable.no/sweden',
+  twitterCard: 'summary',
+  twitterTitle: 'CTO Roundtable Sweden',
+  twitterDescription:
+    'Register your interest in a small, tight-knit network of Stockholm CTOs. A Swedish chapter built on the Norwegian CTO Roundtable model.',
+})
 
 const form = reactive({
   name: '',
