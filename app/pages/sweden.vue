@@ -37,8 +37,8 @@
               so neither side dilutes the other.
             </li>
             <li>
-              <strong>CTOs and technical leaders only.</strong> Everyone in the room carries real
-              technical ownership. That is what keeps the conversation honest and useful.
+              <strong>CTOs only.</strong> The Stockholm room is for sitting CTOs. Everyone carries
+              real technical ownership, and that is what keeps the conversation honest and useful.
             </li>
             <li>
               <strong>Trust first.</strong> What is said in the room stays in the room.
