@@ -66,6 +66,8 @@ export default defineNuxtConfig({
     databaseUrl: process.env.DATABASE_URL || '',
     resendApiKey: process.env.RESEND_API_KEY || '',
     sessionSecret: process.env.SESSION_SECRET || '',
+    slackSigningSecret: process.env.SLACK_SIGNING_SECRET || '',
+    ingestApiKey: process.env.INGEST_API_KEY || '',
     public: {
       posthogToken: process.env.POSTHOG_TOKEN || '',
       posthogHost: process.env.POSTHOG_HOST || 'https://eu.i.posthog.com',

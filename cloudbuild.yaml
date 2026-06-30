@@ -17,6 +17,9 @@ steps:
       - '${_IMAGE}'
 
   # Deploy to Cloud Run
+  # --min-instances 1 keeps the Slack ingest webhook warm (Slack needs a <3s ack).
+  # --update-secrets adds the activity-ingest secrets without touching the
+  # existing bindings (database-url, posthog-token, resend-api-key, session-secret).
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -27,6 +30,10 @@ steps:
       - '${_IMAGE}'
       - '--region'
       - 'europe-north1'
+      - '--min-instances'
+      - '1'
+      - '--update-secrets'
+      - 'NUXT_SLACK_SIGNING_SECRET=www-slack-signing-secret:latest,NUXT_INGEST_API_KEY=www-ingest-api-key:latest'
 
 substitutions:
   _IMAGE: 'europe-north1-docker.pkg.dev/cto-roundtable/ctoroundtable/www:${COMMIT_SHA}'
