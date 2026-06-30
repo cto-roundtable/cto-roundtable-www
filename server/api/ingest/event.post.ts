@@ -16,9 +16,12 @@
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const auth = getHeader(event, 'authorization') || ''
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : ''
+  const token = (auth.startsWith('Bearer ') ? auth.slice(7) : '').trim()
+  // trim the configured key: secrets stored with a trailing newline (e.g. via
+  // `openssl rand | gcloud secrets create`) would otherwise never match.
+  const expected = (config.ingestApiKey || '').trim()
 
-  if (!config.ingestApiKey || !token || !timingSafeEqualStr(token, config.ingestApiKey)) {
+  if (!expected || !token || !timingSafeEqualStr(token, expected)) {
     throw createError({ statusCode: 401, message: 'Unauthorized' })
   }
 

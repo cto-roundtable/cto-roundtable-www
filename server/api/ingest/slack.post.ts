@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
 
   if (
     !verifySlackSignature({
-      signingSecret: config.slackSigningSecret,
+      signingSecret: (config.slackSigningSecret || '').trim(),
       signature: getHeader(event, 'x-slack-signature'),
       timestamp: getHeader(event, 'x-slack-request-timestamp'),
       rawBody,
