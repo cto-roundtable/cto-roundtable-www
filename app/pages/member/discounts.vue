@@ -47,7 +47,7 @@
 
         <!-- Active: show the code to redeem -->
         <div v-if="offer.status === 'active' && offer.code" class="mb-3">
-          <button class="code-pill" @click="copyCode(offer.code)">
+          <button class="code-pill" @click="copyCode(offer)">
             <v-icon size="14" class="mr-1">mdi-content-copy</v-icon>
             <span>{{ copiedCode === offer.code ? 'Kopiert!' : offer.code }}</span>
           </button>
@@ -120,6 +120,7 @@ const offers = ref<Offer[]>([])
 const isBoard = ref(false)
 const busy = ref<string | null>(null)
 const copiedCode = ref<string | null>(null)
+const { $posthog } = useNuxtApp()
 
 watchEffect(async () => {
   if (checked.value && session.value.authenticated && loading.value) {
@@ -127,6 +128,10 @@ watchEffect(async () => {
     isBoard.value = data.isBoard
     offers.value = data.offers
     loading.value = false
+    $posthog?.capture?.('fordeler_viewed', {
+      offer_count: offers.value.length,
+      is_board: isBoard.value,
+    })
   }
 })
 
@@ -139,6 +144,7 @@ async function request(offer: Offer) {
     )
     offer.requestCount = res.requestCount
     offer.hasRequested = res.hasRequested
+    $posthog?.capture?.('offer_requested', { offer_id: offer.id, company: offer.company })
   } finally {
     busy.value = null
   }
@@ -153,18 +159,24 @@ async function unrequest(offer: Offer) {
     )
     offer.requestCount = res.requestCount
     offer.hasRequested = res.hasRequested
+    $posthog?.capture?.('offer_unrequested', { offer_id: offer.id, company: offer.company })
   } finally {
     busy.value = null
   }
 }
 
-async function copyCode(code: string | null) {
-  if (!code) return
+async function copyCode(offer: Offer) {
+  if (!offer.code) return
   try {
-    await navigator.clipboard.writeText(code)
-    copiedCode.value = code
+    await navigator.clipboard.writeText(offer.code)
+    copiedCode.value = offer.code
+    $posthog?.capture?.('offer_code_copied', {
+      offer_id: offer.id,
+      company: offer.company,
+      title: offer.title,
+    })
     setTimeout(() => {
-      if (copiedCode.value === code) copiedCode.value = null
+      if (copiedCode.value === offer.code) copiedCode.value = null
     }, 1500)
   } catch {
     // clipboard not available; ignore

@@ -2,6 +2,7 @@ interface Session {
   authenticated: boolean
   name?: string
   personId?: string
+  email?: string
 }
 
 export function useAuthSession() {
@@ -14,6 +15,10 @@ export function useAuthSession() {
     try {
       const data = await $fetch<Session>('/api/auth/session')
       session.value = data
+      if (import.meta.client && data.authenticated && data.personId) {
+        const { $posthog } = useNuxtApp()
+        $posthog?.identify?.(data.personId, { name: data.name, email: data.email })
+      }
     } catch {
       session.value = { authenticated: false }
     } finally {
@@ -29,6 +34,10 @@ export function useAuthSession() {
   async function logout() {
     await $fetch('/api/auth/logout', { method: 'POST' })
     session.value = { authenticated: false }
+    if (import.meta.client) {
+      const { $posthog } = useNuxtApp()
+      $posthog?.reset?.()
+    }
     await navigateTo('/member')
   }
 
