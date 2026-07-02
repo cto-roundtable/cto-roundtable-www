@@ -3,18 +3,23 @@
 // role from network group memberships (same convention as discounts:
 // braintrust = board) and returns the toolset plus a copy-pasteable prompt
 // that boots a fresh Claude Code install into the CTO Roundtable workspace.
+//
+// Every role routes through a clone of ctoroundtable-hq: the repo's checked-in
+// .claude/settings.json registers the shared-skills plugin marketplace, and
+// the /onboarding skill plus the per-tool setup skills all invoke
+// ./infrastructure/*.sh scripts that only exist in that checkout. A repo-less
+// bootstrap (the personal-hq idea) strands the agent on those scripts today;
+// revisit once the skills ship self-contained setup.
 
 interface RoleProfile {
   role: string
   label: string
   // What the person is being set up to do, phrased for the agent prompt.
   goal: string
-  // Tools the /onboarding skill will configure for this role, with the
-  // dedicated setup skill that owns each one.
+  // Norwegian tool list rendered on the member page.
   tools: string[]
-  // Repo-less roles get the personal-hq folder; committee/developer flows
-  // clone actual repos via /onboarding instead.
-  repoless: boolean
+  // English equivalents spliced into the generated agent prompt.
+  promptTools: string[]
 }
 
 const PROFILES: Record<string, RoleProfile> = {
@@ -28,7 +33,12 @@ const PROFILES: Record<string, RoleProfile> = {
       'Neon MCP, lesetilgang til medlemsdatabasen (via /neon-mcp-setup)',
       'Luma CLI + MCP for events (via /luma-cli-setup)',
     ],
-    repoless: true,
+    promptTools: [
+      'Slack MCP (via /slack-mcp-setup)',
+      'gog CLI for Gmail and Calendar (via /gog-setup)',
+      'Neon MCP with read access to the member database (via /neon-mcp-setup)',
+      'Luma CLI + MCP for events (via /luma-cli-setup)',
+    ],
   },
   'invest-committee': {
     role: 'invest-committee',
@@ -37,37 +47,35 @@ const PROFILES: Record<string, RoleProfile> = {
     tools: [
       'Slack MCP (via /slack-mcp-setup)',
       'gog CLI for Gmail og Kalender (via /gog-setup)',
-      'Coda og Circleback MCP (settes opp av /onboarding)',
+      'Neon MCP, lesetilgang til medlemsdatabasen (via /neon-mcp-setup)',
+      'Coda og Circleback MCP (kobles inn av /onboarding)',
     ],
-    repoless: false,
+    promptTools: [
+      'Slack MCP (via /slack-mcp-setup)',
+      'gog CLI for Gmail and Calendar (via /gog-setup)',
+      'Neon MCP with read access to the member database (via /neon-mcp-setup)',
+      'Coda and Circleback MCP (wired in by /onboarding)',
+    ],
   },
   investor: {
     role: 'investor',
     label: 'Investor',
     goal: 'follow CTO Roundtable Invest as an investor',
     tools: ['Slack MCP (via /slack-mcp-setup)'],
-    repoless: true,
+    promptTools: ['Slack MCP (via /slack-mcp-setup)'],
   },
   member: {
     role: 'member',
     label: 'Medlem',
     goal: 'participate in the CTO Roundtable network',
     tools: ['Slack MCP (via /slack-mcp-setup)'],
-    repoless: true,
+    promptTools: ['Slack MCP (via /slack-mcp-setup)'],
   },
 }
 
 function buildPrompt(name: string, email: string | null, profile: RoleProfile): string {
   const identity = email ? `${name} <${email}>` : name
   const firstName = name.split(' ')[0]
-
-  const workspaceStep = profile.repoless
-    ? `3. Create the personal workspace folder:
-   mkdir -p ~/code/ctoroundtable/personal-hq`
-    : `3. Create the workspace root (the /onboarding skill clones the repos this role needs into it):
-   mkdir -p ~/code/ctoroundtable`
-
-  const restartFolder = profile.repoless ? '~/code/ctoroundtable/personal-hq' : '~/code/ctoroundtable'
 
   return `You are onboarding ${identity} into the CTO Roundtable AI workspace on this machine.
 Role: ${profile.role}. Goal: ${profile.goal}.
@@ -79,26 +87,21 @@ Work step by step. Verify every step before moving to the next, and explain what
    - gh (GitHub CLI), authenticated: gh auth status
    - GitHub org access: gh api user/memberships/orgs/cto-roundtable --jq .state should print "active".
      If it does not, ${firstName} needs to accept the invite at https://github.com/orgs/cto-roundtable/invitation (or ask the board for one). Stop here until this works.
+   - Let git reuse the gh credentials for private HTTPS repos: gh auth setup-git
+     Then prove it works: git ls-remote https://github.com/cto-roundtable/cto-roundtable-skills.git should list refs, not fail. The shared skills are fetched from this repo on session start, so this must pass before the restart below.
 
-2. Register the CTO Roundtable shared skills. Merge these keys into the GLOBAL ~/.claude/settings.json (create the file if it does not exist; merge carefully, never drop existing keys):
-   {
-     "extraKnownMarketplaces": {
-       "cto-roundtable": {
-         "source": { "source": "git", "url": "https://github.com/cto-roundtable/cto-roundtable-skills.git" }
-       }
-     },
-     "enabledPlugins": { "cto-roundtable@cto-roundtable": true }
-   }
+2. Clone the workspace HQ repo. Its checked-in .claude/settings.json registers the shared skills, and its infrastructure/ scripts drive the tool setup:
+   git clone https://github.com/cto-roundtable/ctoroundtable-hq.git ~/code/ctoroundtable/ctoroundtable-hq
 
-${workspaceStep}
+3. Tell ${firstName} to restart Claude Code from that folder:
+   cd ~/code/ctoroundtable/ctoroundtable-hq && claude
+   On first start, accept the prompts to trust the folder and enable the cto-roundtable plugin.
 
-4. Tell ${firstName} to restart Claude Code from that folder:
-   cd ${restartFolder} && claude
-   In the new session, type /onboarding and pick the "${profile.role}" role. The onboarding skill takes over and sets up, one by one:
-${profile.tools.map((t) => `   - ${t}`).join('\n')}
-   Each setup skill verifies its own tool. Nothing should be reported as done without a passing check.
+4. In the new session, type /onboarding and pick the "${profile.role}" role. The onboarding skill walks through the tools for this role one at a time and verifies each one:
+${profile.promptTools.map((t) => `   - ${t}`).join('\n')}
+   If the skill offers any of these as optional, accept it: this list is what the role should end up with. Nothing should be reported as done without a passing check.
 
-If a step fails because access is missing (GitHub repo, Google secret, Neon invite), stop and tell ${firstName} exactly what to ask the board for, then continue once it is granted.`
+If a step fails because access is missing (a GitHub repo, a Google secret, a Neon invite), stop and tell ${firstName} exactly what to ask the board for, then continue once it is granted.`
 }
 
 export default defineEventHandler(async (event) => {
@@ -108,7 +111,8 @@ export default defineEventHandler(async (event) => {
   const person = await sql`
     SELECT p.name,
       (SELECT ci.value FROM contact_infos ci
-       WHERE ci.person_id = p.id AND ci.type = 'email' AND ci.is_primary
+       WHERE ci.person_id = p.id AND ci.type = 'email'
+       ORDER BY ci.is_primary DESC
        LIMIT 1) AS email
     FROM persons p
     WHERE p.id = ${session.personId}
