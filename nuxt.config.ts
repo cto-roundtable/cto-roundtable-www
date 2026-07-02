@@ -68,6 +68,10 @@ export default defineNuxtConfig({
     sessionSecret: process.env.SESSION_SECRET || '',
     slackSigningSecret: process.env.SLACK_SIGNING_SECRET || '',
     ingestApiKey: process.env.INGEST_API_KEY || '',
+    // Canonical public origin for magic-link URLs. Set on the server via
+    // NUXT_SITE_URL (Cloud Run); left empty locally so dev falls back to the
+    // request origin. Never derive auth link hosts from the request Host header.
+    siteUrl: process.env.NUXT_SITE_URL || process.env.SITE_URL || '',
     public: {
       posthogToken: process.env.POSTHOG_TOKEN || '',
       posthogHost: process.env.POSTHOG_HOST || 'https://eu.i.posthog.com',

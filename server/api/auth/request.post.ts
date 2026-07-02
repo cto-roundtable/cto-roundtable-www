@@ -56,16 +56,25 @@ export default defineEventHandler(async (event) => {
   // Clean up expired tokens (opportunistic)
   sql`DELETE FROM auth_tokens WHERE expires_at < now()`.catch(() => {})
 
-  // Send magic link email
-  const baseUrl = getRequestURL(event).origin
+  // Build the magic link from the server-configured canonical origin, never the
+  // request Host header: getRequestURL trusts the incoming Host, so an attacker
+  // could POST with a spoofed Host and have the (genuinely delivered) link point
+  // at their domain to capture the token. config.siteUrl is set in production
+  // (NUXT_SITE_URL); locally it is empty and we fall back to the request origin.
+  const baseUrl = config.siteUrl || getRequestURL(event).origin
   const magicLink = `${baseUrl}/api/auth/verify?token=${token}`
 
+  // Fire-and-forget the email. Awaiting an outbound Resend round-trip here makes
+  // the member path hundreds of ms slower than the non-member early return,
+  // which is a membership-enumeration timing oracle despite the identical body.
+  // The instance stays warm (min-instances 1), so the send still completes.
   const resend = new Resend(config.resendApiKey)
-  await resend.emails.send({
-    from: 'CTO Roundtable <noreply@ctoroundtable.no>',
-    to: email,
-    subject: 'Sign in to CTO Roundtable',
-    html: `
+  resend.emails
+    .send({
+      from: 'CTO Roundtable <noreply@ctoroundtable.no>',
+      to: email,
+      subject: 'Sign in to CTO Roundtable',
+      html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
         <h2 style="color: #111; margin-bottom: 8px;">CTO Roundtable</h2>
         <p style="color: #555; font-size: 16px;">Hi ${member.name.split(' ')[0]},</p>
@@ -77,7 +86,8 @@ export default defineEventHandler(async (event) => {
         <p style="color: #999; font-size: 13px;">If you didn't request this, you can safely ignore this email.</p>
       </div>
     `,
-  })
+    })
+    .catch((err) => console.error('[auth/request] failed to send magic link', err))
 
   return { ok: true }
 })
