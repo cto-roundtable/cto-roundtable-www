@@ -8,19 +8,14 @@
         </v-chip>
       </div>
       <p style="color: #aaa; font-size: 14px;">
-        Koble en AI-agent (Claude Code) til CTO Roundtable-verktøyene. Prompten under er
-        laget for deg og rollen din, og setter opp alt steg for steg.
+        Koble Claude Code til CTO Roundtable-verktøyene. Prompten under er tilpasset rollen din.
       </p>
     </header>
 
     <section class="mb-8">
       <h2 class="section-title">Før du starter</h2>
       <ul class="prereq-list">
-        <li>En terminal på egen maskin (macOS eller Linux)</li>
-        <li>
-          GitHub-konto med akseptert invitasjon til
-          <code>cto-roundtable</code>-organisasjonen (mangler du invitasjon? Si ifra til styret)
-        </li>
+        <li>GitHub-konto med akseptert invitasjon til <code>cto-roundtable</code>-org</li>
         <li>
           <a href="https://claude.com/claude-code" target="_blank" rel="noopener" class="link">
             Claude Code
@@ -56,14 +51,9 @@
     <section class="mb-8">
       <h2 class="section-title">Slik gjør du det</h2>
       <ol class="steps-list">
-        <li>Åpne terminalen og start <code>claude</code></li>
-        <li>Lim inn prompten over og send den</li>
-        <li>Følg stegene. Agenten sjekker og verifiserer alt underveis</li>
-        <li>Når agenten sier restart: start Claude Code på nytt fra mappen den peker på, og kjør <code>/onboarding</code></li>
+        <li>Start <code>claude</code> i en terminal</li>
+        <li>Lim inn prompten og følg stegene</li>
       </ol>
-      <p class="mt-4" style="color: #aaa; font-size: 14px;">
-        Står du fast? Ta kontakt med styret i Slack, så hjelper vi deg i gang.
-      </p>
     </section>
   </div>
 

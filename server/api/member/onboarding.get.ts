@@ -77,31 +77,25 @@ function buildPrompt(name: string, email: string | null, profile: RoleProfile): 
   const identity = email ? `${name} <${email}>` : name
   const firstName = name.split(' ')[0]
 
-  return `You are onboarding ${identity} into the CTO Roundtable AI workspace on this machine.
-Role: ${profile.role}. Goal: ${profile.goal}.
+  return `You are onboarding ${identity} into the CTO Roundtable AI workspace. Role: ${profile.role}. Goal: ${profile.goal}. Verify each step before moving on.
 
-Work step by step. Verify every step before moving to the next, and explain what you are doing in plain language: ${firstName} may not live in a terminal every day.
-
-1. Prerequisites. Check that these exist and help install anything missing:
+1. Prerequisites:
    - git
-   - gh (GitHub CLI), authenticated: gh auth status
-   - GitHub org access: gh api user/memberships/orgs/cto-roundtable --jq .state should print "active".
-     If it does not, ${firstName} needs to accept the invite at https://github.com/orgs/cto-roundtable/invitation (or ask the board for one). Stop here until this works.
-   - Let git reuse the gh credentials for private HTTPS repos: gh auth setup-git
-     Then prove it works: git ls-remote https://github.com/cto-roundtable/cto-roundtable-skills.git should list refs, not fail. The shared skills are fetched from this repo on session start, so this must pass before the restart below.
+   - gh authenticated: gh auth status
+   - org access: gh api user/memberships/orgs/cto-roundtable --jq .state prints "active". If not, accept the invite at https://github.com/orgs/cto-roundtable/invitation first.
+   - gh auth setup-git, then confirm: git ls-remote https://github.com/cto-roundtable/cto-roundtable-skills.git (skills are fetched from there on session start).
 
-2. Clone the workspace HQ repo. Its checked-in .claude/settings.json registers the shared skills, and its infrastructure/ scripts drive the tool setup:
+2. Clone the HQ repo (registers the shared skills, carries the setup scripts):
    git clone https://github.com/cto-roundtable/ctoroundtable-hq.git ~/code/ctoroundtable/ctoroundtable-hq
 
-3. Tell ${firstName} to restart Claude Code from that folder:
+3. Restart Claude Code from that folder, accept the trust/plugin prompts:
    cd ~/code/ctoroundtable/ctoroundtable-hq && claude
-   On first start, accept the prompts to trust the folder and enable the cto-roundtable plugin.
 
-4. In the new session, type /onboarding and pick the "${profile.role}" role. The onboarding skill walks through the tools for this role one at a time and verifies each one:
+4. Run /onboarding and pick the "${profile.role}" role. It sets up and verifies:
 ${profile.promptTools.map((t) => `   - ${t}`).join('\n')}
-   If the skill offers any of these as optional, accept it: this list is what the role should end up with. Nothing should be reported as done without a passing check.
+   Accept anything from this list offered as optional.
 
-If a step fails because access is missing (a GitHub repo, a Google secret, a Neon invite), stop and tell ${firstName} exactly what to ask the board for, then continue once it is granted.`
+If access is missing (GitHub repo, Google secret, Neon invite), stop and tell ${firstName} exactly what to ask the board for.`
 }
 
 export default defineEventHandler(async (event) => {
