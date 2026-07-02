@@ -32,6 +32,9 @@ steps:
       - 'europe-north1'
       - '--min-instances'
       - '1'
+      # Canonical origin for magic-link URLs (never trust the request Host header).
+      - '--update-env-vars'
+      - 'NUXT_SITE_URL=https://www.ctoroundtable.no'
       - '--update-secrets'
       - 'NUXT_SLACK_SIGNING_SECRET=www-slack-signing-secret:latest,NUXT_INGEST_API_KEY=www-ingest-api-key:latest'
 

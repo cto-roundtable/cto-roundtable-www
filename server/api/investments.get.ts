@@ -5,6 +5,10 @@ const sortStrategies: Record<string, (a: any, b: any) => number> = {
 
 const validSorts = new Set(Object.keys(sortStrategies))
 
+// Public endpoint (rendered on the marketing /investment page). It deliberately
+// exposes only the portfolio company + link. Invested amounts and the fund /
+// cohort name are confidential and must never leave the server here; keep them
+// out of both the SQL projection and the response.
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const sql = useDatabase()
@@ -13,13 +17,10 @@ export default defineEventHandler(async (event) => {
     SELECT
       o.name AS company,
       o.website AS url,
-      STRING_AGG(DISTINCT ng.name, ', ' ORDER BY ng.name) AS fund,
-      SUM(i.amount_nok) AS amount_nok,
       MIN(i.invested_at) AS invested_at
     FROM investments i
     INNER JOIN pipeline_deals pd ON i.deal_id = pd.id
     INNER JOIN organizations o ON pd.organization_id = o.id
-    INNER JOIN network_groups ng ON i.group_id = ng.id
     GROUP BY pd.id, o.name, o.website
     ORDER BY MIN(i.invested_at) ASC
   `
@@ -32,8 +33,6 @@ export default defineEventHandler(async (event) => {
     investments: sorted.map((row: any) => ({
       company: row.company as string,
       url: (row.url || '') as string,
-      fund: row.fund as string,
-      amountNok: row.amount_nok as number,
     })),
   }
 })
