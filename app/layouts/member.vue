@@ -166,6 +166,7 @@ const navItems = [
   { to: '/member', title: 'Oversikt', icon: 'mdi-view-dashboard-outline', exact: true },
   { to: '/member/host', title: 'Verting', icon: 'mdi-silverware-fork-knife', exact: false },
   { to: '/member/discounts', title: 'Fordeler', icon: 'mdi-tag-multiple-outline', exact: false },
+  { to: '/member/onboarding', title: 'AI-onboarding', icon: 'mdi-robot-outline', exact: false },
   { to: '/member/faq', title: 'FAQ', icon: 'mdi-help-circle-outline', exact: false },
 ]
 
