@@ -99,6 +99,7 @@ export default defineEventHandler(async (event) => {
     // Never trigger a Slack retry storm over a DB hiccup. Log and ack;
     // dedup_key makes a later redelivery safe to re-record.
     console.error('[ingest/slack] failed to record event', err)
+    captureServerException(err, { route: '/api/ingest/slack', slack_event_type: ev.type })
   }
 
   return { ok: true }

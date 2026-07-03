@@ -43,6 +43,7 @@ export default defineEventHandler(async (event) => {
       recorded++
     } catch (err) {
       console.error('[ingest/event] insert failed', err)
+      captureServerException(err, { route: '/api/ingest/event', item_index: i })
       errors.push(`#${i}: insert failed`)
     }
   }
