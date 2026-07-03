@@ -11,6 +11,7 @@ export default defineNuxtPlugin(() => {
       capture_pageview: false,
       capture_pageleave: true,
       autocapture: true,
+      capture_exceptions: true,
       loaded: (ph) => {
         if (import.meta.dev) {
           ph.debug()
