@@ -4,12 +4,12 @@
 // braintrust = board) and returns the toolset plus a copy-pasteable prompt
 // that boots a fresh Claude Code install into the CTO Roundtable workspace.
 //
-// Every role routes through a clone of ctoroundtable-hq: the repo's checked-in
-// .claude/settings.json registers the shared-skills plugin marketplace, and
-// the /onboarding skill plus the per-tool setup skills all invoke
-// ./infrastructure/*.sh scripts that only exist in that checkout. A repo-less
-// bootstrap (the personal-hq idea) strands the agent on those scripts today;
-// revisit once the skills ship self-contained setup.
+// Every role bootstraps into ~/code/ctoroundtable/personal-hq, the default
+// session home (skills repo 17594d5): setup scripts ship inside the plugin,
+// credentials live machine-level, and org repos are wired in as
+// additionalDirectories by /onboarding per role. The marketplace must be
+// registered in the GLOBAL ~/.claude/settings.json before the restart, or a
+// plain personal-hq folder never fetches the skills.
 
 interface RoleProfile {
   role: string
@@ -85,17 +85,27 @@ function buildPrompt(name: string, email: string | null, profile: RoleProfile): 
    - org access: gh api user/memberships/orgs/cto-roundtable --jq .state prints "active". If not, accept the invite at https://github.com/orgs/cto-roundtable/invitation first.
    - gh auth setup-git, then confirm: git ls-remote https://github.com/cto-roundtable/cto-roundtable-skills.git (skills are fetched from there on session start).
 
-2. Clone the HQ repo (registers the shared skills, carries the setup scripts):
-   git clone https://github.com/cto-roundtable/ctoroundtable-hq.git ~/code/ctoroundtable/ctoroundtable-hq
+2. Register the shared skills in the GLOBAL ~/.claude/settings.json (merge with jq or python, never overwrite existing keys):
+   {
+     "extraKnownMarketplaces": {
+       "cto-roundtable": {
+         "source": { "source": "git", "url": "https://github.com/cto-roundtable/cto-roundtable-skills.git" }
+       }
+     },
+     "enabledPlugins": { "cto-roundtable@cto-roundtable": true }
+   }
 
-3. Restart Claude Code from that folder, accept the trust/plugin prompts:
-   cd ~/code/ctoroundtable/ctoroundtable-hq && claude
+3. Create the session home (plain folder, not a git repo):
+   mkdir -p ~/code/ctoroundtable/personal-hq
 
-4. Run /onboarding and pick the "${profile.role}" role. It sets up and verifies:
+4. Restart Claude Code from it, accept the trust/plugin prompts:
+   cd ~/code/ctoroundtable/personal-hq && claude
+
+5. Run /onboarding and pick the "${profile.role}" role. It builds the session home (MCP config, settings, org repos per role as additional directories) and sets up and verifies:
 ${profile.promptTools.map((t) => `   - ${t}`).join('\n')}
    Accept anything from this list offered as optional.
 
-If access is missing (GitHub repo, Google secret, Neon invite), stop and tell ${firstName} exactly what to ask the board for.`
+If access is missing (GitHub repo, Neon invite), stop and tell ${firstName} exactly what to ask the board for.`
 }
 
 export default defineEventHandler(async (event) => {
