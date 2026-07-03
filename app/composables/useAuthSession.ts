@@ -3,6 +3,7 @@ interface Session {
   name?: string
   personId?: string
   email?: string
+  isBoard?: boolean
 }
 
 export function useAuthSession() {

@@ -20,5 +20,6 @@ export default defineEventHandler(async (event) => {
     name: session.name,
     personId: session.personId,
     email,
+    isBoard: await isBoardMember(session.personId),
   }
 })

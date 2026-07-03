@@ -162,13 +162,21 @@ watchEffect(() => {
   else drawer.value = true
 })
 
-const navItems = [
+const baseNavItems = [
   { to: '/member', title: 'Oversikt', icon: 'mdi-view-dashboard-outline', exact: true },
   { to: '/member/host', title: 'Verting', icon: 'mdi-silverware-fork-knife', exact: false },
   { to: '/member/discounts', title: 'Fordeler', icon: 'mdi-tag-multiple-outline', exact: false },
   { to: '/member/onboarding', title: 'AI-onboarding', icon: 'mdi-robot-outline', exact: false },
   { to: '/member/faq', title: 'FAQ', icon: 'mdi-help-circle-outline', exact: false },
 ]
+
+// Board-only (braintrust) link, shown only when the session says so. The page
+// and its API are independently RBAC-gated, so hiding the link is just UX.
+const navItems = computed(() =>
+  session.value.isBoard
+    ? [...baseNavItems, { to: '/member/activity', title: 'Aktivitet (styret)', icon: 'mdi-pulse', exact: false }]
+    : baseNavItems,
+)
 
 async function submitMagicLink() {
   submitting.value = true
