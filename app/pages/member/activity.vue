@@ -80,7 +80,7 @@
                   {{ statusLabel(m.status) }}
                 </v-chip>
               </td>
-              <td class="text-right">{{ m.posts }}</td>
+              <td class="text-right">{{ m.slackTotal }}</td>
               <td class="text-right">{{ m.attended }}</td>
               <td class="text-right">{{ m.hosted }}</td>
               <td class="text-right font-weight-bold">{{ m.score }}</td>
@@ -90,7 +90,7 @@
         </v-table>
 
         <p style="color: #666; font-size: 12px;" class="mt-3">
-          Vekting: melding + reaksjon = 1, oppmøte = 3, hosting = 8. Vindu: siste {{ data.windowDays }} dager.
+          Vekting: post = 3, tråd-svar = 2, reaksjon = 1, oppmøte = 5, hosting = 8. Vindu: siste {{ data.windowDays }} dager.
         </p>
       </template>
     </template>
@@ -101,7 +101,7 @@
 definePageMeta({ layout: 'member' })
 
 const windowOptions = [30, 90, 180, 365]
-const days = ref(90)
+const days = ref(365)
 const onlyFlagged = ref(false)
 const loading = ref(true)
 const forbidden = ref(false)
