@@ -8,8 +8,9 @@
 // session home (skills repo 17594d5): setup scripts ship inside the plugin,
 // credentials live machine-level, and org repos are wired in as
 // additionalDirectories by /onboarding per role. The marketplace must be
-// registered in the GLOBAL ~/.claude/settings.json before the restart, or a
-// plain personal-hq folder never fetches the skills.
+// registered in personal-hq's project-level .claude/settings.json before the
+// restart, or the folder never fetches the skills. Project scope, not global:
+// the plugin should not leak into unrelated projects on the machine.
 
 interface RoleProfile {
   role: string
@@ -85,7 +86,10 @@ function buildPrompt(name: string, email: string | null, profile: RoleProfile): 
    - org access: gh api user/memberships/orgs/cto-roundtable --jq .state prints "active". If not, accept the invite at https://github.com/orgs/cto-roundtable/invitation first.
    - gh auth setup-git, then confirm: git ls-remote https://github.com/cto-roundtable/cto-roundtable-skills.git (skills are fetched from there on session start).
 
-2. Register the shared skills in the GLOBAL ~/.claude/settings.json (merge with jq or python, never overwrite existing keys):
+2. Create the session home (plain folder, not a git repo):
+   mkdir -p ~/code/ctoroundtable/personal-hq/.claude
+
+3. Register the shared skills in ~/code/ctoroundtable/personal-hq/.claude/settings.json (project-level, NOT the global ~/.claude/settings.json; merge with jq or python if the file exists):
    {
      "extraKnownMarketplaces": {
        "cto-roundtable": {
@@ -95,10 +99,7 @@ function buildPrompt(name: string, email: string | null, profile: RoleProfile): 
      "enabledPlugins": { "cto-roundtable@cto-roundtable": true }
    }
 
-3. Create the session home (plain folder, not a git repo):
-   mkdir -p ~/code/ctoroundtable/personal-hq
-
-4. Restart Claude Code from it, accept the trust/plugin prompts:
+4. Restart Claude Code from the session home, accept the trust/plugin prompts:
    cd ~/code/ctoroundtable/personal-hq && claude
 
 5. Run /onboarding and pick the "${profile.role}" role. It builds the session home (MCP config, settings, org repos per role as additional directories) and sets up and verifies:
