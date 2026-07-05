@@ -73,7 +73,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="m in visibleMembers" :key="m.personId">
+            <tr v-for="m in visibleMembers" :key="m.personId" class="row-click" @click="openDetail(m)">
               <td>{{ m.name }}</td>
               <td>
                 <v-chip :color="statusColor(m.status)" variant="flat" size="x-small" class="text-uppercase font-weight-bold" style="letter-spacing: 0.04em;">
@@ -94,11 +94,33 @@
         </p>
       </template>
     </template>
+
+    <!-- Member detail slide-over -->
+    <v-navigation-drawer
+      v-model="detailOpen"
+      location="right"
+      temporary
+      :width="mdAndUp ? 620 : undefined"
+      color="#141414"
+    >
+      <div class="pa-5">
+        <div class="d-flex justify-end mb-2">
+          <v-btn icon variant="text" size="small" style="color: #aaa;" @click="detailOpen = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </div>
+        <MemberActivityDetail v-if="selectedId" :person-id="selectedId" context="board" />
+      </div>
+    </v-navigation-drawer>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from 'vuetify'
+
 definePageMeta({ layout: 'member' })
+
+const { mdAndUp } = useDisplay()
 
 const windowOptions = [30, 90, 180, 365]
 const days = ref(365)
@@ -106,6 +128,13 @@ const onlyFlagged = ref(false)
 const loading = ref(true)
 const forbidden = ref(false)
 const data = ref<any>(null)
+
+const detailOpen = ref(false)
+const selectedId = ref<string | null>(null)
+function openDetail(m: any) {
+  selectedId.value = m.personId
+  detailOpen.value = true
+}
 
 async function load() {
   loading.value = true
@@ -163,5 +192,8 @@ onMounted(load)
 }
 .activity-table :deep(tr:hover td) {
   background: rgba(255, 255, 255, 0.05) !important;
+}
+.activity-table :deep(tr.row-click) {
+  cursor: pointer;
 }
 </style>
