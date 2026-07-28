@@ -68,6 +68,10 @@ export default defineNuxtConfig({
     sessionSecret: process.env.SESSION_SECRET || '',
     slackSigningSecret: process.env.SLACK_SIGNING_SECRET || '',
     ingestApiKey: process.env.INGEST_API_KEY || '',
+    // GCS bucket holding raw investor-update emails + attachments (EU region).
+    // Read via ADC (the Cloud Run service account) to stream attachments to
+    // authorised members. Empty locally unless you have gcloud ADC + the bucket.
+    gcsInvestorUpdatesBucket: process.env.GCS_INVESTOR_UPDATES_BUCKET || '',
     // Canonical public origin for magic-link URLs. Set on the server via
     // NUXT_SITE_URL (Cloud Run); left empty locally so dev falls back to the
     // request origin. Never derive auth link hosts from the request Host header.

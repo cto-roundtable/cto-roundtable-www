@@ -171,13 +171,19 @@ const baseNavItems = [
   { to: '/member/faq', title: 'FAQ', icon: 'mdi-help-circle-outline', exact: false },
 ]
 
-// Board-only (braintrust) link, shown only when the session says so. The page
-// and its API are independently RBAC-gated, so hiding the link is just UX.
-const navItems = computed(() =>
-  session.value.isBoard
-    ? [...baseNavItems, { to: '/member/activity', title: 'Aktivitet (styret)', icon: 'mdi-pulse', exact: false }]
-    : baseNavItems,
-)
+// Role-scoped links, shown only when the session says so. The pages and their
+// APIs are independently RBAC-gated, so hiding a link is just UX.
+const navItems = computed(() => {
+  const items = [...baseNavItems]
+  // Investor-updates: any member of an investment cohort (invest-*).
+  if (session.value.isInvestor) {
+    items.push({ to: '/member/updates', title: 'Investoroppdateringer', icon: 'mdi-finance', exact: false })
+  }
+  if (session.value.isBoard) {
+    items.push({ to: '/member/activity', title: 'Aktivitet (styret)', icon: 'mdi-pulse', exact: false })
+  }
+  return items
+})
 
 async function submitMagicLink() {
   submitting.value = true

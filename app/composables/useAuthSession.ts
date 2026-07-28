@@ -4,6 +4,7 @@ interface Session {
   personId?: string
   email?: string
   isBoard?: boolean
+  isInvestor?: boolean
 }
 
 export function useAuthSession() {
