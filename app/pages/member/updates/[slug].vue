@@ -16,7 +16,7 @@
         </p>
       </header>
 
-      <article v-for="u in data.updates" :key="u.id" class="update-card mb-4">
+      <article v-for="u in data.updates" :id="`update-${u.id}`" :key="u.id" class="update-card mb-4">
         <div class="d-flex align-center flex-wrap mb-2" style="gap: 8px;">
           <v-chip
             v-if="u.kind === 'notice'"
@@ -131,6 +131,8 @@ function formatSize(bytes: number): string {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   padding: 22px;
+  /* Land a #update-<id> deep-link below the sticky header, not flush to it. */
+  scroll-margin-top: 88px;
 }
 
 .update-date {

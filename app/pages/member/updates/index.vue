@@ -20,26 +20,43 @@
       </div>
     </header>
 
+    <div v-if="companies.length" class="filter-bar mb-5">
+      <v-select
+        v-model="selectedSlug"
+        :items="companyItems"
+        item-title="company"
+        item-value="slug"
+        label="Filtrer på selskap"
+        placeholder="Alle selskaper"
+        density="comfortable"
+        variant="outlined"
+        hide-details
+        clearable
+        theme="dark"
+        style="max-width: 320px;"
+      />
+    </div>
+
     <div v-if="loading" class="d-flex justify-center py-10">
       <v-progress-circular indeterminate color="white" />
     </div>
 
-    <div v-else-if="!companies.length" style="color: #aaa;">
+    <div v-else-if="!updates.length" style="color: #aaa;">
       Ingen oppdateringer er lagt inn ennå.
     </div>
 
-    <section v-else class="company-grid">
+    <section v-else class="feed">
       <NuxtLink
-        v-for="c in companies"
-        :key="c.slug"
-        :to="`/member/updates/${c.slug}`"
-        class="company-card-link"
+        v-for="u in updates"
+        :key="u.id"
+        :to="`/member/updates/${u.slug}#update-${u.id}`"
+        class="feed-card-link"
       >
-        <v-card class="company-card" variant="outlined">
+        <v-card class="feed-card" variant="outlined">
           <div class="d-flex align-center flex-wrap mb-2" style="gap: 8px;">
-            <span class="company-name">{{ c.company }}</span>
+            <span class="company-name">{{ u.company }}</span>
             <v-chip
-              v-for="cohort in c.cohorts"
+              v-for="cohort in u.cohorts"
               :key="cohort"
               color="#2196f3"
               variant="flat"
@@ -49,23 +66,45 @@
             >
               {{ cohort }}
             </v-chip>
+            <v-chip
+              v-if="u.kind === 'notice'"
+              color="#ff9800"
+              variant="flat"
+              size="x-small"
+              class="text-uppercase font-weight-bold"
+            >
+              Notis
+            </v-chip>
           </div>
 
-          <p class="latest-title mb-1">{{ c.latest.title }}</p>
-          <p v-if="c.latest.headline" class="latest-headline mb-2">{{ c.latest.headline }}</p>
+          <p class="latest-title mb-1">{{ u.title }}</p>
+          <p v-if="u.headline" class="latest-headline mb-2">{{ u.headline }}</p>
 
-          <div class="d-flex align-center justify-space-between">
-            <span class="meta">{{ formatDate(c.latest.updateDate) }}</span>
-            <span class="meta">{{ c.count }} {{ c.count === 1 ? 'oppdatering' : 'oppdateringer' }}</span>
-          </div>
+          <span class="meta">{{ formatDate(u.updateDate) }}</span>
         </v-card>
       </NuxtLink>
+
+      <div v-if="hasMore" class="d-flex justify-center mt-5">
+        <v-btn
+          :loading="loadingMore"
+          variant="outlined"
+          color="white"
+          @click="loadMore"
+        >
+          Last inn flere
+        </v-btn>
+      </div>
+      <p v-else class="text-center meta mt-5">
+        Viser alle {{ total }} {{ total === 1 ? 'oppdatering' : 'oppdateringer' }}
+      </p>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ layout: 'member' })
+
+const PAGE_SIZE = 20
 
 interface UpdateRow {
   id: string
@@ -77,46 +116,81 @@ interface UpdateRow {
   title: string
   headline: string | null
 }
-
-interface Company {
+interface CompanyOption {
   slug: string
   company: string
-  cohorts: string[]
-  count: number
-  latest: UpdateRow
+}
+interface UpdatesResponse {
+  memberCohorts: string[]
+  companies: CompanyOption[]
+  total: number
+  hasMore: boolean
+  updates: UpdateRow[]
 }
 
 const { session, checked } = useAuthSession()
 const loading = ref(true)
-const companies = ref<Company[]>([])
+const loadingMore = ref(false)
+const updates = ref<UpdateRow[]>([])
+const companies = ref<CompanyOption[]>([])
 const memberCohorts = ref<string[]>([])
+const selectedSlug = ref<string | null>(null)
+const total = ref(0)
+const hasMore = ref(false)
 const { $posthog } = useNuxtApp()
 
+// "Alle selskaper" is expressed by clearing the select (null), so the item list is
+// just the companies; the placeholder covers the cleared state.
+const companyItems = computed(() => companies.value)
+
+// Fetch a page. reset=true replaces the feed (initial load / filter change); otherwise
+// it appends the next page. Server always returns the companies + cohort lists, cheap
+// enough to refresh each call and keeps the dropdown correct on first paint.
+async function fetchPage(reset: boolean) {
+  const offset = reset ? 0 : updates.value.length
+  const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) })
+  if (selectedSlug.value) params.set('slug', selectedSlug.value)
+
+  const data = await $fetch<UpdatesResponse>(`/api/member/updates?${params.toString()}`)
+  memberCohorts.value = data.memberCohorts ?? []
+  companies.value = data.companies ?? []
+  total.value = data.total
+  hasMore.value = data.hasMore
+  updates.value = reset ? data.updates : [...updates.value, ...data.updates]
+}
+
+async function loadMore() {
+  if (loadingMore.value || !hasMore.value) return
+  loadingMore.value = true
+  try {
+    await fetchPage(false)
+  } finally {
+    loadingMore.value = false
+  }
+}
+
+// Initial load once auth is confirmed.
 watchEffect(async () => {
   if (checked.value && session.value.authenticated && loading.value) {
-    const data = await $fetch<{ memberCohorts: string[]; updates: UpdateRow[] }>('/api/member/updates')
-    memberCohorts.value = data.memberCohorts ?? []
-
-    // Group by company; rows arrive newest-first, so the first per slug is latest.
-    const bySlug = new Map<string, Company>()
-    for (const u of data.updates) {
-      const existing = bySlug.get(u.slug)
-      if (existing) {
-        existing.count += 1
-      } else {
-        bySlug.set(u.slug, {
-          slug: u.slug,
-          company: u.company,
-          cohorts: u.cohorts,
-          count: 1,
-          latest: u,
-        })
-      }
-    }
-    companies.value = [...bySlug.values()]
+    await fetchPage(true)
     loading.value = false
-    $posthog?.capture?.('investor_updates_viewed', { company_count: companies.value.length })
+    $posthog?.capture?.('investor_updates_viewed', {
+      company_count: companies.value.length,
+      total_updates: total.value,
+    })
   }
+})
+
+// Reload from the top whenever the company filter changes (after the first load).
+watch(selectedSlug, async () => {
+  if (loading.value) return
+  loading.value = true
+  try {
+    await fetchPage(true)
+  } finally {
+    loading.value = false
+  }
+  $posthog?.capture?.('investor_updates_filtered', { slug: selectedSlug.value ?? 'all' })
 })
 
 function formatDate(d: string): string {
@@ -125,26 +199,30 @@ function formatDate(d: string): string {
 </script>
 
 <style scoped>
-.company-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+.filter-bar {
+  display: flex;
+  align-items: center;
 }
 
-.company-card-link {
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.feed-card-link {
   text-decoration: none;
 }
 
-.company-card {
+.feed-card {
   background: #161616 !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   color: #fff !important;
   padding: 18px;
-  height: 100%;
   transition: border-color 0.15s ease;
 }
 
-.company-card:hover {
+.feed-card:hover {
   border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
