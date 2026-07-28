@@ -126,6 +126,11 @@ resource "google_cloud_run_v2_service" "www" {
       }
 
       env {
+        name  = "NUXT_GCS_INVESTOR_UPDATES_BUCKET"
+        value = google_storage_bucket.investor_updates.name
+      }
+
+      env {
         name = "NUXT_DATABASE_URL"
         value_source {
           secret_key_ref {
