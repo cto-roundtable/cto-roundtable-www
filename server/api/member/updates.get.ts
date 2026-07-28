@@ -40,7 +40,17 @@ export default defineEventHandler(async (event) => {
   const cohortsBySlug: Record<string, string[]> = {}
   for (const r of cohortRows as any[]) cohortsBySlug[r.slug] = r.cohorts
 
+  // The caller's own investment groups, for the "you're in" pills at the top.
+  const memberCohortRows = await sql`
+    SELECT ng.name
+    FROM memberships m
+    JOIN network_groups ng ON ng.id = m.group_id
+    WHERE m.person_id = ${session.personId} AND ng.slug LIKE 'invest-%'
+    ORDER BY ng.slug
+  `
+
   return {
+    memberCohorts: (memberCohortRows as any[]).map((r) => r.name),
     updates: (rows as any[]).map((r) => ({
       id: r.id,
       slug: r.slug,
