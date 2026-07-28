@@ -5,6 +5,19 @@
       <p style="color: #aaa; font-size: 14px;">
         Oppdateringer fra porteføljeselskapene i kohortene du er med i.
       </p>
+      <div v-if="memberCohorts.length" class="d-flex align-center flex-wrap mt-3" style="gap: 8px;">
+        <span style="color: #888; font-size: 13px;">Dine investeringsgrupper:</span>
+        <v-chip
+          v-for="cohort in memberCohorts"
+          :key="cohort"
+          color="#4caf50"
+          variant="flat"
+          size="small"
+          class="font-weight-bold"
+        >
+          {{ cohort }}
+        </v-chip>
+      </div>
     </header>
 
     <div v-if="loading" class="d-flex justify-center py-10">
@@ -76,11 +89,13 @@ interface Company {
 const { session, checked } = useAuthSession()
 const loading = ref(true)
 const companies = ref<Company[]>([])
+const memberCohorts = ref<string[]>([])
 const { $posthog } = useNuxtApp()
 
 watchEffect(async () => {
   if (checked.value && session.value.authenticated && loading.value) {
-    const data = await $fetch<{ updates: UpdateRow[] }>('/api/member/updates')
+    const data = await $fetch<{ memberCohorts: string[]; updates: UpdateRow[] }>('/api/member/updates')
+    memberCohorts.value = data.memberCohorts ?? []
 
     // Group by company; rows arrive newest-first, so the first per slug is latest.
     const bySlug = new Map<string, Company>()
