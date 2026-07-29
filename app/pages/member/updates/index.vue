@@ -21,8 +21,8 @@
     </header>
 
     <div v-if="companies.length" class="filter-bar mb-5">
-      <v-select
-        v-model="selectedSlug"
+      <v-autocomplete
+        v-model="selectedSlugs"
         :items="companyItems"
         item-title="company"
         item-value="slug"
@@ -31,9 +31,12 @@
         density="comfortable"
         variant="outlined"
         hide-details
+        multiple
+        chips
+        closable-chips
         clearable
         theme="dark"
-        style="max-width: 320px;"
+        style="max-width: 480px;"
       />
     </div>
 
@@ -134,13 +137,13 @@ const loadingMore = ref(false)
 const updates = ref<UpdateRow[]>([])
 const companies = ref<CompanyOption[]>([])
 const memberCohorts = ref<string[]>([])
-const selectedSlug = ref<string | null>(null)
+const selectedSlugs = ref<string[]>([])
 const total = ref(0)
 const hasMore = ref(false)
 const { $posthog } = useNuxtApp()
 
-// "Alle selskaper" is expressed by clearing the select (null), so the item list is
-// just the companies; the placeholder covers the cleared state.
+// "Alle selskaper" is the empty selection (no chips); the placeholder covers it. Any
+// number of companies can be selected — each adds a removable chip and a ?slugs param.
 const companyItems = computed(() => companies.value)
 
 // Fetch a page. reset=true replaces the feed (initial load / filter change); otherwise
@@ -149,7 +152,7 @@ const companyItems = computed(() => companies.value)
 async function fetchPage(reset: boolean) {
   const offset = reset ? 0 : updates.value.length
   const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) })
-  if (selectedSlug.value) params.set('slug', selectedSlug.value)
+  for (const slug of selectedSlugs.value) params.append('slugs', slug)
 
   const data = await $fetch<UpdatesResponse>(`/api/member/updates?${params.toString()}`)
   memberCohorts.value = data.memberCohorts ?? []
@@ -182,16 +185,23 @@ watchEffect(async () => {
 })
 
 // Reload from the top whenever the company filter changes (after the first load).
-watch(selectedSlug, async () => {
-  if (loading.value) return
-  loading.value = true
-  try {
-    await fetchPage(true)
-  } finally {
-    loading.value = false
-  }
-  $posthog?.capture?.('investor_updates_filtered', { slug: selectedSlug.value ?? 'all' })
-})
+watch(
+  selectedSlugs,
+  async () => {
+    if (loading.value) return
+    loading.value = true
+    try {
+      await fetchPage(true)
+    } finally {
+      loading.value = false
+    }
+    $posthog?.capture?.('investor_updates_filtered', {
+      slugs: selectedSlugs.value.length ? selectedSlugs.value.join(',') : 'all',
+      company_count: selectedSlugs.value.length,
+    })
+  },
+  { deep: true },
+)
 
 function formatDate(d: string): string {
   return new Date(d).toLocaleDateString('nb-NO', { year: 'numeric', month: 'short', day: 'numeric' })

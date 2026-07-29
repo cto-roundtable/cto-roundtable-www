@@ -2,9 +2,9 @@
 // Chronological feed of investor updates for the portfolio companies the caller's
 // cohort(s) funded. Cohort-scoped via the subquery (deal_id -> investments ->
 // memberships) and paginated (default newest 20, load more via ?offset). An
-// optional ?slug narrows the feed to a single company. Returns list metadata only
-// (no body) so the overview page stays light; full body + attachments come from
-// /api/member/updates/[slug].
+// optional ?slugs (repeatable, or comma-separated) narrows the feed to one or more
+// companies. Returns list metadata only (no body) so the overview page stays light;
+// full body + attachments come from /api/member/updates/[slug].
 export default defineEventHandler(async (event) => {
   const session = event.context.session
   const sql = useDatabase()
@@ -13,18 +13,24 @@ export default defineEventHandler(async (event) => {
   const q = getQuery(event)
   const limit = Math.min(Math.max(Number.parseInt(String(q.limit ?? '20'), 10) || 20, 1), 50)
   const offset = Math.max(Number.parseInt(String(q.offset ?? '0'), 10) || 0, 0)
-  const slug = typeof q.slug === 'string' && q.slug.trim() ? q.slug.trim() : null
+
+  // Company filter: accept ?slugs=a&slugs=b, ?slugs=a,b, or legacy ?slug=a.
+  const rawSlugs = q.slugs ?? q.slug
+  const slugs = (Array.isArray(rawSlugs) ? rawSlugs.map(String) : String(rawSlugs ?? '').split(','))
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const hasFilter = slugs.length > 0
 
   // Paginated feed of individual updates, newest first, cohort-scoped. The optional
-  // slug narrows to one company; the cohort subquery still gates visibility either way.
-  const rows = slug
+  // slug list narrows to those companies; the cohort subquery still gates visibility.
+  const rows = hasFilter
     ? await sql`
         SELECT u.id, pd.slug, o.name AS company,
                u.kind, u.update_date, u.title, u.headline
         FROM investor_updates u
         JOIN pipeline_deals pd ON pd.id = u.deal_id
         JOIN organizations o   ON o.id = pd.organization_id
-        WHERE pd.slug = ${slug}
+        WHERE pd.slug = ANY(${slugs})
           AND u.deal_id IN (
             SELECT inv.deal_id
             FROM investments inv
@@ -51,12 +57,12 @@ export default defineEventHandler(async (event) => {
       `
 
   // Total matching the current filter, so the client knows when to stop loading.
-  const countRows = slug
+  const countRows = hasFilter
     ? await sql`
         SELECT COUNT(*)::int AS n
         FROM investor_updates u
         JOIN pipeline_deals pd ON pd.id = u.deal_id
-        WHERE pd.slug = ${slug}
+        WHERE pd.slug = ANY(${slugs})
           AND u.deal_id IN (
             SELECT inv.deal_id
             FROM investments inv
