@@ -49,43 +49,40 @@
     </div>
 
     <section v-else class="feed">
-      <NuxtLink
-        v-for="u in updates"
-        :key="u.id"
-        :to="`/member/updates/${u.slug}/${u.id}`"
-        class="feed-card-link"
-      >
-        <v-card class="feed-card" variant="outlined">
-          <div class="d-flex align-center flex-wrap mb-2" style="gap: 8px;">
-            <span class="company-name">{{ u.company }}</span>
-            <v-chip
-              v-for="cohort in u.cohorts"
-              :key="cohort"
-              color="#2196f3"
-              variant="flat"
-              size="x-small"
-              class="text-uppercase font-weight-bold"
-              style="letter-spacing: 0.05em;"
-            >
-              {{ cohort }}
-            </v-chip>
-            <v-chip
-              v-if="u.kind === 'notice'"
-              color="#ff9800"
-              variant="flat"
-              size="x-small"
-              class="text-uppercase font-weight-bold"
-            >
-              Notis
-            </v-chip>
-          </div>
+      <v-card v-for="u in updates" :key="u.id" class="feed-card" variant="outlined">
+        <div class="d-flex align-center flex-wrap mb-2" style="gap: 8px;">
+          <!-- Company name jumps to the company's full history; the rest opens this update. -->
+          <NuxtLink :to="`/member/updates/${u.slug}`" class="company-name company-link">
+            {{ u.company }}
+          </NuxtLink>
+          <v-chip
+            v-for="cohort in u.cohorts"
+            :key="cohort"
+            color="#2196f3"
+            variant="flat"
+            size="x-small"
+            class="text-uppercase font-weight-bold"
+            style="letter-spacing: 0.05em;"
+          >
+            {{ cohort }}
+          </v-chip>
+          <v-chip
+            v-if="u.kind === 'notice'"
+            color="#ff9800"
+            variant="flat"
+            size="x-small"
+            class="text-uppercase font-weight-bold"
+          >
+            Notis
+          </v-chip>
+        </div>
 
+        <NuxtLink :to="`/member/updates/${u.slug}/${u.id}`" class="update-link">
           <p class="latest-title mb-1">{{ u.title }}</p>
           <p v-if="u.headline" class="latest-headline mb-2">{{ u.headline }}</p>
-
           <span class="meta">{{ formatDate(u.updateDate) }}</span>
-        </v-card>
-      </NuxtLink>
+        </NuxtLink>
+      </v-card>
 
       <div v-if="hasMore" class="d-flex justify-center mt-5">
         <v-btn
@@ -220,7 +217,8 @@ function formatDate(d: string): string {
   gap: 12px;
 }
 
-.feed-card-link {
+.update-link {
+  display: block;
   text-decoration: none;
 }
 
@@ -240,6 +238,18 @@ function formatDate(d: string): string {
   font-size: 1.1rem;
   font-weight: 700;
   color: #fff;
+}
+
+/* Company name is a link into the company's full history — signal it clearly. */
+.company-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.company-link:hover,
+.company-link:focus-visible {
+  color: #64b5f6;
+  text-decoration: underline;
 }
 
 .latest-title {
