@@ -11,7 +11,10 @@
 
     <template v-else-if="data">
       <header class="mb-4">
-        <h1 class="font-weight-bold mb-0" style="font-size: 1.6rem;">{{ data.company }}</h1>
+        <!-- Company name links into the company's full update history. -->
+        <NuxtLink :to="`/member/updates/${slug}`" class="company-title-link">
+          <h1 class="font-weight-bold mb-0" style="font-size: 1.6rem;">{{ data.company }}</h1>
+        </NuxtLink>
       </header>
 
       <article class="update-card">
@@ -136,6 +139,17 @@ function formatSize(bytes: number): string {
 }
 .back-link:hover {
   color: #fff;
+}
+
+.company-title-link {
+  text-decoration: none;
+  color: inherit;
+  display: inline-block;
+}
+.company-title-link:hover h1,
+.company-title-link:focus-visible h1 {
+  color: #64b5f6;
+  text-decoration: underline;
 }
 
 .update-card {
