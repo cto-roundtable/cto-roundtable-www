@@ -52,7 +52,7 @@
       <NuxtLink
         v-for="u in updates"
         :key="u.id"
-        :to="`/member/updates/${u.slug}#update-${u.id}`"
+        :to="`/member/updates/${u.slug}/${u.id}`"
         class="feed-card-link"
       >
         <v-card class="feed-card" variant="outlined">
