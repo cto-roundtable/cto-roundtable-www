@@ -1,9 +1,8 @@
 <template>
   <div class="single-update text-left">
-    <NuxtLink :to="`/member/updates/${slug}`" class="back-link mb-4 d-inline-flex align-center">
+    <NuxtLink :to="backTo" class="back-link mb-4 d-inline-flex align-center">
       <v-icon size="16" class="mr-1">mdi-arrow-left</v-icon>
-      <span v-if="data">Alle oppdateringer fra {{ data.company }}</span>
-      <span v-else>Tilbake</span>
+      <span>{{ backLabel }}</span>
     </NuxtLink>
 
     <div v-if="loading" class="d-flex justify-center py-10">
@@ -86,6 +85,22 @@ const { session, checked } = useAuthSession()
 const loading = ref(true)
 const data = ref<SingleUpdate | null>(null)
 const { $posthog } = useNuxtApp()
+
+// "Back" follows how you got here, not a fixed parent: if the previous page was this
+// company's own list you return there; from the cross-company feed, or from a direct/
+// external link (Slack, pasted URL — no in-app history), you return to the feed.
+const companyPath = `/member/updates/${slug}`
+const cameFromCompany = ref(false)
+onMounted(() => {
+  const prev = window.history.state?.back
+  if (typeof prev === 'string' && prev.split(/[?#]/)[0] === companyPath) {
+    cameFromCompany.value = true
+  }
+})
+const backTo = computed(() => (cameFromCompany.value ? companyPath : '/member/updates'))
+const backLabel = computed(() =>
+  cameFromCompany.value ? `Alle oppdateringer${data.value ? ` fra ${data.value.company}` : ''}` : 'Alle oppdateringer',
+)
 
 watchEffect(async () => {
   if (checked.value && session.value.authenticated && loading.value) {
