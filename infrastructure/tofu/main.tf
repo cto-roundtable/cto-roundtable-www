@@ -101,7 +101,7 @@ resource "google_cloud_run_v2_service" "www" {
     }
 
     containers {
-      image = "${var.region}-docker.pkg.dev/${var.project_id}/${data.google_artifact_registry_repository.docker.repository_id}/www:latest"
+      image = "${var.region}-docker.pkg.dev/${var.project_id}/${data.google_artifact_registry_repository.docker.repository_id}/www:${var.image_tag}"
 
       ports {
         container_port = 8080
@@ -178,6 +178,16 @@ resource "google_cloud_run_v2_service" "www" {
     google_secret_manager_secret.resend_api_key,
     google_secret_manager_secret.session_secret,
   ]
+
+  lifecycle {
+    # Cloud Build (cloudbuild.yaml) deploys new revisions with www:$COMMIT_SHA
+    # on every push to main. tofu manages the rest of the service but must not
+    # fight CI over the image tag — otherwise a later `tofu apply` would revert
+    # the live revision to var.image_tag (a stale/bootstrap tag).
+    ignore_changes = [
+      template[0].containers[0].image,
+    ]
+  }
 }
 
 # Allow unauthenticated access (public website)
@@ -291,5 +301,5 @@ output "url" {
 
 output "docker_image" {
   description = "Full Docker image path"
-  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${data.google_artifact_registry_repository.docker.repository_id}/www:latest"
+  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${data.google_artifact_registry_repository.docker.repository_id}/www:${var.image_tag}"
 }
