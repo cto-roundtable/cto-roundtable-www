@@ -9,6 +9,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "sync:board-meetings": "node scripts/sync-board-meetings.mjs",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write ."

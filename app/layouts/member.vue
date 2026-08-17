@@ -180,6 +180,7 @@ const navItems = computed(() => {
     items.push({ to: '/member/updates', title: 'Investoroppdateringer', icon: 'mdi-finance', exact: false })
   }
   if (session.value.isBoard) {
+    items.push({ to: '/member/board', title: 'Styremøter', icon: 'mdi-gavel', exact: false })
     items.push({ to: '/member/activity', title: 'Aktivitet (styret)', icon: 'mdi-pulse', exact: false })
   }
   return items
