@@ -23,7 +23,7 @@
         </p>
       </header>
 
-      <div v-if="hasBoth" class="tabs mb-5">
+      <div v-if="hasBoth" class="tabs mb-4">
         <button
           type="button"
           class="tab"
@@ -42,8 +42,7 @@
         </button>
       </div>
 
-      <!-- eslint-disable-next-line vue/no-v-html -- renderMarkdown escapes first and only emits its own tags -->
-      <article v-if="body" class="doc" v-html="body" />
+      <BoardMeetingDoc v-if="body" :key="view" :markdown="body" />
       <p v-else style="color: #aaa;">
         {{ view === 'referat' ? 'Referatet er ikke skrevet ennå.' : 'Agendaen er ikke lagt ut ennå.' }}
       </p>
@@ -79,8 +78,7 @@ const hasBoth = computed(() => !!meeting.value?.agendaMd && !!meeting.value?.min
 const body = computed(() => {
   const m = meeting.value
   if (!m) return ''
-  const md = view.value === 'referat' ? m.minutesMd : m.agendaMd
-  return md ? renderMarkdown(md, { headings: 'levels' }) : ''
+  return (view.value === 'referat' ? m.minutesMd : m.agendaMd) ?? ''
 })
 
 const dateLine = computed(() => {
@@ -156,107 +154,5 @@ watchEffect(async () => {
 .tab-active {
   border-bottom-color: #fff;
   color: #fff;
-}
-
-.doc {
-  color: #ddd;
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.doc :deep(h2) {
-  color: #fff;
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 1.8rem 0 0.6rem;
-}
-
-.doc :deep(h3) {
-  color: #fff;
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin: 1.5rem 0 0.5rem;
-}
-
-.doc :deep(h4),
-.doc :deep(h5) {
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 700;
-  margin: 1.2rem 0 0.4rem;
-}
-
-.doc :deep(p) {
-  margin: 0 0 0.8rem;
-}
-
-.doc :deep(ul),
-.doc :deep(ol) {
-  margin: 0 0 0.9rem;
-  padding-left: 1.3rem;
-}
-
-.doc :deep(li) {
-  margin-bottom: 0.3rem;
-}
-
-.doc :deep(a) {
-  color: #64b5f6;
-}
-
-.doc :deep(strong) {
-  color: #fff;
-}
-
-.doc :deep(code) {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 3px;
-  font-size: 0.9em;
-  padding: 1px 5px;
-}
-
-.doc :deep(hr) {
-  border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  margin: 1.6rem 0;
-}
-
-.doc :deep(blockquote) {
-  border-left: 3px solid rgba(255, 255, 255, 0.25);
-  color: #bbb;
-  margin: 0 0 1rem;
-  padding: 2px 0 2px 14px;
-}
-
-.doc :deep(blockquote p:last-child) {
-  margin-bottom: 0;
-}
-
-/* Tables are the one thing that can outgrow the column on a phone, so they get
-   their own scroller rather than pushing the page sideways. */
-.doc :deep(.md-table-wrap) {
-  margin: 0 0 1.1rem;
-  overflow-x: auto;
-}
-
-.doc :deep(.md-table) {
-  border-collapse: collapse;
-  font-size: 13px;
-  min-width: 100%;
-}
-
-.doc :deep(.md-table th) {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-  color: #fff;
-  font-weight: 700;
-  padding: 8px 12px 8px 0;
-  text-align: left;
-  white-space: nowrap;
-}
-
-.doc :deep(.md-table td) {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 8px 12px 8px 0;
-  vertical-align: top;
 }
 </style>
