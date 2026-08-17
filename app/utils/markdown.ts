@@ -212,3 +212,112 @@ export function renderMarkdown(md: string, opts: MarkdownOptions = {}): string {
   if (!md) return ''
   return renderBlocks(escapeHtml(md).split(/\r?\n/), opts)
 }
+
+/* ------------------------------------------------------------------ *
+ * Document outline
+ *
+ * A board agenda is 13k characters. Rendered as one blob it is unreadable,
+ * so the meeting page shows it as a two-level accordion instead: `##` are
+ * the sections, `###` under them are the individual saker. This splits the
+ * markdown into that shape without rendering anything, so the page decides
+ * what to open.
+ * ------------------------------------------------------------------ */
+
+export interface DocSection {
+  /** Stable, URL-safe id derived from the title. Used as key and anchor. */
+  id: string
+  /** Heading text with any trailing `(10 min)` lifted out into `meta`. */
+  title: string
+  /** The `(10 min)` estimate, when the heading carries one. */
+  meta: string | null
+  /** Minutes as a number when `meta` is a duration, else null. Lets the page
+   *  add up how much of the meeting is actually accounted for. */
+  minutes: number | null
+  /** Markdown under this heading, excluding any child sections. */
+  body: string
+  children: DocSection[]
+}
+
+export interface DocOutline {
+  /** Everything before the first `##`, e.g. the date/location block. */
+  preamble: string
+  sections: DocSection[]
+}
+
+function sectionId(title: string, index: number): string {
+  const base = title
+    .toLowerCase()
+    .replace(/ø/g, 'o')
+    .replace(/æ/g, 'ae')
+    .replace(/å/g, 'a')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+  return base ? `${base.slice(0, 40)}-${index}` : `del-${index}`
+}
+
+/** `Sak 1: Noe (10 min)` -> title without the parenthetical, plus the meta. */
+function splitMeta(heading: string): { title: string; meta: string | null; minutes: number | null } {
+  const m = heading.match(/^(.*?)\s*\(([^()]*\d+[^()]*)\)\s*$/)
+  if (!m) return { title: heading, meta: null, minutes: null }
+  const mins = m[2].match(/^\s*(\d+)\s*min/i)
+  // Only a trailing duration is a badge. A parenthetical like "(fysisk)" or
+  // "(til årsmøtet)" is part of the title and must stay in it.
+  if (!mins) return { title: heading, meta: null, minutes: null }
+  return { title: m[1].trim(), meta: m[2].trim(), minutes: Number(mins[1]) }
+}
+
+export function outlineMarkdown(md: string): DocOutline {
+  if (!md) return { preamble: '', sections: [] }
+
+  const lines = md.split(/\r?\n/)
+  const preamble: string[] = []
+  const sections: DocSection[] = []
+  let current: DocSection | null = null
+  let child: DocSection | null = null
+  let n = 0
+
+  const push = (line: string) => {
+    if (child) child.body += `${line}\n`
+    else if (current) current.body += `${line}\n`
+    else preamble.push(line)
+  }
+
+  for (const line of lines) {
+    const h = line.match(/^(#{2,3})\s+(.*)$/)
+    if (!h) {
+      push(line)
+      continue
+    }
+    const { title, meta, minutes } = splitMeta(h[2].trim())
+    const node: DocSection = { id: sectionId(title, n++), title, meta, minutes, body: '', children: [] }
+    if (h[1].length === 2) {
+      sections.push(node)
+      current = node
+      child = null
+    } else if (current) {
+      current.children.push(node)
+      child = node
+    } else {
+      // A `###` before any `##`: treat it as a section of its own rather than
+      // dropping it on the floor.
+      sections.push(node)
+      current = node
+      child = null
+    }
+  }
+
+  // `---` separators sit between sections in the source, so they always land at
+  // the end of the preceding body. Inside a collapsible they are just a stray
+  // line under the content, so drop them from the edges.
+  const RULE = /^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/
+  const trim = (s: DocSection) => {
+    const lines = s.body.split('\n')
+    while (lines.length && (lines[0].trim() === '' || RULE.test(lines[0]))) lines.shift()
+    while (lines.length && (lines[lines.length - 1].trim() === '' || RULE.test(lines[lines.length - 1]))) lines.pop()
+    s.body = lines.join('\n')
+    s.children.forEach(trim)
+  }
+  sections.forEach(trim)
+
+  return { preamble: preamble.join('\n').trim(), sections }
+}
