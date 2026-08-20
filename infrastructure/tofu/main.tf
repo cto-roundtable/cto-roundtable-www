@@ -146,7 +146,13 @@ resource "google_cloud_run_v2_service" "www" {
     service_account = google_service_account.www.email
 
     scaling {
-      min_instance_count = 0
+      # Live value, adopted rather than converged away. The service has run with
+      # one warm instance since it was set with gcloud; tofu declared 0, so the
+      # first apply after that would have flipped the portal to scale-to-zero and
+      # handed members a cold start on the first request after idle. Same class of
+      # drift as the three env vars above: the running config was right, the
+      # declaration was stale.
+      min_instance_count = 1
       max_instance_count = 2
     }
 
