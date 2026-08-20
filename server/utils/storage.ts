@@ -47,12 +47,18 @@ export async function readBoardProtocolObject(
 export async function writeBoardProtocolObject(
   objectKey: string,
   data: Buffer,
-  contentType = 'application/pdf',
+  options: { contentType?: string; allowOverwrite?: boolean } = {},
 ): Promise<void> {
   const file = client().bucket(boardProtocolsBucket()).file(objectKey)
   await file.save(data, {
-    contentType,
-    preconditionOpts: { ifGenerationMatch: 0 },
+    contentType: options.contentType ?? 'application/pdf',
+    // A generated protocol is written once and never again: a new version gets a
+    // new key, so a collision means a bug and should be loud. The signed
+    // rendition is the exception. It arrives from outside, and the first upload
+    // is sometimes the wrong file, so replacing it has to be possible. The
+    // bucket has versioning enabled, so a replaced object is retained rather
+    // than lost, and the register records the hash of whatever is current.
+    ...(options.allowOverwrite ? {} : { preconditionOpts: { ifGenerationMatch: 0 } }),
     metadata: { cacheControl: 'private, no-store' },
   })
 }

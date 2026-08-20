@@ -340,6 +340,152 @@ export async function issueProtocol(options: IssueOptions): Promise<IssueResult>
   return { protocol, reused: false }
 }
 
+export interface SignatureInput {
+  personId: string
+  role: 'chair' | 'member'
+  /** ISO date the signature was made, which is NOT when it was registered here. */
+  signedAt: string
+}
+
+export interface AttachSignedInput {
+  protocolId: string
+  pdf: Buffer
+  filename: string
+  method: 'bankid' | 'portal' | 'manual'
+  signatures: SignatureInput[]
+  registeredBy: string
+  ip: string | null
+  userAgent: string | null
+  note: string | null
+}
+
+/**
+ * Record an externally signed protocol: store the file and the signatures in one
+ * step.
+ *
+ * Deliberately one action, not two. The board signs with BankID outside the
+ * portal, so what comes back is a file plus knowledge of who signed it and when.
+ * Splitting that into "upload" and "register signatures" would allow a signed
+ * file with nobody attached to it, which is a register that looks complete and
+ * proves nothing.
+ *
+ * The signed file has DIFFERENT BYTES from what we generated: a signing service
+ * stamps the document and, in a PAdES flow, appends its own signature. Byte
+ * equality is therefore never asserted. What ties them together is
+ * content_sha256, printed on every page of the generated PDF, which survives the
+ * round trip and is stored per signature as attested_sha256.
+ */
+export async function attachSignedProtocol(input: AttachSignedInput): Promise<ProtocolRow> {
+  const sql = useDatabase()
+
+  const rows = await sql`
+    SELECT id, meeting_slug, version, content_sha256, chair_person_id, superseded_at
+    FROM board_protocols WHERE id = ${input.protocolId} LIMIT 1
+  `
+  const protocol = rows[0]
+  if (!protocol) throw createError({ statusCode: 404, message: 'Fant ikke protokollen' })
+  if (protocol.superseded_at) {
+    throw createError({
+      statusCode: 409,
+      message: 'Denne versjonen er erstattet av en nyere. Last ned den gjeldende versjonen og signer den i stedet.',
+    })
+  }
+
+  // A PDF, not something that merely ends in .pdf. The signed document is the
+  // artifact the board will point at years from now.
+  if (input.pdf.subarray(0, 5).toString('latin1') !== '%PDF-') {
+    throw createError({ statusCode: 422, message: 'Filen er ikke en PDF' })
+  }
+
+  if (input.signatures.length === 0) {
+    throw createError({ statusCode: 422, message: 'Registrer hvem som signerte' })
+  }
+  const people = new Set(input.signatures.map((s) => s.personId))
+  if (people.size !== input.signatures.length) {
+    throw createError({ statusCode: 422, message: 'Samme person er ført opp to ganger' })
+  }
+  for (const signature of input.signatures) {
+    if (!(await isBoardMember(signature.personId))) {
+      throw createError({ statusCode: 422, message: 'Bare styremedlemmer kan signere protokollen' })
+    }
+  }
+  // Vedtak 4: møteleder pluss én. The chair's signature is what makes the other
+  // one count, so a set of signatures without them is refused rather than stored
+  // and quietly treated as complete.
+  if (input.signatures.length >= 2 && !people.has(protocol.chair_person_id)) {
+    throw createError({
+      statusCode: 422,
+      message: 'Én av signaturene må være møteleders, jf. vedtak 4',
+    })
+  }
+
+  // Looked up one at a time rather than with `= ANY($1)`: the Neon HTTP driver
+  // is awkward about array parameters, and a protocol has two signers, not two
+  // thousand.
+  const byId = new Map<string, { name: string; email: string | null }>()
+  for (const personId of people) {
+    const found = await sql`
+      SELECT p.name,
+             (SELECT ci.value FROM contact_infos ci
+               WHERE ci.person_id = p.id AND ci.type = 'email'
+               ORDER BY ci.is_primary DESC LIMIT 1) AS email
+      FROM persons p WHERE p.id = ${personId} LIMIT 1
+    `
+    if (found[0]) byId.set(personId, { name: found[0].name, email: found[0].email ?? null })
+  }
+
+  const objectKey = protocolObjectKey(protocol.meeting_slug, Number(protocol.version), true)
+  await writeBoardProtocolObject(objectKey, input.pdf, { allowOverwrite: true })
+
+  const statements = [
+    sql`
+      UPDATE board_protocols SET
+        signed_object_key = ${objectKey},
+        signed_sha256 = ${sha256(input.pdf)},
+        signed_filename = ${input.filename},
+        signed_uploaded_by = ${input.registeredBy},
+        signed_uploaded_at = now(),
+        updated_at = now()
+      WHERE id = ${input.protocolId}
+    `,
+  ]
+
+  for (const signature of input.signatures) {
+    const person = byId.get(signature.personId)
+    statements.push(sql`
+      INSERT INTO board_protocol_signatures
+        (protocol_id, person_id, role, method, signed_at, attested_sha256,
+         signer_name, signer_email, registered_by, registered_ip, user_agent, note)
+      VALUES
+        (${input.protocolId}, ${signature.personId}, ${signature.role}, ${input.method},
+         ${signature.signedAt}, ${protocol.content_sha256},
+         ${person?.name ?? 'ukjent'}, ${person?.email ?? null}, ${input.registeredBy},
+         ${input.ip}, ${input.userAgent}, ${input.note})
+      ON CONFLICT (protocol_id, person_id) DO NOTHING
+    `)
+  }
+
+  await sql.transaction(statements)
+
+  // Vedtak 4 is satisfied when two signatures exist and one of them is the
+  // chair's. Computed from the rows rather than from this request, so a second
+  // upload that completes an earlier partial one is handled the same way.
+  await sql`
+    UPDATE board_protocols p SET completed_at = now()
+    WHERE p.id = ${input.protocolId}
+      AND p.completed_at IS NULL
+      AND (SELECT count(*) FROM board_protocol_signatures s WHERE s.protocol_id = p.id) >= 2
+      AND EXISTS (
+        SELECT 1 FROM board_protocol_signatures s
+        WHERE s.protocol_id = p.id AND s.person_id = p.chair_person_id
+      )
+  `
+
+  const updated = await getProtocol(input.protocolId)
+  if (!updated) throw createError({ statusCode: 500, message: 'Protokollen forsvant under lesing' })
+  return updated
+}
+
 /**
  * Re-download a stored protocol and check it still hashes to what the register
  * says. This is what makes the archive worth anything in three years: without
