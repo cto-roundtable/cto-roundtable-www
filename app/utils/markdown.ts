@@ -86,19 +86,22 @@ function tableCells(line: string): string[] {
  */
 function renderBlocks(lines: string[], opts: MarkdownOptions): string {
   const html: string[] = []
+  // Items are held as raw text, not as finished <li>, so a hard-wrapped item can
+  // still have its continuation appended before it is rendered. Rendering each
+  // line as it arrived also broke `**bold**` that spanned the wrap.
   let bullets: string[] | null = null
   let ordered: string[] | null = null
   let para: string[] = []
 
   const flushBullets = () => {
     if (bullets) {
-      html.push(`<ul>${bullets.join('')}</ul>`)
+      html.push(`<ul>${bullets.map((b) => `<li>${inline(b)}</li>`).join('')}</ul>`)
       bullets = null
     }
   }
   const flushOrdered = () => {
     if (ordered) {
-      html.push(`<ol>${ordered.join('')}</ol>`)
+      html.push(`<ol>${ordered.map((o) => `<li>${inline(o)}</li>`).join('')}</ol>`)
       ordered = null
     }
   }
@@ -173,7 +176,7 @@ function renderBlocks(lines: string[], opts: MarkdownOptions): string {
       flushPara()
       flushOrdered()
       if (!bullets) bullets = []
-      bullets.push(`<li>${inline(bullet[1])}</li>`)
+      bullets.push(bullet[1])
       continue
     }
 
@@ -182,7 +185,7 @@ function renderBlocks(lines: string[], opts: MarkdownOptions): string {
       flushPara()
       flushBullets()
       if (!ordered) ordered = []
-      ordered.push(`<li>${inline(numbered[1])}</li>`)
+      ordered.push(numbered[1])
       continue
     }
 
@@ -199,8 +202,21 @@ function renderBlocks(lines: string[], opts: MarkdownOptions): string {
       continue
     }
 
-    flushBullets()
-    flushOrdered()
+    // Lazy continuation. These documents are hand-written and hard-wrapped at
+    // about 80 columns, so a list item routinely spills onto the next line.
+    // Treating that line as a new paragraph did real damage: it closed the list,
+    // emitted the continuation as its own paragraph BEFORE the rest of the list,
+    // and reopened a second <ul> after it. One agenda had 22 wrapped items, so
+    // the saksliste arrived shuffled.
+    if (bullets && bullets.length > 0) {
+      bullets[bullets.length - 1] += ` ${line}`
+      continue
+    }
+    if (ordered && ordered.length > 0) {
+      ordered[ordered.length - 1] += ` ${line}`
+      continue
+    }
+
     para.push(line)
   }
 

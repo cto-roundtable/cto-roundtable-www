@@ -7,7 +7,7 @@
     <!-- Vedtak 4 wants two named people. They are printed on the signature
          lines, so who they are changes the document and has to be chosen before
          it is issued, not after. -->
-    <div v-if="canIssue" class="issue-form">
+    <div v-if="canIssue && registerReady" class="issue-form">
       <label class="field">
         <span class="field-label">Møteleder</span>
         <select v-model="chairPersonId" class="select">
@@ -31,6 +31,8 @@
     <p v-if="loading" class="muted">Henter …</p>
 
     <p v-else-if="error" class="error">{{ error }}</p>
+
+    <p v-else-if="!registerReady" class="warning">{{ registerReason }}</p>
 
     <template v-else>
       <!-- The drift warning is the whole reason the issued text is frozen: the
@@ -161,6 +163,8 @@ const error = ref('')
 const protocols = ref<Protocol[]>([])
 const verdicts = ref<Record<string, { ok: boolean }>>({})
 const boardMembers = ref<BoardMember[]>([])
+const registerReady = ref(true)
+const registerReason = ref('')
 const chairPersonId = ref('')
 const secondSignerPersonId = ref('')
 
@@ -201,18 +205,25 @@ async function load() {
   error.value = ''
   try {
     const [data, board] = await Promise.all([
-      $fetch<{ protocols: Protocol[] }>(`/api/member/board/meetings/${props.slug}/protocols`),
+      $fetch<{ protocols: Protocol[]; registerReady?: boolean; reason?: string }>(
+        `/api/member/board/meetings/${props.slug}/protocols`,
+      ),
       $fetch<{ members: BoardMember[] }>('/api/member/board/members'),
     ])
     protocols.value = data.protocols
+    registerReady.value = data.registerReady !== false
+    registerReason.value = data.reason ?? ''
     boardMembers.value = board.members
     // Carry the previous version's choice forward: re-issuing after a referat
     // edit almost always keeps the same two signers.
     const previous = protocols.value[0]
     chairPersonId.value = previous?.chairPersonId ?? session.value.personId ?? board.members[0]?.id ?? ''
     secondSignerPersonId.value = previous?.secondSignerId ?? ''
-  } catch {
-    error.value = 'Klarte ikke å hente protokollene.'
+  } catch (e: any) {
+    // Show what the server said. The generic version of this line hid a missing
+    // migration behind "noe gikk galt" and cost an afternoon of guessing.
+    const reason = e?.data?.message || e?.statusMessage || ''
+    error.value = reason ? `Klarte ikke å hente protokollene: ${reason}` : 'Klarte ikke å hente protokollene.'
   } finally {
     loading.value = false
   }

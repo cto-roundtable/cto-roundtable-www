@@ -10,5 +10,15 @@ export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
   if (!slug) throw createError({ statusCode: 400, message: 'Missing slug' })
 
-  return { protocols: await listProtocols(slug) }
+  try {
+    return { protocols: await listProtocols(slug), registerReady: true }
+  } catch (error) {
+    // Deployed ahead of its migration is a legitimate state, not an error worth
+    // a 500 and a red box that says nothing. Report it as a fact about the
+    // system so the panel can name the missing step.
+    if (isMissingRegister(error)) {
+      return { protocols: [], registerReady: false, reason: MISSING_REGISTER_MESSAGE }
+    }
+    throw error
+  }
 })

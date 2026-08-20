@@ -42,6 +42,9 @@ export default defineEventHandler(async (event) => {
     if (error?.name === 'UnrepresentableCharacterError' || error?.name === 'MissingProtocolSectionError') {
       throw createError({ statusCode: 422, message: error.message })
     }
+    if (isMissingRegister(error)) {
+      throw createError({ statusCode: 503, message: MISSING_REGISTER_MESSAGE })
+    }
     throw error
   }
 })

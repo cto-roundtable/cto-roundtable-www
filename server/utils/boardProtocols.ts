@@ -50,6 +50,21 @@ export interface SignatureRow {
   note: string | null
 }
 
+/**
+ * The register lives in migration 018, which is applied to Neon by hand (see
+ * ctoroundtable-hq/infrastructure/db/deployment-strategy.md — we are at stage 1,
+ * manual). Merging the migration file does not create the tables, so the portal
+ * can be deployed while the register is still missing. When that happens the
+ * board should be told which step is outstanding, not shown a generic failure.
+ */
+export function isMissingRegister(error: unknown): boolean {
+  const message = (error as { message?: string })?.message ?? ''
+  return /relation .*board_protocol.* does not exist/i.test(message)
+}
+
+export const MISSING_REGISTER_MESSAGE =
+  'Protokollregisteret finnes ikke i databasen ennå. Migrasjon 018 (board_protocols) må kjøres mot Neon før protokoller kan utstedes.'
+
 export function sha256(input: string | Buffer): string {
   return createHash('sha256').update(input).digest('hex')
 }
