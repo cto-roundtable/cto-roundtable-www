@@ -59,6 +59,41 @@ resource "google_secret_manager_secret" "session_secret" {
   }
 }
 
+# These two were created with gcloud and wired to the service by hand, so tofu
+# did not know about them. That was not harmless: google_cloud_run_v2_service
+# reconciles the whole container spec, so the first `tofu apply` after they were
+# set would have REMOVED NUXT_INGEST_API_KEY and NUXT_SLACK_SIGNING_SECRET from
+# the running service, taking down Slack activity ingest and the ingest API
+# without any error to notice it by.
+#
+# They already exist, so they are adopted rather than created. The import blocks
+# below do that as part of plan/apply (OpenTofu >= 1.6), which keeps the
+# adoption in the repo instead of in someone's shell history. Declaring them as
+# plain resources without importing would fail with "already exists".
+resource "google_secret_manager_secret" "ingest_api_key" {
+  secret_id = "www-ingest-api-key"
+  replication {
+    auto {}
+  }
+}
+
+resource "google_secret_manager_secret" "slack_signing_secret" {
+  secret_id = "www-slack-signing-secret"
+  replication {
+    auto {}
+  }
+}
+
+import {
+  to = google_secret_manager_secret.ingest_api_key
+  id = "projects/cto-roundtable/secrets/www-ingest-api-key"
+}
+
+import {
+  to = google_secret_manager_secret.slack_signing_secret
+  id = "projects/cto-roundtable/secrets/www-slack-signing-secret"
+}
+
 # Grant the service account access to secrets
 resource "google_secret_manager_secret_iam_member" "database_url" {
   secret_id = google_secret_manager_secret.database_url.id
@@ -80,6 +115,21 @@ resource "google_secret_manager_secret_iam_member" "resend_api_key" {
 
 resource "google_secret_manager_secret_iam_member" "session_secret" {
   secret_id = google_secret_manager_secret.session_secret.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.www.email}"
+}
+
+# Both bindings already exist, granted outside tofu. iam_member is
+# non-authoritative, so re-declaring the same member is idempotent and does not
+# disturb anything else on the secret.
+resource "google_secret_manager_secret_iam_member" "ingest_api_key" {
+  secret_id = google_secret_manager_secret.ingest_api_key.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.www.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "slack_signing_secret" {
+  secret_id = google_secret_manager_secret.slack_signing_secret.id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.www.email}"
 }
@@ -135,6 +185,15 @@ resource "google_cloud_run_v2_service" "www" {
         value = google_storage_bucket.board_protocols.name
       }
 
+      # Canonical public origin for magic-link URLs. Live value is
+      # https://www.ctoroundtable.no; without it validate-config falls back to
+      # the request Host header, which server/api/auth is explicit about not
+      # wanting for auth links.
+      env {
+        name  = "NUXT_SITE_URL"
+        value = "https://www.${var.domain}"
+      }
+
       env {
         name = "NUXT_DATABASE_URL"
         value_source {
@@ -174,6 +233,26 @@ resource "google_cloud_run_v2_service" "www" {
           }
         }
       }
+
+      env {
+        name = "NUXT_INGEST_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.ingest_api_key.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name = "NUXT_SLACK_SIGNING_SECRET"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.slack_signing_secret.secret_id
+            version = "latest"
+          }
+        }
+      }
     }
   }
 
@@ -182,6 +261,8 @@ resource "google_cloud_run_v2_service" "www" {
     google_secret_manager_secret.posthog_token,
     google_secret_manager_secret.resend_api_key,
     google_secret_manager_secret.session_secret,
+    google_secret_manager_secret.ingest_api_key,
+    google_secret_manager_secret.slack_signing_secret,
   ]
 
   lifecycle {
