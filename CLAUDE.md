@@ -49,6 +49,32 @@ Database credentials and sensitive tokens live in **private** `runtimeConfig` (n
 - `app/pages/members.vue` — Legacy hardcoded member list
 - `app/components/WhoAreWe.vue` — Member list with two-line layout, calls `/api/members`
 
+### Styreprotokoll (board minutes as signed PDF)
+
+Styremøte 2 (20.8.2026), vedtak 4: minutes are issued as a PDF and signed by two,
+møteleder plus one. The motivation is styreansvar, so the design optimises for
+evidence rather than convenience.
+
+- `server/utils/protocolMarkdown.ts` — referat markdown -> blocks, and picks the
+  sections that make up the formal protocol (til stede, vedtak, action points).
+  Refuses characters the PDF font cannot set instead of mangling them.
+- `server/utils/protocolPdf.ts` — pdfkit renderer. Base-14 fonts on purpose; see
+  the header comment for why embedding a font and why headless Chrome are both out.
+- `server/utils/boardProtocols.ts` — issuing, listing, archive verification.
+- `npm run render:protocol -- <referat.md>` — render a PDF offline, no database.
+
+The register lives in Neon (`board_protocols`, `board_protocol_signatures`, see
+`ctoroundtable-hq/infrastructure/db/migrations/018_board_protocols.sql`) and the
+PDFs in the `cto-roundtable-board-protocols` GCS bucket. Issuing freezes a copy
+of the referat and hashes it; `scripts/sync-board-meetings.mjs` warns when the
+referat later drifts away from a protocol that has already been issued.
+
+Signing itself happens outside the portal, with BankID in an external service.
+The portal generates the PDF, holds the signed file that comes back, and records
+who signed what and when. The generated PDF prints its content hash on every
+page so an externally signed copy, whose bytes necessarily differ, still names
+the register row it came from.
+
 ### Data sources
 - **Members**: Neon Postgres (`persons`, `memberships`, `organizations` tables)
 - **Portfolio companies**: Coda API (migration pending)

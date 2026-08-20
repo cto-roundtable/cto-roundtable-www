@@ -20,6 +20,7 @@
  * Date and meeting number come from the folder name, not the prose, because the
  * folder name is machine-written and the prose is not.
  */
+import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync, existsSync } from 'node:fs'
 import { join, resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -109,6 +110,7 @@ if (folders.length === 0) {
 }
 
 let synced = 0
+const drift = []
 for (const folder of folders) {
   const agendaPath = join(dir, folder, 'agenda.md')
   const referatPath = join(dir, folder, 'referat.md')
@@ -165,6 +167,44 @@ for (const folder of folders) {
     `  ${slug}  ${status.padEnd(8)} agenda:${agendaRaw ? 'ja' : 'nei'} referat:${referatRaw ? 'ja' : 'nei'}`,
   )
   synced++
+
+  // Drift check. An issued protocol froze a copy of the referat and recorded its
+  // sha256; the signatures hang on that text. If the referat has moved since,
+  // the portal still serves the protocol that was signed, which is correct — but
+  // somebody has to be told, or the two quietly say different things forever.
+  if (referat.body) {
+    const bodySha = createHash('sha256').update(referat.body, 'utf8').digest('hex')
+    const drifted = await sql`
+      SELECT version, content_sha256, issued_at,
+             (SELECT count(*) FROM board_protocol_signatures s WHERE s.protocol_id = p.id) AS signatures
+      FROM board_protocols p
+      WHERE p.meeting_slug = ${slug} AND p.superseded_at IS NULL AND p.content_sha256 <> ${bodySha}
+      LIMIT 1
+    `.catch((err) => {
+      // Before migration 018 is applied the table is simply not there, and that
+      // must not stop a sync. Anything else is a real failure and stays loud.
+      if (/relation .*board_protocol/i.test(err?.message ?? '')) return []
+      throw err
+    })
+    const hit = drifted[0]
+    if (hit) {
+      drift.push({ slug, version: Number(hit.version), signatures: Number(hit.signatures) })
+      console.warn(
+        `    ! referatet er endret etter at protokoll v${hit.version} ble utstedt` +
+          `${Number(hit.signatures) > 0 ? ` (${hit.signatures} signatur(er) gjelder den gamle teksten)` : ''}`,
+      )
+    }
+  }
 }
 
 console.log(`\nSynced ${synced} meeting${synced === 1 ? '' : 's'} from ${dir}`)
+
+if (drift.length > 0) {
+  console.warn(
+    `\n${drift.length} m\u00f8te(r) har en utstedt protokoll som ikke lenger matcher referatet:`,
+  )
+  for (const d of drift) {
+    console.warn(`  ${d.slug}: protokoll v${d.version}, ${d.signatures} signatur(er)`)
+  }
+  console.warn('Utsted ny versjon i portalen hvis endringen skal gjelde. Den gamle blir st\u00e5ende som erstattet.')
+}

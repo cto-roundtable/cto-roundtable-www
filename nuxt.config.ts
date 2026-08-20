@@ -72,6 +72,11 @@ export default defineNuxtConfig({
     // Read via ADC (the Cloud Run service account) to stream attachments to
     // authorised members. Empty locally unless you have gcloud ADC + the bucket.
     gcsInvestorUpdatesBucket: process.env.GCS_INVESTOR_UPDATES_BUCKET || '',
+    // GCS bucket holding issued styreprotokoller (EU region). Separate from the
+    // investor-updates bucket on purpose: these are permanent records of the
+    // association, and the investor-updates ingest identity has objectAdmin on
+    // its own bucket. Read AND written via ADC by the Cloud Run service account.
+    gcsBoardProtocolsBucket: process.env.GCS_BOARD_PROTOCOLS_BUCKET || '',
     // Canonical public origin for magic-link URLs. Set on the server via
     // NUXT_SITE_URL (Cloud Run); left empty locally so dev falls back to the
     // request origin. Never derive auth link hosts from the request Host header.
