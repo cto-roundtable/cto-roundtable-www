@@ -21,6 +21,8 @@ export interface ProtocolRow {
   pdfBytes: number
   chairPersonId: string
   chairName: string | null
+  secondSignerId: string | null
+  secondSignerName: string | null
   issuedBy: string | null
   issuedByName: string | null
   issuedAt: string
@@ -82,6 +84,8 @@ function mapProtocol(row: any, signatures: any[], currentMinutesMd: string | nul
     pdfBytes: Number(row.pdf_bytes),
     chairPersonId: row.chair_person_id,
     chairName: row.chair_name ?? null,
+    secondSignerId: row.second_signer_id ?? null,
+    secondSignerName: row.second_signer_name ?? null,
     issuedBy: row.issued_by ?? null,
     issuedByName: row.issued_by_name ?? null,
     issuedAt: row.issued_at,
@@ -98,10 +102,11 @@ function mapProtocol(row: any, signatures: any[], currentMinutesMd: string | nul
 
 const PROTOCOL_COLUMNS = `
   p.id, p.meeting_slug, p.version, p.content_sha256, p.pdf_sha256, p.pdf_bytes,
-  p.chair_person_id, p.issued_by, p.issued_at, p.superseded_at,
+  p.chair_person_id, p.second_signer_id, p.issued_by, p.issued_at, p.superseded_at,
   p.signed_object_key, p.signed_sha256, p.signed_filename, p.signed_uploaded_at,
   p.completed_at,
   chair.name AS chair_name,
+  cosigner.name AS second_signer_name,
   issuer.name AS issued_by_name
 `
 
@@ -113,6 +118,7 @@ export async function listProtocols(meetingSlug: string): Promise<ProtocolRow[]>
     FROM board_protocols p
     JOIN board_meetings m ON m.slug = p.meeting_slug
     LEFT JOIN persons chair ON chair.id = p.chair_person_id
+    LEFT JOIN persons cosigner ON cosigner.id = p.second_signer_id
     LEFT JOIN persons issuer ON issuer.id = p.issued_by
     WHERE p.meeting_slug = ${meetingSlug}
     ORDER BY p.version DESC
@@ -136,6 +142,7 @@ export async function getProtocol(id: string): Promise<ProtocolRow | null> {
     FROM board_protocols p
     JOIN board_meetings m ON m.slug = p.meeting_slug
     LEFT JOIN persons chair ON chair.id = p.chair_person_id
+    LEFT JOIN persons cosigner ON cosigner.id = p.second_signer_id
     LEFT JOIN persons issuer ON issuer.id = p.issued_by
     WHERE p.id = ${id}
     LIMIT 1
@@ -166,6 +173,8 @@ export interface IssueOptions {
   meetingSlug: string
   /** Møteleder. Vedtak 4 requires their signature as one of the two. */
   chairPersonId: string
+  /** The other of the two, when it is known. Named on the document, not signed by it. */
+  secondSignerPersonId?: string | null
   issuedBy: string
   siteUrl: string | null
 }
@@ -213,16 +222,38 @@ export async function issueProtocol(options: IssueOptions): Promise<IssueResult>
     throw createError({ statusCode: 400, message: 'Møteleder må sitte i styret' })
   }
 
+  const secondSignerPersonId = options.secondSignerPersonId || null
+  let secondSignerName: string | null = null
+  if (secondSignerPersonId) {
+    if (secondSignerPersonId === options.chairPersonId) {
+      throw createError({ statusCode: 400, message: 'De to signaturene må være to forskjellige personer' })
+    }
+    if (!(await isBoardMember(secondSignerPersonId))) {
+      throw createError({ statusCode: 400, message: 'Den andre signataren må sitte i styret' })
+    }
+    const rows = await sql`SELECT name FROM persons WHERE id = ${secondSignerPersonId} LIMIT 1`
+    if (!rows[0]) throw createError({ statusCode: 400, message: 'Ukjent signatar' })
+    secondSignerName = rows[0].name
+  }
+
   const contentSha256 = sha256(meeting.minutes_md)
 
   const existing = await sql`
-    SELECT id, content_sha256, version
+    SELECT id, content_sha256, version, chair_person_id, second_signer_id
     FROM board_protocols
     WHERE meeting_slug = ${options.meetingSlug} AND superseded_at IS NULL
     LIMIT 1
   `
   const current = existing[0]
-  if (current && current.content_sha256 === contentSha256) {
+  // Reuse only when the resulting document would be byte-identical. The signers
+  // are printed on it, so changing who signs changes the PDF even though the
+  // referat has not moved, and returning the old file would name the wrong person.
+  if (
+    current &&
+    current.content_sha256 === contentSha256 &&
+    current.chair_person_id === options.chairPersonId &&
+    (current.second_signer_id ?? null) === secondSignerPersonId
+  ) {
     const protocol = await getProtocol(current.id)
     if (!protocol) throw createError({ statusCode: 500, message: 'Protokollen forsvant under lesing' })
     return { protocol, reused: true }
@@ -258,6 +289,7 @@ export async function issueProtocol(options: IssueOptions): Promise<IssueResult>
     protocolId: id,
     contentSha256,
     chairName: chair.name,
+    secondSignerName,
     issuedAt,
     referatUrl: options.siteUrl ? `${options.siteUrl.replace(/\/$/, '')}/member/board/${meeting.slug}` : null,
   })
@@ -279,11 +311,12 @@ export async function issueProtocol(options: IssueOptions): Promise<IssueResult>
     sql`
       INSERT INTO board_protocols
         (id, meeting_slug, version, protocol_md, content_sha256,
-         pdf_object_key, pdf_sha256, pdf_bytes, chair_person_id, issued_by, issued_at)
+         pdf_object_key, pdf_sha256, pdf_bytes, chair_person_id, second_signer_id,
+         issued_by, issued_at)
       VALUES
         (${id}, ${options.meetingSlug}, ${version}, ${meeting.minutes_md}, ${contentSha256},
-         ${objectKey}, ${sha256(pdf)}, ${pdf.length}, ${options.chairPersonId}, ${options.issuedBy},
-         ${issuedAt.toISOString()})
+         ${objectKey}, ${sha256(pdf)}, ${pdf.length}, ${options.chairPersonId}, ${secondSignerPersonId},
+         ${options.issuedBy}, ${issuedAt.toISOString()})
     `,
   ])
 

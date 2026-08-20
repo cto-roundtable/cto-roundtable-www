@@ -78,6 +78,8 @@ export interface ProtocolRenderInput {
   /** sha256 of `minutesMd`. Printed on every page, see the note in the footer code. */
   contentSha256: string
   chairName: string
+  /** The "pluss én" of vedtak 4, when the board has settled who it is. */
+  secondSignerName: string | null
   issuedAt: Date
   /** Absolute URL of the meeting in the portal, for the pointer to the full referat. */
   referatUrl: string | null
@@ -115,7 +117,7 @@ function plain(runs: Run[]): string {
 }
 
 export async function renderProtocolPdf(input: ProtocolRenderInput): Promise<Buffer> {
-  const { meeting, version, protocolId, contentSha256, chairName, issuedAt } = input
+  const { meeting, version, protocolId, contentSha256, chairName, secondSignerName, issuedAt } = input
 
   // Parse before opening the document: a missing section or an unrenderable
   // character must fail before anything is written, not halfway down page two.
@@ -474,7 +476,7 @@ export async function renderProtocolPdf(input: ProtocolRenderInput): Promise<Buf
   }
 
   signatureLine('Møteleder', chairName)
-  signatureLine('Styremedlem', null)
+  signatureLine('Styremedlem', secondSignerName)
 
   // ---------------------------------------------------------------------------
   // Footer on every page
