@@ -10,8 +10,9 @@
  *   npm run render:protocol -- ../ctoroundtable-hq/styret/møter/2026-08-20-styremøte-2/referat.md
  *
  * Writes protokoll-<slug>.pdf in the current directory unless a second argument
- * gives an output path. The hash and version it prints are placeholders: a real
- * protocol gets its identity from the board_protocols row, not from this.
+ * gives an output path. PROTOCOL_CHAIR and PROTOCOL_SIGNER name the two
+ * signature lines. The hash, version and signers it prints are placeholders: a
+ * real protocol gets its identity from the board_protocols row, not from this.
  */
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
@@ -77,7 +78,8 @@ const pdf = await renderProtocolPdf({
   version: 1,
   protocolId: '00000000-0000-0000-0000-000000000000',
   contentSha256,
-  chairName: 'Snorre Lothar von Gohren Edwin',
+  chairName: process.env.PROTOCOL_CHAIR ?? 'Snorre Lothar von Gohren Edwin',
+  secondSignerName: process.env.PROTOCOL_SIGNER ?? null,
   issuedAt: new Date(`${meetingDate}T12:00:00Z`),
   referatUrl: `https://ctoroundtable.no/member/board/${folder}`,
 })
