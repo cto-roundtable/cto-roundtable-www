@@ -1,3 +1,10 @@
 {
-  "extends": "./.nuxt/tsconfig.json"
+  "extends": "./.nuxt/tsconfig.json",
+  "compilerOptions": {
+    // server/utils/protocolPdf.ts imports its parser with an explicit .ts
+    // specifier so the same module graph loads under Nitro's bundler AND under
+    // plain `node --experimental-strip-types`, which scripts/render-protocol.mjs
+    // uses to render a protocol without a database.
+    "allowImportingTsExtensions": true
+  }
 }

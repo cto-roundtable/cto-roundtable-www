@@ -131,6 +131,11 @@ resource "google_cloud_run_v2_service" "www" {
       }
 
       env {
+        name  = "NUXT_GCS_BOARD_PROTOCOLS_BUCKET"
+        value = google_storage_bucket.board_protocols.name
+      }
+
+      env {
         name = "NUXT_DATABASE_URL"
         value_source {
           secret_key_ref {

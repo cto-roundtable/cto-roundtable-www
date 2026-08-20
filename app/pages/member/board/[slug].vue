@@ -46,6 +46,8 @@
       <p v-else style="color: #aaa;">
         {{ view === 'referat' ? 'Referatet er ikke skrevet ennå.' : 'Agendaen er ikke lagt ut ennå.' }}
       </p>
+
+      <BoardProtocolPanel :slug="meeting.slug" :has-minutes="!!meeting.minutesMd" />
     </template>
   </div>
 </template>
