@@ -1,7 +1,10 @@
 // POST /api/member/board/meetings/:slug/protocol
 // Board-only: issue a protocol for this styremøte from its referat.
 //
-// Body: { chairPersonId?: string }  — møteleder, defaulting to the caller.
+// Body: { chairPersonId?: string, secondSignerPersonId?: string }
+//   chairPersonId        — møteleder, defaulting to the caller
+//   secondSignerPersonId — the "pluss én" of vedtak 4, printed on the signature
+//                          line. Naming them is an expectation, not a signature.
 //
 // Issuing is idempotent on the referat text: called twice without an edit in
 // between it returns the existing version rather than minting a second one.
@@ -13,7 +16,9 @@ export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
   if (!slug) throw createError({ statusCode: 400, message: 'Missing slug' })
 
-  const body = await readBody<{ chairPersonId?: string }>(event).catch(() => ({}))
+  const body = await readBody<{ chairPersonId?: string; secondSignerPersonId?: string }>(event).catch(
+    () => ({}) as { chairPersonId?: string; secondSignerPersonId?: string },
+  )
   const chairPersonId = body?.chairPersonId || personId
 
   const config = useRuntimeConfig()
@@ -23,6 +28,7 @@ export default defineEventHandler(async (event) => {
     const { protocol, reused } = await issueProtocol({
       meetingSlug: slug,
       chairPersonId,
+      secondSignerPersonId: body?.secondSignerPersonId || null,
       issuedBy: personId,
       siteUrl,
     })
@@ -35,6 +41,9 @@ export default defineEventHandler(async (event) => {
     // rather than becoming a generic 500.
     if (error?.name === 'UnrepresentableCharacterError' || error?.name === 'MissingProtocolSectionError') {
       throw createError({ statusCode: 422, message: error.message })
+    }
+    if (isMissingRegister(error)) {
+      throw createError({ statusCode: 503, message: MISSING_REGISTER_MESSAGE })
     }
     throw error
   }

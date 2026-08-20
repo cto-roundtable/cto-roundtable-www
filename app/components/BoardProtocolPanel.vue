@@ -2,13 +2,28 @@
   <section class="protocol-panel">
     <div class="panel-head">
       <h2 class="panel-title">Protokoll</h2>
-      <button
-        v-if="canIssue"
-        type="button"
-        class="issue-btn"
-        :disabled="issuing"
-        @click="issue"
-      >
+    </div>
+
+    <!-- Vedtak 4 wants two named people. They are printed on the signature
+         lines, so who they are changes the document and has to be chosen before
+         it is issued, not after. -->
+    <div v-if="canIssue && registerReady" class="issue-form">
+      <label class="field">
+        <span class="field-label">Møteleder</span>
+        <select v-model="chairPersonId" class="select">
+          <option v-for="m in boardMembers" :key="m.id" :value="m.id">{{ m.name }}</option>
+        </select>
+      </label>
+      <label class="field">
+        <span class="field-label">Signerer nr. 2</span>
+        <select v-model="secondSignerPersonId" class="select">
+          <option value="">Ikke bestemt</option>
+          <option v-for="m in boardMembers" :key="m.id" :value="m.id" :disabled="m.id === chairPersonId">
+            {{ m.name }}
+          </option>
+        </select>
+      </label>
+      <button type="button" class="issue-btn" :disabled="issuing" @click="issue">
         {{ issuing ? 'Lager …' : current ? 'Utsted ny versjon' : 'Utsted protokoll' }}
       </button>
     </div>
@@ -16,6 +31,8 @@
     <p v-if="loading" class="muted">Henter …</p>
 
     <p v-else-if="error" class="error">{{ error }}</p>
+
+    <p v-else-if="!registerReady" class="warning">{{ registerReason }}</p>
 
     <template v-else>
       <!-- The drift warning is the whole reason the issued text is frozen: the
@@ -43,8 +60,12 @@
         </header>
 
         <dl class="facts">
-          <dt>Møteleder</dt>
-          <dd>{{ p.chairName ?? 'ukjent' }}</dd>
+          <dt>Skal signeres av</dt>
+          <dd>
+            {{ p.chairName ?? 'ukjent' }} (møteleder)
+            <template v-if="p.secondSignerName"> og {{ p.secondSignerName }}</template>
+            <span v-else class="muted"> og én til, ikke bestemt</span>
+          </dd>
           <dt>Utstedt av</dt>
           <dd>{{ p.issuedByName ?? 'ukjent' }}</dd>
           <dt>Innholds-hash</dt>
@@ -109,11 +130,19 @@ interface Signature {
   attestsCurrentVersion: boolean
 }
 
+interface BoardMember {
+  id: string
+  name: string
+}
+
 interface Protocol {
   id: string
   version: number
   contentSha256: string
+  chairPersonId: string
   chairName: string | null
+  secondSignerId: string | null
+  secondSignerName: string | null
   issuedByName: string | null
   issuedAt: string
   supersededAt: string | null
@@ -125,12 +154,19 @@ interface Protocol {
 
 const props = defineProps<{ slug: string; hasMinutes: boolean }>()
 
+const { session } = useAuthSession()
+
 const loading = ref(true)
 const issuing = ref(false)
 const verifying = ref<string | null>(null)
 const error = ref('')
 const protocols = ref<Protocol[]>([])
 const verdicts = ref<Record<string, { ok: boolean }>>({})
+const boardMembers = ref<BoardMember[]>([])
+const registerReady = ref(true)
+const registerReason = ref('')
+const chairPersonId = ref('')
+const secondSignerPersonId = ref('')
 
 const current = computed(() => protocols.value.find((p) => !p.supersededAt) ?? null)
 
@@ -168,10 +204,26 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
-    const data = await $fetch<{ protocols: Protocol[] }>(`/api/member/board/meetings/${props.slug}/protocols`)
+    const [data, board] = await Promise.all([
+      $fetch<{ protocols: Protocol[]; registerReady?: boolean; reason?: string }>(
+        `/api/member/board/meetings/${props.slug}/protocols`,
+      ),
+      $fetch<{ members: BoardMember[] }>('/api/member/board/members'),
+    ])
     protocols.value = data.protocols
-  } catch {
-    error.value = 'Klarte ikke å hente protokollene.'
+    registerReady.value = data.registerReady !== false
+    registerReason.value = data.reason ?? ''
+    boardMembers.value = board.members
+    // Carry the previous version's choice forward: re-issuing after a referat
+    // edit almost always keeps the same two signers.
+    const previous = protocols.value[0]
+    chairPersonId.value = previous?.chairPersonId ?? session.value.personId ?? board.members[0]?.id ?? ''
+    secondSignerPersonId.value = previous?.secondSignerId ?? ''
+  } catch (e: any) {
+    // Show what the server said. The generic version of this line hid a missing
+    // migration behind "noe gikk galt" and cost an afternoon of guessing.
+    const reason = e?.data?.message || e?.statusMessage || ''
+    error.value = reason ? `Klarte ikke å hente protokollene: ${reason}` : 'Klarte ikke å hente protokollene.'
   } finally {
     loading.value = false
   }
@@ -181,7 +233,13 @@ async function issue() {
   issuing.value = true
   error.value = ''
   try {
-    await $fetch(`/api/member/board/meetings/${props.slug}/protocol`, { method: 'POST' })
+    await $fetch(`/api/member/board/meetings/${props.slug}/protocol`, {
+      method: 'POST',
+      body: {
+        chairPersonId: chairPersonId.value || undefined,
+        secondSignerPersonId: secondSignerPersonId.value || undefined,
+      },
+    })
     await load()
   } catch (e: any) {
     // A 422 carries the reason the referat cannot be turned into a protocol —
@@ -246,6 +304,34 @@ onMounted(load)
 .issue-btn:disabled {
   cursor: default;
   opacity: 0.5;
+}
+
+.issue-form {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-label {
+  color: #888;
+  font-size: 12px;
+}
+
+.select {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 13px;
+  padding: 6px 8px;
 }
 
 .version {

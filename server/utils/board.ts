@@ -8,7 +8,7 @@ import type { H3Event } from 'h3'
 // contained two people who are not on the styret and was missing one who is. Now
 // that styremøte agendas and referater are served here, the gate has to be the
 // actual board.
-const BOARD_GROUP = 'styret'
+export const BOARD_GROUP = 'styret'
 
 /**
  * RBAC guard: allow only board members. Must run after the /api/member/
