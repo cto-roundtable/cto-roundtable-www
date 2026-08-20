@@ -95,6 +95,55 @@
           {{ p.signatures.length === 1 ? 'Én gjenstår.' : '' }}
         </p>
 
+        <!-- The external-signing loop, in the order it actually happens:
+             download, sign in BankID elsewhere, come back and register it. -->
+        <ol v-if="!p.supersededAt && p.signatures.length < 2" class="steps">
+          <li>
+            <a :href="`/api/member/board/protocols/${p.id}/pdf`" target="_blank" rel="noopener">
+              Last ned protokollen
+            </a>
+            og signer den med BankID utenfor portalen.
+          </li>
+          <li>
+            Last opp den signerte filen her, sammen med hvem som signerte.
+            <div class="upload">
+              <input
+                :id="`file-${p.id}`"
+                type="file"
+                accept="application/pdf,.pdf"
+                @change="pickFile(p.id, $event)"
+              >
+              <label class="field inline">
+                <span class="field-label">Signert dato</span>
+                <input v-model="signedAt" type="date" class="select">
+              </label>
+              <label class="field inline">
+                <span class="field-label">Metode</span>
+                <select v-model="method" class="select">
+                  <option value="bankid">BankID</option>
+                  <option value="manual">Registrert manuelt</option>
+                </select>
+              </label>
+              <button
+                type="button"
+                class="issue-btn"
+                :disabled="uploading === p.id || !files[p.id]"
+                @click="uploadSigned(p)"
+              >
+                {{ uploading === p.id ? 'Laster opp …' : 'Registrer signert protokoll' }}
+              </button>
+            </div>
+            <p class="muted small">
+              Registreres for {{ p.chairName }} (møteleder)
+              <template v-if="p.secondSignerName"> og {{ p.secondSignerName }}</template>.
+              Den signerte filen har andre bytes enn den vi genererte, og det er som det skal
+              være: den er stemplet av signeringstjenesten. Innholds-hashen i bunnteksten er
+              det som knytter dem sammen.
+            </p>
+            <p v-if="uploadError" class="error small">{{ uploadError }}</p>
+          </li>
+        </ol>
+
         <div class="actions">
           <a class="link-btn" :href="`/api/member/board/protocols/${p.id}/pdf`" target="_blank" rel="noopener">
             Last ned PDF
@@ -165,6 +214,13 @@ const verdicts = ref<Record<string, { ok: boolean }>>({})
 const boardMembers = ref<BoardMember[]>([])
 const registerReady = ref(true)
 const registerReason = ref('')
+const files = ref<Record<string, File>>({})
+const uploading = ref<string | null>(null)
+const uploadError = ref('')
+const method = ref<'bankid' | 'manual'>('bankid')
+// Defaults to today, which is almost always right: you register the signature
+// the day it comes back. Editable because "almost always" is not always.
+const signedAt = ref(new Date().toISOString().slice(0, 10))
 const chairPersonId = ref('')
 const secondSignerPersonId = ref('')
 
@@ -249,6 +305,42 @@ async function issue() {
     error.value = e?.data?.message || e?.statusMessage || 'Klarte ikke å utstede protokollen.'
   } finally {
     issuing.value = false
+  }
+}
+
+function pickFile(id: string, event: Event) {
+  const picked = (event.target as HTMLInputElement).files?.[0]
+  if (picked) files.value = { ...files.value, [id]: picked }
+  uploadError.value = ''
+}
+
+async function uploadSigned(p: Protocol) {
+  const file = files.value[p.id]
+  if (!file) return
+  uploading.value = p.id
+  uploadError.value = ''
+
+  // Both named signers are registered together. Vedtak 4 wants two, the server
+  // refuses a pair that does not include the chair, and a BankID-signed document
+  // carries both signatures in one file anyway.
+  const signatures = [{ personId: p.chairPersonId, role: 'chair', signedAt: signedAt.value }]
+  if (p.secondSignerId) {
+    signatures.push({ personId: p.secondSignerId, role: 'member', signedAt: signedAt.value })
+  }
+
+  const body = new FormData()
+  body.append('file', file)
+  body.append('signatures', JSON.stringify(signatures))
+  body.append('method', method.value)
+
+  try {
+    await $fetch(`/api/member/board/protocols/${p.id}/signed`, { method: 'POST', body })
+    files.value = { ...files.value, [p.id]: undefined as unknown as File }
+    await load()
+  } catch (e: any) {
+    uploadError.value = e?.data?.message || e?.statusMessage || 'Klarte ikke å registrere den signerte protokollen.'
+  } finally {
+    uploading.value = null
   }
 }
 
@@ -422,6 +514,39 @@ onMounted(load)
 .link-btn:disabled {
   color: #888;
   cursor: default;
+}
+
+.steps {
+  color: #ccc;
+  font-size: 13px;
+  margin: 12px 0 6px;
+  padding-left: 18px;
+}
+
+.steps li {
+  margin-bottom: 10px;
+}
+
+.steps a {
+  color: #8ab4f8;
+}
+
+.upload {
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.upload input[type='file'] {
+  color: #bbb;
+  font-size: 12px;
+  max-width: 260px;
+}
+
+.field.inline {
+  gap: 3px;
 }
 
 .muted {
