@@ -71,6 +71,11 @@
           <p>
             So for now: leave your details below if you want in. That is the whole ask.
           </p>
+          <p>
+            Wondering about anything before you sign up? Mail Snorre directly at
+            <a href="mailto:snorre.edwin@gmail.com">snorre.edwin@gmail.com</a>. Happy to take a
+            quick call too, if that is easier.
+          </p>
         </section>
 
         <section class="block">
@@ -91,6 +96,10 @@
               We will be in touch toward the end of August with details on the first Stockholm
               gathering. In the meantime, feel free to point any peers you would want in the room
               to this page.
+            </p>
+            <p>
+              Anything you wonder about in the meantime, mail Snorre at
+              <a href="mailto:snorre.edwin@gmail.com">snorre.edwin@gmail.com</a>.
             </p>
           </div>
 
