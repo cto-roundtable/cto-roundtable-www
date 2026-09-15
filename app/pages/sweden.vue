@@ -11,6 +11,35 @@
           the first people who want to be part of it.
         </p>
 
+        <section v-if="status" class="numbers" aria-label="Where the Stockholm chapter stands">
+          <div class="stat">
+            <span class="stat-n">{{ status.signups }}</span>
+            <span class="stat-l">Stockholm CTOs have raised their hand</span>
+          </div>
+          <div class="stat">
+            <span class="stat-n">~{{ status.gate }}</span>
+            <span class="stat-l">is when the first date gets set</span>
+          </div>
+          <div class="stat">
+            <span class="stat-n">{{ status.roomMin }} to {{ status.roomMax }}</span>
+            <span class="stat-l">seats in the founding room, picked for the mix</span>
+          </div>
+          <p class="numbers-note">
+            <template v-if="remaining > 0">
+              <strong>{{ remaining }} {{ remaining === 1 ? 'name' : 'names' }} from a date.</strong>
+              <template v-if="status.recent > 0">
+                {{ status.recent }} of the {{ status.signups }} came in the last 30 days, so this is moving.
+              </template>
+              The room is picked from the pool, not filled in order, and the first names in shape
+              what the mix gets built around.
+            </template>
+            <template v-else>
+              <strong>The first date is being set.</strong> The pool stays open: the founding room
+              is picked from it for the mix, and a second round follows the first.
+            </template>
+          </p>
+        </section>
+
         <section class="block">
           <h2>What we are building</h2>
           <p>
@@ -63,13 +92,14 @@
         <section class="block">
           <h2>What happens next</h2>
           <p>
-            We want to move forward with the first 10 to 15 people to start the network. Once we
-            have enough of the right people, we set a date for the first gathering, planned for
-            early autumn. More information comes once you have signed up. Expect to hear from us
-            with concrete details toward the end of August.
+            The first meeting gets set once we are around ten names, and Snorre comes over from
+            Oslo to run it. The founding room is 10 to 15 CTOs, picked from the pool for the mix:
+            stage, sector, the problems people are carrying. So signing up puts you in the pool,
+            not in the room, and we say that plainly because the room is small on purpose.
           </p>
           <p>
-            So for now: leave your details below if you want in. That is the whole ask.
+            You hear from Snorre personally, not from a mailing list, and you hear from him either
+            way. So for now: leave your details below if you want in. That is the whole ask.
           </p>
           <p>
             Wondering about anything before you sign up? Mail Snorre directly at
@@ -81,8 +111,12 @@
         <section class="block">
           <h2>Who we are</h2>
           <p>
-            CTO Roundtable is a Norwegian network of CTOs from scale-ups and growth companies
-            (Kahoot, Ardoq and others). See the people and what we do at
+            CTO Roundtable is a Norwegian network of
+            <template v-if="status?.norwayMembers">{{ status.norwayMembers }} sitting CTOs</template>
+            <template v-else>CTOs</template>
+            from scale-ups and growth companies (Kahoot, Ardoq and others). Eight years running,
+            six meetups a year, and an investment arm where members back startups together, three
+            cohorts in. See the people and what we do at
             <a href="https://www.ctoroundtable.no" target="_blank" rel="noopener">ctoroundtable.no</a>.
           </p>
         </section>
@@ -91,11 +125,11 @@
           <h2>Register your interest</h2>
 
           <div v-if="submitted" class="success">
-            <p class="success-title">Thanks, you are on the list.</p>
+            <p class="success-title">Thanks, you are in the pool.</p>
             <p>
-              We will be in touch toward the end of August with details on the first Stockholm
-              gathering. In the meantime, feel free to point any peers you would want in the room
-              to this page.
+              Snorre will be in touch personally. The founding room gets picked once we are around
+              ten names, so the most useful thing you can do right now is point a peer you would
+              want in the room to this page.
             </p>
             <p>
               Anything you wonder about in the meantime, mail Snorre at
@@ -174,6 +208,10 @@ useSeoMeta({
     'Register your interest in a small, tight-knit network of Stockholm CTOs. A Swedish chapter built on the Norwegian CTO Roundtable model.',
 })
 
+// Live numbers from Neon (counts only). The page still renders without them.
+const { data: status } = await useFetch('/api/sweden/status')
+const remaining = computed(() => Math.max(0, (status.value?.gate ?? 0) - (status.value?.signups ?? 0)))
+
 const form = reactive({
   name: '',
   email: '',
@@ -230,6 +268,51 @@ async function submit() {
   font-size: 1.15rem;
   color: rgba(255, 255, 255, 0.85);
   margin-bottom: 2rem;
+}
+
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 0 0 2.5rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-n {
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #fff;
+}
+
+.stat-l {
+  font-size: 14px;
+  color: #bbb;
+  margin-top: 0.35rem;
+  line-height: 1.4;
+}
+
+.numbers-note {
+  grid-column: 1 / -1;
+  margin: 0.5rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid #2a2a2a;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+@media (max-width: 600px) {
+  .numbers {
+    grid-template-columns: 1fr;
+  }
 }
 
 .block {
