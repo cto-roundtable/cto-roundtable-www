@@ -75,6 +75,16 @@ who signed what and when. The generated PDF prints its content hash on every
 page so an externally signed copy, whose bytes necessarily differ, still names
 the register row it came from.
 
+### Åpen for jobb (`/member/jobb`)
+
+Members opt in as open to new opportunities; the default is not listed. Any
+member can set or withdraw their own flag. The list of who is open is for the
+investment cohorts (`invest-*`) and the board (`styret`) only, because founders
+asking "do you know a CTO" come in through the invest side. The gate is
+`requireOpenToWorkViewer` in `server/utils/openToWork.ts`, checked per request.
+Table: `open_to_work` (`ctoroundtable-hq/infrastructure/db/migrations/021_open_to_work.sql`),
+one open row per person, withdrawn rows kept as `closed` history.
+
 ### Data sources
 - **Members**: Neon Postgres (`persons`, `memberships`, `organizations` tables)
 - **Portfolio companies**: Coda API (migration pending)
