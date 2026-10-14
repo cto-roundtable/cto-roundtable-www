@@ -6,9 +6,10 @@
         <h1 class="headline">A small, tight-knit network of Stockholm CTOs</h1>
         <p class="lead">
           We are starting a Swedish chapter of the CTO Roundtable, built on the same model we
-          have run in Norway for years. This page is just to register interest. You are not
-          signing up for an event, and you are not committing to anything yet. We are gathering
-          the first people who want to be part of it.
+          have run in Norway for years. The first meeting is booked: Tuesday 17 November, an
+          evening in Stockholm, hosted by Endform. Invites go out from this page, so leave your
+          details below and Snorre gets back to you personally. The room is small and picked, so
+          signing up is how you get considered, not a guaranteed seat.
         </p>
 
         <section v-if="status" class="numbers" aria-label="Where the Stockholm chapter stands">
@@ -17,26 +18,20 @@
             <span class="stat-l">Stockholm CTOs have raised their hand</span>
           </div>
           <div class="stat">
-            <span class="stat-n">~{{ status.gate }}</span>
-            <span class="stat-l">is when the first date gets set</span>
+            <span class="stat-n">17 Nov</span>
+            <span class="stat-l">first meeting, an evening hosted by Endform</span>
           </div>
           <div class="stat">
             <span class="stat-n">{{ status.roomMin }} to {{ status.roomMax }}</span>
             <span class="stat-l">seats in the founding room, picked for the mix</span>
           </div>
           <p class="numbers-note">
-            <template v-if="remaining > 0">
-              <strong>{{ remaining }} {{ remaining === 1 ? 'name' : 'names' }} from a date.</strong>
-              <template v-if="status.recent > 0">
-                {{ status.recent }} of the {{ status.signups }} came in the last 30 days, so this is moving.
-              </template>
-              The room is picked from the pool, not filled in order, and the first names in shape
-              what the mix gets built around.
+            <strong>The first date is set.</strong>
+            <template v-if="status.recent > 0">
+              {{ status.recent }} of the {{ status.signups }} came in the last 30 days.
             </template>
-            <template v-else>
-              <strong>The first date is being set.</strong> The pool stays open: the founding room
-              is picked from it for the mix, and a second round follows the first.
-            </template>
+            The room is picked from the pool for the mix, not filled in order. The pool stays
+            open, and a second round follows the first.
           </p>
         </section>
 
@@ -92,14 +87,16 @@
         <section class="block">
           <h2>What happens next</h2>
           <p>
-            The first meeting gets set once we are around ten names, and Snorre comes over from
-            Oslo to run it. The founding room is 10 to 15 CTOs, picked from the pool for the mix:
-            stage, sector, the problems people are carrying. So signing up puts you in the pool,
-            not in the room, and we say that plainly because the room is small on purpose.
+            The first meeting is Tuesday 17 November, in the evening, hosted by Endform in
+            Stockholm. Snorre comes over from Oslo to run it. The founding room is 10 to 15 CTOs,
+            picked from the pool for the mix: stage, sector, the problems people are carrying. So
+            signing up puts you in the pool, not in the room, and we say that plainly because the
+            room is small on purpose.
           </p>
           <p>
-            You hear from Snorre personally, not from a mailing list, and you hear from him either
-            way. So for now: leave your details below if you want in. That is the whole ask.
+            Invites go out from Snorre personally, not from a mailing list, and you hear from him
+            either way. If the first room fills up, the pool stays open for the next one. So: leave
+            your details below if you want in. That is the whole ask.
           </p>
           <p>
             Wondering about anything before you sign up? Mail Snorre directly at
@@ -127,9 +124,9 @@
           <div v-if="submitted" class="success">
             <p class="success-title">Thanks, you are in the pool.</p>
             <p>
-              Snorre will be in touch personally. The founding room gets picked once we are around
-              ten names, so the most useful thing you can do right now is point a peer you would
-              want in the room to this page.
+              Snorre will be in touch personally about the first meeting on 17 November. The room
+              is picked for the mix, so the most useful thing you can do right now is point a peer
+              you would want in the room to this page.
             </p>
             <p>
               Anything you wonder about in the meantime, mail Snorre at
@@ -210,7 +207,6 @@ useSeoMeta({
 
 // Live numbers from Neon (counts only). The page still renders without them.
 const { data: status } = await useFetch('/api/sweden/status')
-const remaining = computed(() => Math.max(0, (status.value?.gate ?? 0) - (status.value?.signups ?? 0)))
 
 const form = reactive({
   name: '',
