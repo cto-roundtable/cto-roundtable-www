@@ -1,16 +1,17 @@
 // GET /api/member/surveys/:id
-// One survey with the caller's own answer. Members see it when they are in the
-// event's group and it is not a draft; anyone else gets a 404, as if it did not
-// exist. The board always sees it, plus the response count.
+// One survey with the caller's own answer. Members see it when they attended the
+// event (and are in its group) and it is not a draft; anyone else gets a 404, as
+// if it did not exist. The board always sees it, plus the response and attendee
+// counts. ineligibleReason says why the caller cannot answer.
 export default defineEventHandler(async (event) => {
   const session = event.context.session
   const id = surveyIdParam(event)
   const survey = await loadSurvey(id)
   if (!survey) throw createError({ statusCode: 404, message: 'Survey not found' })
 
-  const [isBoard, eligible] = await Promise.all([
+  const [isBoard, { eligible, reason }] = await Promise.all([
     isBoardMember(session.personId),
-    isEligibleForSurvey(session.personId, survey),
+    surveyEligibility(session.personId, survey),
   ])
   if (!isBoard && (!eligible || survey.status === 'draft')) {
     throw createError({ statusCode: 404, message: 'Survey not found' })
@@ -39,6 +40,9 @@ export default defineEventHandler(async (event) => {
     },
     questions: survey.questions,
     eligible,
+    ineligibleReason: reason,
+    hasLuma: Boolean(survey.lumaEventId),
+    attendeeCount: isBoard ? survey.attendeeCount : null,
     canAnswer: eligible && isOpen,
     isBoard,
     responseCount,
