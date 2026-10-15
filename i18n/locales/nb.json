@@ -17,7 +17,8 @@
     "faq": "FAQ",
     "investorUpdates": "Investoroppdateringer",
     "boardMeetings": "Styremøter",
-    "boardActivity": "Aktivitet (styret)"
+    "boardActivity": "Aktivitet (styret)",
+    "sweden": "Sverige"
   },
   "layout": {
     "signedInAs": "Innlogget som",
@@ -454,6 +455,45 @@
         "textHidden": "Fritekst, synlig for styret.",
         "loadFailed": "Kunne ikke hente resultatene."
       }
+    },
+    "sweden": {
+      "title": "CTO Roundtable Sverige",
+      "intro": "Dette er Stockholm-avdelingens eget rom. Samlingene og undersøkelsene her er bare for den svenske avdelingen.",
+      "nextHeading": "Neste samling",
+      "noUpcoming": "Ingen samling er satt opp ennå. Den kommer her og på Luma.",
+      "untitled": "Samling",
+      "onLuma": "Se den på Luma",
+      "pastHeading": "Tidligere samlinger",
+      "channelHeading": "Kanalen din",
+      "channelBody": "#roundtable-sweden på Slack.",
+      "sharedHeading": "Felles for hele nettverket",
+      "sharedBody": "Fordeler fra partnerselskaper, og investoroppdateringer hvis du er med i en investeringsrunde.",
+      "faq": {
+        "title": "FAQ",
+        "intro": "Hvordan den svenske avdelingen fungerer.",
+        "how": {
+          "q": "Hvordan fungerer det?",
+          "a": "En samling hver eller annenhver måned. Ett selskap viser hvordan de jobber, verten byr på pizza og noe å drikke, og resten er tre timer med ærlige spørsmål. 10 til 15 CTO-er, kun på invitasjon."
+        },
+        "who": {
+          "q": "Hvem kan bli med?",
+          "a": "CTO-er, eller den som gjør den jobben, invitert av et eksisterende medlem."
+        },
+        "norway": {
+          "q": "Hvordan henger dette sammen med det norske nettverket?",
+          "a": "Samme modell, egen gruppe. Egne samlinger, egen kanal og ingen felles invitasjoner. Fordelene og investeringssiden er felles."
+        },
+        "question": {
+          "q": "Jeg har et spørsmål.",
+          "a": "Spør i #roundtable-sweden, eller svar på invitasjonen du fikk på e-post."
+        }
+      },
+      "chapter": {
+        "no": "Norge",
+        "se": "Sverige"
+      },
+      "hostChapter": "Hvilken avdeling er tilbudet for?",
+      "hostChapterSummary": "Avdeling"
     }
   }
 }

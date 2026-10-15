@@ -17,7 +17,8 @@
     "faq": "Vanliga frågor",
     "investorUpdates": "Investeraruppdateringar",
     "boardMeetings": "Styrelsemöten",
-    "boardActivity": "Aktivitet (styrelsen)"
+    "boardActivity": "Aktivitet (styrelsen)",
+    "sweden": "Sverige"
   },
   "layout": {
     "signedInAs": "Inloggad som",
@@ -454,6 +455,45 @@
         "textHidden": "Fritext, synlig för styrelsen.",
         "loadFailed": "Kunde inte hämta resultaten."
       }
+    },
+    "sweden": {
+      "title": "CTO Roundtable Sverige",
+      "intro": "Det här är Stockholmsavdelningens egen plats. Träffarna och enkäterna här är bara för den svenska avdelningen.",
+      "nextHeading": "Nästa träff",
+      "noUpcoming": "Ingen träff är inbokad ännu. Den dyker upp här och på Luma.",
+      "untitled": "Träff",
+      "onLuma": "Se den på Luma",
+      "pastHeading": "Tidigare träffar",
+      "channelHeading": "Din kanal",
+      "channelBody": "#roundtable-sweden på Slack.",
+      "sharedHeading": "Gemensamt för hela nätverket",
+      "sharedBody": "Erbjudanden från partnerföretag, och investeraruppdateringar om du är med i en investeringsrunda.",
+      "faq": {
+        "title": "Vanliga frågor",
+        "intro": "Så fungerar den svenska avdelningen.",
+        "how": {
+          "q": "Hur fungerar det?",
+          "a": "En träff varje eller varannan månad. Ett företag visar hur de arbetar, värden bjuder på pizza och något att dricka, och resten är tre timmar med ärliga frågor. 10 till 15 CTO:er, endast på inbjudan."
+        },
+        "who": {
+          "q": "Vem kan vara med?",
+          "a": "CTO:er, eller den som gör det jobbet, inbjudna av en befintlig medlem."
+        },
+        "norway": {
+          "q": "Hur hänger det här ihop med det norska nätverket?",
+          "a": "Samma modell, egen grupp. Egna träffar, egen kanal och inga gemensamma inbjudningar. Erbjudandena och investeringssidan är gemensamma."
+        },
+        "question": {
+          "q": "Jag har en fråga.",
+          "a": "Fråga i #roundtable-sweden, eller svara på inbjudan du fick via e-post."
+        }
+      },
+      "chapter": {
+        "no": "Norge",
+        "se": "Sverige"
+      },
+      "hostChapter": "Vilken avdelning gäller erbjudandet?",
+      "hostChapterSummary": "Avdelning"
     }
   }
 }

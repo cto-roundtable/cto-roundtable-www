@@ -22,7 +22,7 @@
         </div>
         <div style="font-size: 14px; color: #ccc; line-height: 1.7;">
           <p v-if="chapterChoice" class="mb-1">
-            <strong>{{ t('member.host.summary.chapter') }}:</strong> {{ t(`common.chapter.${volunteer.chapter}`) }}
+            <strong>{{ t('member.sweden.hostChapterSummary') }}:</strong> {{ t(`member.sweden.chapter.${volunteer.chapter}`) }}
           </p>
           <p v-if="volunteer.location" class="mb-1">
             <strong>{{ t('member.host.summary.location') }}:</strong> {{ volunteer.location }}
@@ -63,8 +63,8 @@
           <v-select
             v-if="chapterChoice"
             v-model="form.chapter"
-            :items="memberChapters.map((c) => ({ value: c, title: t(`common.chapter.${c}`) }))"
-            :label="t('member.host.form.chapter')"
+            :items="memberChapters.map((c) => ({ value: c, title: t(`member.sweden.chapter.${c}`) }))"
+            :label="t('member.sweden.hostChapter')"
             variant="outlined"
             density="comfortable"
             hide-details="auto"

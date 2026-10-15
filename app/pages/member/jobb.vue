@@ -129,7 +129,7 @@
             {{ m.name }}
             <!-- The list spans both chapters; a Swedish member says so. -->
             <v-chip v-if="m.chapters?.includes('se')" size="x-small" variant="outlined" class="ml-2">
-              {{ t('common.chapter.se') }}
+              {{ t('member.sweden.chapter.se') }}
             </v-chip>
           </p>
           <p v-if="m.company" class="mb-2" style="color: #aaa; font-size: 14px;">
