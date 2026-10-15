@@ -252,7 +252,7 @@ const commands = {
     out(d, () => {
       const verb = d.dryRun ? 'would create' : 'created'
       console.log(`${verb} ${d.created.length}, already had a survey ${d.existing}, skipped ${d.skipped.length}`)
-      for (const c of d.created) console.log(`  + ${c.date} ${c.group} event ${c.eventId} -> survey ${c.surveyId ?? '-'}`)
+      for (const c of d.created) console.log(`  + ${c.date} ${c.group} event ${c.eventId} -> survey ${c.surveyId || '(dry run)'}`)
       for (const s of d.skipped) console.log(`  - event ${s.eventId}: ${s.reason}`)
     })
   },

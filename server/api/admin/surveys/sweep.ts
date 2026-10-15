@@ -9,15 +9,10 @@ export default defineAdminRoute({
     handler: async (event, _caller, audit) => {
       const q = getQuery(event)
       const dryRun = q.dryRun === '1' || q.dryRun === 'true'
-      let windowDays: number | undefined
-      if (q.windowDays !== undefined) {
-        windowDays = Number(q.windowDays)
-        if (!Number.isInteger(windowDays) || windowDays < 1 || windowDays > 60) {
-          throw createError({ statusCode: 400, message: 'windowDays must be 1 to 60' })
-        }
-      }
+      // Range checked by sweepPastEventSurveys (400 outside 1 to 365), so there is one rule.
+      const windowDays = q.windowDays === undefined ? undefined : Number(q.windowDays)
       audit.summary.dryRun = dryRun
-      if (windowDays !== undefined) audit.summary.windowDays = windowDays
+      if (windowDays !== undefined && Number.isFinite(windowDays)) audit.summary.windowDays = windowDays
       const result = await sweepPastEventSurveys({ dryRun, windowDays })
       audit.summary.created = result.created.length
       audit.summary.existing = result.existing
