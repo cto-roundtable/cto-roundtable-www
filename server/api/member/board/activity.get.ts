@@ -1,10 +1,12 @@
-// GET /api/member/board/activity?days=365
+// GET /api/member/board/activity?days=365&chapter=no|se
 // Board-only (braintrust) member-activity picture over a rolling window.
 // Feeds the styret's "flag inactive members" work. Reads the activity_events
 // signal layer (Slack messages/reactions + Luma attendance/hosting).
 //
-// Universe = all ACTIVE cto-roundtable members (LEFT JOIN activity), so members
+// Universe = all ACTIVE members of one chapter (LEFT JOIN activity), so members
 // with zero signals in the window are included: those are the ones to flag.
+// chapter=no (default) is cto-roundtable, chapter=se the Swedish chapter; the
+// two are kept apart because they run separately (vedtak 6).
 //
 // Score weights mirror the report shared with the board:
 //   post (thread start) = 3, thread reply = 2, reaction = 1,
@@ -19,6 +21,7 @@ export default defineEventHandler(async (event) => {
 
   const q = getQuery(event)
   const days = Math.min(Math.max(Number.parseInt(String(q.days ?? '365'), 10) || 365, 7), 365)
+  const chapter: Chapter = isChapter(q.chapter) ? q.chapter : 'no'
 
   const rows = await sql`
     WITH act AS (
@@ -53,7 +56,7 @@ export default defineEventHandler(async (event) => {
         + COALESCE(a.attended,0) * 5 + COALESCE(a.hosted,0) * 8) AS score
     FROM persons p
     JOIN memberships m    ON m.person_id = p.id
-    JOIN network_groups g ON g.id = m.group_id AND g.slug = 'cto-roundtable'
+    JOIN network_groups g ON g.id = m.group_id AND g.slug = ${CHAPTER_GROUPS[chapter]}
     LEFT JOIN act a  ON a.person_id = p.id
     LEFT JOIN ever e ON e.person_id = p.id
     WHERE p.status = 'active'
@@ -95,6 +98,7 @@ export default defineEventHandler(async (event) => {
 
   return {
     windowDays: days,
+    chapter,
     generatedAt: new Date().toISOString(),
     weights: { post: 3, reply: 2, reaction: 1, attended: 5, hosted: 8 },
     // Slack has a coverage gap: our live webhook started 2026-06-30, and the

@@ -125,7 +125,13 @@
       </div>
       <div v-else class="d-flex flex-column" style="gap: 12px;">
         <v-card v-for="m in list" :key="m.personId" variant="outlined" class="pa-4">
-          <p class="font-weight-bold mb-1">{{ m.name }}</p>
+          <p class="font-weight-bold mb-1">
+            {{ m.name }}
+            <!-- The list spans both chapters; a Swedish member says so. -->
+            <v-chip v-if="m.chapters?.includes('se')" size="x-small" variant="outlined" class="ml-2">
+              {{ t('common.chapter.se') }}
+            </v-chip>
+          </p>
           <p v-if="m.company" class="mb-2" style="color: #aaa; font-size: 14px;">
             {{ m.roleTitle ? t('member.openToWork.list.roleAtCompany', { role: m.roleTitle, company: m.company }) : m.company }}
           </p>
@@ -173,6 +179,7 @@ interface OpenMember {
   linkedin: string | null
   company: string | null
   roleTitle: string | null
+  chapters: ('no' | 'se')[]
   lookingFor: string | null
   availability: string | null
   note: string | null

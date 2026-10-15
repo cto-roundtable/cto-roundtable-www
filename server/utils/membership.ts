@@ -1,28 +1,19 @@
 // THE login gate for the member portal: who may hold a session.
 //
-// Today the rule is "an active person in group cto-roundtable". It used to be
+// The rule is "an active person in a chapter group" (server/utils/chapter.ts:
+// cto-roundtable for Norway, roundtable-sweden for the Swedish chapter). It used to be
 // copy-pasted into /api/auth/request and the /api/member/ middleware; passkey
 // sign-in is a third caller, so it lives here, once. Every way in (magic link,
 // passkey, the per-request session re-check) asks these two functions, which
 // is what keeps "a session is valid exactly as long as the holder could obtain
-// a fresh one" true. Widening who may sign in (e.g. a Swedish chapter) is a
-// change to this file and nowhere else.
-export const PORTAL_GROUP = 'cto-roundtable'
+// a fresh one" true. Who counts as a chapter is CHAPTER_GROUPS in chapter.ts.
+// Swedish members get in once they are `active`; while they are `prospect`
+// (all of them, when this was written) nothing changes for anyone.
+export const PORTAL_GROUPS = CHAPTER_SLUGS
 
 /** Whether this person may sign in to (and stay signed in to) the portal. */
 export async function isPortalMember(personId: string): Promise<boolean> {
-  const sql = useDatabase()
-  const rows = await sql`
-    SELECT 1
-    FROM persons p
-    JOIN memberships m ON m.person_id = p.id
-    JOIN network_groups ng ON ng.id = m.group_id
-    WHERE p.id = ${personId}
-      AND p.status = 'active'
-      AND ng.slug = ${PORTAL_GROUP}
-    LIMIT 1
-  `
-  return rows.length > 0
+  return (await getChapters(personId)).length > 0
 }
 
 /**
@@ -40,7 +31,7 @@ export async function findPortalMemberByEmail(email: string): Promise<{ id: stri
     WHERE ci.type = 'email'
       AND LOWER(ci.value) = ${email.trim().toLowerCase()}
       AND p.status = 'active'
-      AND ng.slug = ${PORTAL_GROUP}
+      AND ng.slug = ANY(${PORTAL_GROUPS})
     LIMIT 1
   `
   const row = rows[0]

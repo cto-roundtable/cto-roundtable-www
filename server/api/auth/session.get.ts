@@ -3,7 +3,8 @@ export default defineEventHandler(async (event) => {
 
   // Same gate as every /api/member/ request: a session whose holder is no longer
   // a portal member is reported as signed out.
-  if (!session || !(await isPortalMember(session.personId))) {
+  const chapters = session ? await getChapters(session.personId) : []
+  if (!session || chapters.length === 0) {
     return { authenticated: false }
   }
 
@@ -24,5 +25,7 @@ export default defineEventHandler(async (event) => {
     email,
     isBoard: await isBoardMember(session.personId),
     isInvestor: await isInvestorMember(session.personId),
+    // Chapters (`no`, `se`) pick the nav and the default language.
+    chapters,
   }
 })

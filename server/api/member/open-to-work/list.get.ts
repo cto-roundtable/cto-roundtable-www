@@ -1,8 +1,9 @@
 // GET /api/member/open-to-work/list
 // Members who are open to new opportunities. Investment cohorts and board only
-// (see server/utils/openToWork.ts). Only active cto-roundtable members are
-// listed, so someone who leaves the network drops off without anyone closing
-// their flag. Most recently updated first, so a stale flag sinks.
+// (see server/utils/openToWork.ts). Only active members of a chapter
+// (Norway or the Swedish chapter) are listed, so someone who leaves the network
+// drops off without anyone closing their flag. Each row says which chapter(s)
+// the member is in. Most recently updated first, so a stale flag sinks.
 export default defineEventHandler(async (event) => {
   await requireOpenToWorkViewer(event)
   const sql = useDatabase()
@@ -12,7 +13,7 @@ export default defineEventHandler(async (event) => {
            otw.looking_for, otw.availability, otw.note,
            otw.created_at, otw.updated_at,
            email.value AS email, li.value AS linkedin,
-           org.name AS company, org.role_title
+           org.name AS company, org.role_title, ch.slugs AS chapter_slugs
     FROM open_to_work otw
     JOIN persons p ON p.id = otw.person_id AND p.status = 'active'
     LEFT JOIN LATERAL (
@@ -35,12 +36,13 @@ export default defineEventHandler(async (event) => {
       ORDER BY po.is_primary DESC NULLS LAST, po.started_at DESC NULLS LAST
       LIMIT 1
     ) org ON true
+    JOIN LATERAL (
+      SELECT array_agg(ng.slug) AS slugs
+      FROM memberships m
+      JOIN network_groups ng ON ng.id = m.group_id
+      WHERE m.person_id = p.id AND ng.slug = ANY(${CHAPTER_SLUGS})
+    ) ch ON ch.slugs IS NOT NULL
     WHERE otw.status = 'open'
-      AND EXISTS (
-        SELECT 1 FROM memberships m
-        JOIN network_groups ng ON ng.id = m.group_id
-        WHERE m.person_id = p.id AND ng.slug = 'cto-roundtable'
-      )
     ORDER BY otw.updated_at DESC
   `
 
@@ -57,6 +59,7 @@ export default defineEventHandler(async (event) => {
       note: r.note,
       createdAt: r.created_at,
       updatedAt: r.updated_at,
+      chapters: (Object.keys(CHAPTER_GROUPS) as Chapter[]).filter((c) => r.chapter_slugs.includes(CHAPTER_GROUPS[c])),
     })),
   }
 })
