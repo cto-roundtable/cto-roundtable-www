@@ -16,17 +16,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Survey not found' })
   }
 
-  const sql = useDatabase()
-  const [mine, count] = await Promise.all([
-    sql`
-      SELECT answers, submitted_at, updated_at
-      FROM event_survey_responses
-      WHERE survey_id = ${id} AND person_id = ${session.personId}
-      LIMIT 1
-    `,
-    isBoard ? sql`SELECT COUNT(*)::int AS n FROM event_survey_responses WHERE survey_id = ${id}` : Promise.resolve([]),
+  const [own, responseCount] = await Promise.all([
+    loadOwnResponse(id, session.personId),
+    isBoard ? countSurveyResponses(id) : Promise.resolve(null),
   ])
-  const own: any = mine[0]
   const isOpen = isOpenForAnswers(survey)
 
   return {
@@ -48,9 +41,9 @@ export default defineEventHandler(async (event) => {
     eligible,
     canAnswer: eligible && isOpen,
     isBoard,
-    responseCount: isBoard ? ((count[0] as any)?.n ?? 0) : null,
+    responseCount,
     myAnswers: own?.answers ?? null,
-    mySubmittedAt: own?.submitted_at ?? null,
-    myUpdatedAt: own?.updated_at ?? null,
+    mySubmittedAt: own?.submittedAt ?? null,
+    myUpdatedAt: own?.updatedAt ?? null,
   }
 })

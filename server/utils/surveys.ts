@@ -15,6 +15,12 @@ import type { H3Event } from 'h3'
  * - Answers are validated against the survey's questions on every write, so a
  *   stored answer always matches the schema it was given under. That is also
  *   why questions are frozen once the first answer is in.
+ *
+ * All survey SQL lives in this file. The member routes (/api/member/surveys) and
+ * the agent routes (/api/admin/surveys, admin-cli) both call the helpers below,
+ * so the two surfaces cannot drift apart. sweepPastEventSurveys() creates surveys
+ * for events that have passed; it never schedules itself, a daily job runs it
+ * through the audited admin API (`ctr surveys sweep`).
  */
 
 export type QuestionType = 'rating' | 'text' | 'choice' | 'multi'
@@ -391,4 +397,392 @@ export function aggregateResponses(
     }
     return result
   })
+}
+
+// ---------------------------------------------------------------------------
+// Writes and reads shared by /api/member/surveys and /api/admin/surveys
+// ---------------------------------------------------------------------------
+
+export interface SurveySummary {
+  id: string
+  title: string
+  status: 'draft' | 'open' | 'closed'
+  isOpen: boolean
+  closesAt: string | null
+  createdAt: string
+  lang: SurveyLang
+  event: { id: string; date: string | null; theme: string | null; location: string | null; groupSlug: string | null }
+  responseCount: number
+}
+
+/** A survey as one member sees it in the list. */
+export interface MemberSurveySummary extends SurveySummary {
+  eligible: boolean
+  answered: boolean
+  answeredAt: string | null
+}
+
+export interface SurveyEventOption {
+  id: string
+  date: string
+  theme: string | null
+  location: string | null
+  group: string | null
+  groupSlug: string | null
+  lang: SurveyLang
+  defaultTitle: string
+  surveyId: string | null
+}
+
+export interface CreateSurveyInput {
+  eventId: string
+  title?: string | null
+  intro?: string | null
+  questions?: unknown
+  closesAt?: string | null
+  status?: 'draft' | 'open'
+}
+
+export interface SurveyPatch {
+  status?: 'draft' | 'open' | 'closed'
+  closesAt?: string | null
+  title?: string
+  intro?: string | null
+  questions?: unknown
+}
+
+/**
+ * Every survey with its event, newest event first. With a personId the rows also
+ * say whether that person may answer and has answered; without one (board,
+ * agents) those columns are simply false.
+ */
+async function querySurveys(personId: string | null): Promise<MemberSurveySummary[]> {
+  const sql = useDatabase()
+  const rows = await sql`
+    SELECT s.id, s.title, s.status, s.closes_at, s.created_at,
+           e.id AS event_id, to_char(e.date, 'YYYY-MM-DD') AS event_date, e.theme, e.location,
+           ng.slug AS group_slug,
+           r.submitted_at, r.updated_at AS answer_updated_at,
+           (SELECT COUNT(*)::int FROM event_survey_responses x WHERE x.survey_id = s.id) AS response_count,
+           EXISTS (
+             SELECT 1 FROM memberships m
+             WHERE m.person_id = ${personId}::uuid
+               AND m.group_id = COALESCE(
+                 e.group_id,
+                 (SELECT id FROM network_groups WHERE slug = ${SURVEY_FALLBACK_GROUP})
+               )
+           ) AS eligible
+    FROM event_surveys s
+    JOIN events e ON e.id = s.event_id
+    LEFT JOIN network_groups ng ON ng.id = e.group_id
+    LEFT JOIN event_survey_responses r ON r.survey_id = s.id AND r.person_id = ${personId}::uuid
+    ORDER BY e.date DESC NULLS LAST, s.created_at DESC
+  `
+  return rows.map((r: any) => ({
+    id: r.id,
+    title: r.title,
+    status: r.status,
+    isOpen: isOpenForAnswers({ status: r.status, closesAt: r.closes_at }),
+    closesAt: r.closes_at,
+    createdAt: r.created_at,
+    lang: surveyLang(r.group_slug),
+    event: { id: r.event_id, date: r.event_date, theme: r.theme, location: r.location, groupSlug: r.group_slug },
+    responseCount: r.response_count,
+    eligible: r.eligible,
+    answered: Boolean(r.submitted_at),
+    answeredAt: r.answer_updated_at ?? r.submitted_at ?? null,
+  }))
+}
+
+/** Every survey, drafts included, with response counts. For the board and for agents. */
+export async function listSurveysForBoard(): Promise<SurveySummary[]> {
+  return (await querySurveys(null)).map(({ eligible: _e, answered: _a, answeredAt: _at, ...s }) => s)
+}
+
+/** Every survey with the person's eligibility and own answer state. Callers filter by role. */
+export async function listSurveysForPerson(personId: string): Promise<MemberSurveySummary[]> {
+  return querySurveys(personId)
+}
+
+/**
+ * The board's event picker: the most recent events up to today (a survey is
+ * about an event that happened), with the title and language a survey would
+ * get and the survey the event already has, if any.
+ */
+export async function listSurveyEvents(limit = 15): Promise<SurveyEventOption[]> {
+  const n = Number.isInteger(limit) && limit > 0 && limit <= 200 ? limit : 15
+  const sql = useDatabase()
+  const rows = await sql`
+    SELECT e.id, to_char(e.date, 'YYYY-MM-DD') AS date, e.theme, e.location,
+           ng.slug AS group_slug, ng.name AS group_name, s.id AS survey_id
+    FROM events e
+    LEFT JOIN network_groups ng ON ng.id = e.group_id
+    LEFT JOIN event_surveys s ON s.event_id = e.id
+    WHERE e.date IS NOT NULL AND e.date <= CURRENT_DATE
+    ORDER BY e.date DESC
+    LIMIT ${n}
+  `
+  return rows.map((r: any) => {
+    const lang = surveyLang(r.group_slug)
+    return {
+      id: r.id,
+      date: r.date,
+      theme: r.theme,
+      location: r.location,
+      group: r.group_name,
+      groupSlug: r.group_slug,
+      lang,
+      defaultTitle: defaultTitle(r.theme, lang),
+      surveyId: r.survey_id,
+    }
+  })
+}
+
+/** The one INSERT into event_surveys. Null when the event already has a survey. */
+async function insertSurvey(row: {
+  eventId: string
+  title: string
+  intro: string | null
+  questions: SurveyQuestion[]
+  status: 'draft' | 'open'
+  closesAt: string | null
+  createdBy: string | null
+}): Promise<string | null> {
+  const sql = useDatabase()
+  const rows = await sql`
+    INSERT INTO event_surveys (event_id, title, intro, questions, status, closes_at, created_by)
+    VALUES (${row.eventId}, ${row.title}, ${row.intro}, ${JSON.stringify(row.questions)}::jsonb,
+            ${row.status}, ${row.closesAt}, ${row.createdBy})
+    ON CONFLICT (event_id) DO NOTHING
+    RETURNING id
+  `
+  return (rows[0] as any)?.id ?? null
+}
+
+/**
+ * Create the survey for an event. Without `questions` it gets the default
+ * template, in English for a roundtable-sweden event. `status` is 'open'
+ * (default) or 'draft'. `createdBy` is the person who answers for it; null means
+ * the system. Throws 400 (bad input), 404 (no such event), 409 (already has one).
+ */
+export async function createSurvey(input: CreateSurveyInput, createdBy: string | null): Promise<{ id: string }> {
+  if (!isSurveyUuid(input?.eventId)) badRequest('Velg et arrangement')
+  const sql = useDatabase()
+  const events = await sql`
+    SELECT e.id, e.theme, ng.slug AS group_slug
+    FROM events e
+    LEFT JOIN network_groups ng ON ng.id = e.group_id
+    WHERE e.id = ${input.eventId}
+    LIMIT 1
+  `
+  const ev: any = events[0]
+  if (!ev) throw createError({ statusCode: 404, message: 'Fant ikke arrangementet' })
+
+  const lang = surveyLang(ev.group_slug)
+  const id = await insertSurvey({
+    eventId: ev.id,
+    title: cleanSurveyText(input.title, 200, 'Tittel') ?? defaultTitle(ev.theme, lang),
+    intro: cleanSurveyText(input.intro, 2000, 'Ingress'),
+    questions:
+      input.questions === undefined || input.questions === null
+        ? defaultQuestions(lang)
+        : validateQuestions(input.questions),
+    status: input.status === 'draft' ? 'draft' : 'open',
+    closesAt: cleanSurveyTimestamp(input.closesAt, 'Frist'),
+    createdBy,
+  })
+  if (!id) throw createError({ statusCode: 409, message: 'Dette arrangementet har allerede en undersøkelse.' })
+  return { id }
+}
+
+/**
+ * Change status, deadline, title, intro or questions. Questions can only change
+ * while nobody has answered; the guard is in the UPDATE itself, so a first
+ * answer arriving at the same moment cannot slip past it. Throws 404, 400, 409.
+ */
+export async function updateSurvey(id: string, patch: SurveyPatch): Promise<void> {
+  const current = isSurveyUuid(id) ? await loadSurvey(id) : null
+  if (!current) throw createError({ statusCode: 404, message: 'Survey not found' })
+  const p = patch ?? {}
+
+  let status = current.status
+  if (p.status !== undefined) {
+    if (!['draft', 'open', 'closed'].includes(p.status)) badRequest('Ugyldig status')
+    status = p.status
+  }
+  let title = current.title
+  if (p.title !== undefined) {
+    const t = cleanSurveyText(p.title, 200, 'Tittel')
+    if (!t) badRequest('Tittelen kan ikke være tom')
+    title = t
+  }
+  const intro = p.intro !== undefined ? cleanSurveyText(p.intro, 2000, 'Ingress') : current.intro
+  const closesAt = p.closesAt !== undefined ? cleanSurveyTimestamp(p.closesAt, 'Frist') : current.closesAt
+  const questionsChanged = p.questions !== undefined
+  const questions = questionsChanged ? validateQuestions(p.questions) : current.questions
+
+  const sql = useDatabase()
+  const rows = await sql`
+    UPDATE event_surveys
+    SET status = ${status}, title = ${title}, intro = ${intro},
+        closes_at = ${closesAt}, questions = ${JSON.stringify(questions)}::jsonb
+    WHERE id = ${id}
+      AND (
+        NOT ${questionsChanged}::boolean
+        OR NOT EXISTS (SELECT 1 FROM event_survey_responses WHERE survey_id = ${id})
+      )
+    RETURNING id
+  `
+  if (rows.length === 0) {
+    throw createError({
+      statusCode: 409,
+      message: 'Noen har allerede svart, så spørsmålene kan ikke endres lenger.',
+    })
+  }
+}
+
+export async function countSurveyResponses(surveyId: string): Promise<number> {
+  const sql = useDatabase()
+  const rows = await sql`SELECT COUNT(*)::int AS n FROM event_survey_responses WHERE survey_id = ${surveyId}`
+  return (rows[0] as any)?.n ?? 0
+}
+
+/** The person's own answer to a survey, or null. */
+export async function loadOwnResponse(
+  surveyId: string,
+  personId: string,
+): Promise<{ answers: SurveyAnswers; submittedAt: string; updatedAt: string } | null> {
+  const sql = useDatabase()
+  const rows = await sql`
+    SELECT answers, submitted_at, updated_at
+    FROM event_survey_responses
+    WHERE survey_id = ${surveyId} AND person_id = ${personId}
+    LIMIT 1
+  `
+  const r: any = rows[0]
+  return r ? { answers: r.answers, submittedAt: r.submitted_at, updatedAt: r.updated_at } : null
+}
+
+/**
+ * Validate and store a person's answer, replacing an earlier one. The caller
+ * checks eligibility and that the survey is open; this only writes.
+ */
+export async function saveSurveyResponse(
+  survey: Pick<SurveyRow, 'id' | 'questions' | 'lang'>,
+  personId: string,
+  answersInput: unknown,
+): Promise<{ submittedAt: string; updatedAt: string }> {
+  const answers = validateAnswers(survey.questions, answersInput, survey.lang)
+  const sql = useDatabase()
+  const rows = await sql`
+    INSERT INTO event_survey_responses (survey_id, person_id, answers)
+    VALUES (${survey.id}, ${personId}, ${JSON.stringify(answers)}::jsonb)
+    ON CONFLICT (survey_id, person_id)
+    DO UPDATE SET answers = EXCLUDED.answers, updated_at = NOW()
+    RETURNING submitted_at, updated_at
+  `
+  const r: any = rows[0]
+  return { submittedAt: r.submitted_at, updatedAt: r.updated_at }
+}
+
+/**
+ * Results per question. `withTexts` (board only) adds every text answer with the
+ * respondent's name; without it text questions report only how many answered.
+ */
+export async function loadSurveyResults(
+  survey: Pick<SurveyRow, 'id' | 'questions'>,
+  withTexts: boolean,
+): Promise<{ responseCount: number; questions: QuestionResult[] }> {
+  const sql = useDatabase()
+  const rows = await sql`
+    SELECT p.name, r.answers
+    FROM event_survey_responses r
+    JOIN persons p ON p.id = r.person_id
+    WHERE r.survey_id = ${survey.id}
+    ORDER BY r.submitted_at
+  `
+  const responses = rows.map((r: any) => ({ name: r.name, answers: r.answers }))
+  return { responseCount: responses.length, questions: aggregateResponses(survey.questions, responses, withTexts) }
+}
+
+// ---------------------------------------------------------------------------
+// Automatic creation (decisions/survey-phase2.md)
+// ---------------------------------------------------------------------------
+
+export interface SweepResult {
+  /** Surveys created (or, with dryRun, that would be; surveyId is then ''). */
+  created: { surveyId: string; eventId: string; date: string; group: string }[]
+  /** Events in the window that already had a survey. */
+  existing: number
+  /** Events the sweep could not create a survey for, with why. */
+  skipped: { eventId: string; reason: string }[]
+}
+
+/** Days after the event a swept survey stays open. */
+export const SWEEP_OPEN_DAYS = 14
+
+/**
+ * Give every event that has passed a survey. Window: events dated from
+ * today - windowDays through yesterday, Oslo time. Each one without a survey gets
+ * the default template in its group's language, status 'open', closing at the end
+ * of event date + 14 days (Oslo), created_by NULL (= the system).
+ *
+ * Idempotent: the insert is ON CONFLICT (event_id) DO NOTHING, so running it
+ * twice, or at the same time as the board creating one by hand, never makes a
+ * second survey. One failing event does not stop the rest; it lands in
+ * `skipped` with the error, so the caller can audit it.
+ *
+ * It does not schedule itself. The daily tick is `ctr surveys sweep` through
+ * /api/admin/surveys/sweep, so every automatic write is attributable.
+ */
+export async function sweepPastEventSurveys(opts?: { dryRun?: boolean; windowDays?: number }): Promise<SweepResult> {
+  const windowDays = opts?.windowDays ?? 14
+  if (!Number.isInteger(windowDays) || windowDays < 1 || windowDays > 365) {
+    badRequest('windowDays må være et heltall fra 1 til 365')
+  }
+  const dryRun = opts?.dryRun === true
+
+  const sql = useDatabase()
+  const rows = await sql`
+    WITH today AS (SELECT (NOW() AT TIME ZONE 'Europe/Oslo')::date AS d)
+    SELECT e.id, to_char(e.date, 'YYYY-MM-DD') AS date, e.theme, ng.slug AS group_slug,
+           s.id AS survey_id,
+           (((e.date + ${SWEEP_OPEN_DAYS}::int) + TIME '23:59:59') AT TIME ZONE 'Europe/Oslo') AS closes_at
+    FROM events e
+    CROSS JOIN today
+    LEFT JOIN network_groups ng ON ng.id = e.group_id
+    LEFT JOIN event_surveys s ON s.event_id = e.id
+    WHERE e.date BETWEEN today.d - ${windowDays}::int AND today.d - 1
+    ORDER BY e.date, e.id
+  `
+
+  const result: SweepResult = { created: [], existing: 0, skipped: [] }
+  for (const r of rows as any[]) {
+    if (r.survey_id) {
+      result.existing++
+      continue
+    }
+    const group = r.group_slug ?? SURVEY_FALLBACK_GROUP
+    if (dryRun) {
+      result.created.push({ surveyId: '', eventId: r.id, date: r.date, group })
+      continue
+    }
+    const lang = surveyLang(r.group_slug)
+    try {
+      const surveyId = await insertSurvey({
+        eventId: r.id,
+        title: defaultTitle(r.theme, lang),
+        intro: null,
+        questions: defaultQuestions(lang),
+        status: 'open',
+        closesAt: new Date(r.closes_at).toISOString(),
+        createdBy: null,
+      })
+      if (surveyId) result.created.push({ surveyId, eventId: r.id, date: r.date, group })
+      else result.existing++ // created by someone else between the read and the insert
+    } catch (err: any) {
+      result.skipped.push({ eventId: r.id, reason: String(err?.message ?? err).slice(0, 300) })
+    }
+  }
+  return result
 }
