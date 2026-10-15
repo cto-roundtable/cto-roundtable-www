@@ -1,11 +1,12 @@
 import type { H3Event } from 'h3'
 
 /**
- * The audit log for /api/admin/** (table api_audit_log,
+ * The audit log for /api/admin/** and the device flow /api/auth/device/**
+ * (table api_audit_log,
  * ctoroundtable-hq/infrastructure/db/migrations/026_api_tokens_and_audit.sql).
  *
- * One row per request, refusals included, written by defineAdminRoute once the
- * status is known. The table is append-only (a trigger refuses UPDATE, DELETE
+ * One row per request, refusals included, written by defineAdminRoute or
+ * defineDeviceRoute once the status is known. The table is append-only (a trigger refuses UPDATE, DELETE
  * and TRUNCATE), so this file only ever INSERTs.
  *
  * What goes in `summary` is small structured context a person reading the log

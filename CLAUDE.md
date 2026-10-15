@@ -165,8 +165,19 @@ lookup. Scopes: `events:read`, `events:write`, `surveys:read`, `surveys:write`.
   `CTR_API_URL`. Docs: `cli/README.md`. The daily tick on the cto-roundtable box is
   `ctr events import-luma && ctr surveys sweep` (import first: surveys go only to
   attendees).
-- **Tokens**: `scripts/mint-api-token.mjs mint|list|revoke` with `DATABASE_URL`. The
-  token is printed once and revoked, never deleted. Minting is a human step.
+- **Getting a token: the device flow** (RFC 8628 shape, `server/utils/deviceAuth.ts`,
+  table `device_authorizations`, hq migration 029). The agent calls
+  `POST /api/auth/device/code` with `{client_name, scopes}` and prints the `user_code`
+  and `/member/device?code=…`. A `styret` member signed in within the last 10 minutes
+  (`REAUTH_WINDOW_MS`) checks the name, scopes and IP there and approves or denies. The
+  agent polls `POST /api/auth/device/token` (`authorization_pending`, `slow_down` under
+  5 s, `expired_token`, `access_denied`, `invalid_grant`) and gets the token once. The
+  `api_tokens` row is created at that pickup, owned by the approver, for 90 days, so the
+  plaintext never sits anywhere in between. Codes live 10 minutes, at most 5 pending
+  per IP. Only sha256(device_code) is stored, and every step (code, view, approve,
+  deny, every poll) is an `api_audit_log` row.
+- **Break-glass**: `scripts/mint-api-token.mjs mint|list|revoke` with `DATABASE_URL`.
+  The token is printed once and revoked, never deleted. Revoking is still done here.
 
 ### Styreprotokoll (board minutes as signed PDF)
 

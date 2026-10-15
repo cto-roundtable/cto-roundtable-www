@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import type { H3Event } from 'h3'
 import type { AuditEntry } from './audit'
 
@@ -7,8 +7,9 @@ import type { AuditEntry } from './audit'
  * CLI (cli/ctr.mjs). Table api_tokens
  * (ctoroundtable-hq/infrastructure/db/migrations/026_api_tokens_and_audit.sql).
  *
- * A token is `ctr_` + 43 base64url characters (32 random bytes), minted by
- * scripts/mint-api-token.mjs and shown once. Only its sha256 is stored, so a
+ * A token is `ctr_` + 43 base64url characters (32 random bytes), shown once:
+ * issued by the device flow (`ctr login`, server/utils/deviceAuth.ts) or, as
+ * break-glass, minted by scripts/mint-api-token.mjs. Only its sha256 is stored, so a
  * request is a hash lookup, not a comparison against a secret, and a leaked
  * database row cannot be replayed.
  *
@@ -42,6 +43,12 @@ export interface ApiCaller {
 
 export function hashApiToken(token: string): string {
   return createHash('sha256').update(token).digest('hex')
+}
+
+/** A new bearer token and the hash to store. Same shape as the mint script's. */
+export function newApiToken(): { token: string; hash: string } {
+  const token = `ctr_${randomBytes(32).toString('base64url')}`
+  return { token, hash: hashApiToken(token) }
 }
 
 function unauthorized(audit: AuditEntry, reason: string): never {
