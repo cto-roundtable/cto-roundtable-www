@@ -1,0 +1,418 @@
+{
+  "common": {
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "copied": "Kopierat!",
+    "board": "Styrelsen"
+  },
+  "nav": {
+    "overview": "Översikt",
+    "hosting": "Värdskap",
+    "openToWork": "Öppen för jobb",
+    "myActivity": "Min aktivitet",
+    "discounts": "Erbjudanden",
+    "surveys": "Enkäter",
+    "aiOnboarding": "AI-onboarding",
+    "signIn": "Inloggning",
+    "faq": "Vanliga frågor",
+    "investorUpdates": "Investeraruppdateringar",
+    "boardMeetings": "Styrelsemöten",
+    "boardActivity": "Aktivitet (styrelsen)"
+  },
+  "layout": {
+    "signedInAs": "Inloggad som",
+    "homeAria": "Till startsidan",
+    "menuAria": "Meny",
+    "passkeyNudge": {
+      "body": "Slipp e-postlänken nästa gång: lägg till en passkey, så loggar du in med Face ID, fingeravtryck eller säkerhetsnyckel.",
+      "link": "Lägg till under Inloggning"
+    },
+    "language": "Språk"
+  },
+  "auth": {
+    "signOut": "Logga ut",
+    "login": {
+      "title": "Medlemsportal",
+      "intro": "Logga in med e-postadressen som ditt medlemskap är kopplat till för att se medlemsinformation.",
+      "errorExpired": "Länken har gått ut eller har redan använts. Begär en ny.",
+      "errorInvalid": "Ogiltig inloggningslänk. Begär en ny.",
+      "errorPasskey": "Inloggningen med passkey fungerade inte. Försök igen eller få en inloggningslänk via e-post.",
+      "errorUnknown": "Något gick fel. Försök igen.",
+      "passkeyButton": "Logga in med passkey",
+      "orEmail": "eller få en inloggningslänk via e-post",
+      "emailLabel": "E-postadress",
+      "sendLink": "Skicka inloggningslänk",
+      "sent": "Kolla din e-post efter en inloggningslänk. Den slutar gälla om 15 minuter."
+    }
+  },
+  "member": {
+    "overview": {
+      "title": "Översikt",
+      "memberSince": "Medlem sedan {date}",
+      "surveyBanner": {
+        "title": "Hur var {event}?",
+        "body": "En kort enkät, ett par minuter.",
+        "cta": "Svara nu"
+      },
+      "statusHeading": "Status",
+      "status": {
+        "active": "Aktiv",
+        "retired": "Pensionerad",
+        "inactive": "Inaktiv"
+      },
+      "membershipsHeading": "Dina medlemskap",
+      "table": {
+        "group": "Grupp",
+        "role": "Roll",
+        "memberSince": "Medlem sedan"
+      },
+      "roleFallback": "medlem"
+    },
+    "discounts": {
+      "title": "Erbjudanden",
+      "intro": "Rabatter och erbjudanden som medlemmar ger varandra på sina produkter.",
+      "empty": "Inga erbjudanden har publicerats än.",
+      "request": "Jag vill ha det här",
+      "requested": "✓ Du har anmält intresse (ångra)",
+      "demand": "{count} medlem vill ha det här | {count} medlemmar vill ha det här",
+      "boardRequests": "{count} förfrågan · syns bara för styrelsen | {count} förfrågningar · syns bara för styrelsen",
+      "offeredBy": "Erbjuds av {name}",
+      "status": {
+        "active": "Aktivt",
+        "testing": "Testas",
+        "pending": "Under bedömning"
+      }
+    },
+    "faq": {
+      "title": "Vanliga frågor",
+      "intro": "Aktivitetskrav och pensionering.",
+      "activity": {
+        "heading": "Aktivitetskrav",
+        "lead": "För att hålla gemenskapen aktiv och värdefull förväntas medlemmar:",
+        "attend": {
+          "title": "Delta i minst 2 träffar per år.",
+          "body": "Träffar omfattar fysiska möten, workshoppar och sociala evenemang."
+        },
+        "slack": {
+          "title": "Vara aktiv i Slack-kanalen.",
+          "body": "Bidra till diskussioner, dela erfarenheter och ställ frågor."
+        },
+        "absence": {
+          "title": "Säga till vid frånvaro.",
+          "body": "Om du vet att du kommer att vara mindre aktiv under en period, säg till styrelsen."
+        },
+        "review": "Styrelsen ser regelbundet över aktivitetsnivån. Om kraven inte uppfylls över tid kan styrelsen höra av sig för ett samtal om vägen framåt."
+      },
+      "retirement": {
+        "heading": "Pensionering",
+        "body": "En medlem som under en längre tid inte uppfyller aktivitetskraven kan pensioneras av styrelsen. Pensionering är inget straff, utan ett erkännande av att livet och prioriteringarna förändras.",
+        "meaningHeading": "Vad pensionering innebär",
+        "meaning": {
+          "slack": "Du behåller åtkomsten till Slack, men förlorar åtkomsten till privata kanaler och flyttas till rollen pensionerad.",
+          "events": "Du kan inte delta i roundtable-träffar, men är välkommen på sociala evenemang.",
+          "vote": "Du har inte rösträtt på årsmötet.",
+          "rejoin": "Du kan när som helst ansöka hos styrelsen om att bli aktiv medlem igen."
+        }
+      },
+      "reinstatement": {
+        "heading": "Återinträde",
+        "body": "Vill du bli aktiv medlem igen? Hör av dig till styrelsen. Vi bedömer återinträde utifrån din avsikt och din möjlighet att delta aktivt."
+      }
+    },
+    "host": {
+      "title": "Värdskap",
+      "intro": "Anmäl intresse för att vara värd. Det är inget åtagande: styrelsen hör av sig när vi planerar nästa träff och matchar dig med ett passande tema och en passande grupp. Själva träffarna bokar vi via Luma.",
+      "yourInterest": "Ditt intresse",
+      "onList": "Du står på listan",
+      "summary": {
+        "location": "Plats",
+        "capacity": "Kapacitet",
+        "capacityValue": "{count} person | {count} personer",
+        "timeframe": "Tidsperiod",
+        "sponsors": "Bjuder på",
+        "food": "mat",
+        "drinks": "dryck",
+        "notes": "Anteckningar",
+        "registered": "Registrerad {date}"
+      },
+      "withdraw": "Dra tillbaka intresset",
+      "formIntro": "Alla fält är valfria: det räcker att anmäla sig. Styrelsen lägger upp träffen i Luma när det är din tur.",
+      "form": {
+        "location": "Plats",
+        "locationPlaceholder": "t.ex. city, Södermalm, Solna",
+        "capacity": "Hur många kan ni ta emot?",
+        "timeframe": "Tidsperiod (valfritt)",
+        "timeframePlaceholder": "t.ex. Q3 2026, före sommaren, flexibel",
+        "sponsorFood": "Vi bjuder på mat",
+        "sponsorDrinks": "Vi bjuder på dryck",
+        "notes": "Anteckningar (valfritt)",
+        "submit": "Anmäl intresse",
+        "error": "Kunde inte registrera. Försök igen."
+      },
+      "history": {
+        "heading": "Din värdhistorik",
+        "count": "{count} gång | {count} gånger",
+        "empty": "Ingen tidigare värdhistorik än.",
+        "date": "Datum",
+        "theme": "Tema",
+        "group": "Grupp",
+        "coHosts": "Medvärdar"
+      }
+    },
+    "openToWork": {
+      "title": "Öppen för jobb",
+      "intro": "Vi får ofta frågan om vi känner någon som passar för en CTO-roll. Står du inför en ny situation, eller är du bara nyfiken på vad som finns, kan du markera dig som öppen här. Som standard är du inte listad. Listan syns bara för medlemmarna i investeringsgrupperna och styrelsen, eftersom det är dit förfrågningarna kommer. Du kan avanmäla dig när som helst.",
+      "yourStatus": "Din status",
+      "isOpen": "Du är markerad som öppen för nya möjligheter",
+      "notListed": "Du är inte listad. Alla fält är valfria, det räcker att anmäla sig.",
+      "form": {
+        "lookingFor": "Vad letar du efter? (valfritt)",
+        "lookingForPlaceholder": "t.ex. CTO, VP Engineering, deltid/rådgivare",
+        "availability": "När är du tillgänglig? (valfritt)",
+        "availabilityPlaceholder": "t.ex. nu, från januari, 3 månaders uppsägningstid",
+        "note": "Något mer de borde veta? (valfritt)",
+        "notePlaceholder": "Bransch, fas, distans, vad du inte vill",
+        "saveChanges": "Spara ändringar",
+        "setOpen": "Markera mig som öppen",
+        "error": "Kunde inte spara. Försök igen."
+      },
+      "setOn": "Markerad {date}",
+      "setOnUpdated": "Markerad {date}, uppdaterad {updated}",
+      "withdraw": "Jag är inte öppen längre",
+      "list": {
+        "heading": "Öppna för nya möjligheter",
+        "chip": "Invest + styrelsen",
+        "trustNote": "Det här delas i förtroende. Kontakta personen själv innan du skickar namnet vidare till någon utanför nätverket.",
+        "empty": "Ingen är markerad som öppen just nu.",
+        "roleAtCompany": "{role}, {company}",
+        "lookingFor": "Letar efter",
+        "availability": "Tillgänglig",
+        "updated": "Uppdaterad {date}",
+        "forbidden": "Listan är bara för investeringsgrupperna och styrelsen.",
+        "error": "Kunde inte hämta listan. Försök igen."
+      }
+    },
+    "myActivity": {
+      "title": "Min aktivitet",
+      "intro": "Din aktivitet från Slack (inlägg, trådsvar, reaktioner) och Luma (närvaro + värdskap), de senaste 12 månaderna.",
+      "signInPrompt": "Logga in för att se din aktivitet."
+    },
+    "activityDetail": {
+      "error": "Kunde inte ladda aktiviteten.",
+      "summary": "Poäng {score} · aktiv {from} till {to} · senaste {months} mån",
+      "tiles": {
+        "posts": "inlägg",
+        "replies": "trådsvar",
+        "reactions": "reaktioner",
+        "attended": "närvaro",
+        "hosted": "värdskap",
+        "points": "{points} p"
+      },
+      "weeklyHeading": "Aktivitet per vecka",
+      "noSlack": "Ingen Slack-aktivitet under perioden.",
+      "legend": {
+        "post": "inlägg",
+        "reply": "trådsvar",
+        "reaction": "reaktion",
+        "perActiveWeek": "{count} meddelanden / aktiv vecka"
+      },
+      "barTitle": "{week}: {posts} inlägg, {replies} svar, {reactions} reaktioner",
+      "events": "Evenemang ({count})",
+      "noEvents": "Inga registrerade evenemang.",
+      "reactionsReceived": "Mottagna reaktioner",
+      "mostActiveIn": "Mest aktiv i",
+      "noChannels": "Inga kanaler.",
+      "status": {
+        "active": "Aktiv",
+        "low": "Låg",
+        "dormant": "Vilande"
+      }
+    },
+    "onboarding": {
+      "title": "AI-onboarding",
+      "intro": "Koppla Claude Code till CTO Roundtables verktyg. Prompten nedan är anpassad efter din roll.",
+      "before": {
+        "heading": "Innan du börjar",
+        "github": "Ett GitHub-konto med accepterad inbjudan till organisationen {org}",
+        "claudeCode": "{link} installerat"
+      },
+      "toolsHeading": "Det här sätts upp åt dig",
+      "promptHeading": "Din prompt",
+      "copyPrompt": "Kopiera prompten",
+      "howTo": {
+        "heading": "Så gör du",
+        "step1": "Starta {cmd} i en terminal",
+        "step2": "Klistra in prompten och följ stegen"
+      }
+    },
+    "updates": {
+      "title": "Investeraruppdateringar",
+      "intro": "Uppdateringar från portföljbolagen i de kohorter du är med i.",
+      "yourCohorts": "Dina investeringsgrupper:",
+      "filterLabel": "Filtrera på bolag",
+      "filterPlaceholder": "Alla bolag",
+      "empty": "Inga uppdateringar har lagts in än.",
+      "notice": "Notis",
+      "loadMore": "Ladda fler",
+      "showingAll": "Visar {count} uppdatering | Visar alla {count} uppdateringar",
+      "count": "{count} uppdatering | {count} uppdateringar",
+      "allUpdates": "Alla uppdateringar",
+      "allUpdatesFrom": "Alla uppdateringar från {company}",
+      "attachments": "Bilagor"
+    },
+    "security": {
+      "title": "Inloggning",
+      "intro": "Du loggar in med en länk som skickas via e-post. Med en passkey kan du i stället logga in med Face ID, fingeravtryck eller en säkerhetsnyckel, utan att vänta på mejlet. E-postlänken fungerar fortfarande, så om du tappar bort enheten loggar du bara in med länken och tar bort passkeyn här.",
+      "add": {
+        "heading": "Lägg till en passkey",
+        "headingOnboarding": "Ett steg till: skapa en passkey för {name}",
+        "unsupported": "Den här webbläsaren har inte stöd för passkeys. Du kan fortfarande logga in med e-postlänken.",
+        "storage": "Passkeyn sparas på den här enheten (eller i iCloud-nyckelringen / Googles lösenordshanterare, så att den följer med till dina andra enheter). Vi sparar bara den publika nyckeln.",
+        "nameLabel": "Namn (valfritt)",
+        "namePlaceholder": "t.ex. MacBook, iPhone",
+        "submit": "Lägg till passkey",
+        "submitOnboarding": "Skapa passkey",
+        "skip": "Inte nu",
+        "added": "Passkeyn är tillagd. Nästa gång kan du välja ”{button}” på inloggningssidan.",
+        "goToOverview": "Gå till översikten",
+        "signOutAndIn": "Logga ut och logga in igen"
+      },
+      "list": {
+        "heading": "Dina passkeys",
+        "empty": "Inga passkeys än. Du loggar in med e-postlänken.",
+        "nameLabel": "Namn",
+        "unnamed": "Passkey utan namn",
+        "synced": "Synkad",
+        "addedOn": "Tillagd {date}",
+        "lastUsed": "senast använd {date}",
+        "neverUsed": "inte använd än",
+        "rename": "Byt namn",
+        "remove": "Ta bort",
+        "confirmRemove": "Ta bort {label}? Du kan fortfarande logga in med e-postlänken.",
+        "thisPasskey": "den här passkeyn"
+      },
+      "errors": {
+        "loadList": "Kunde inte hämta dina passkeys. Försök igen.",
+        "alreadyOnDevice": "Den här enheten har redan en passkey för dig.",
+        "createFailed": "Kunde inte skapa en passkey på den här enheten.",
+        "duplicate": "Den här passkeyn är redan tillagd.",
+        "saveFailed": "Kunde inte spara passkeyn. Försök igen och kontrollera att enheten ber om Face ID, fingeravtryck eller pinkod.",
+        "rename": "Kunde inte byta namn. Försök igen.",
+        "remove": "Kunde inte ta bort passkeyn. Försök igen.",
+        "reauth": "Av säkerhetsskäl kan du bara lägga till en passkey direkt efter att du har loggat in. Logga ut, logga in igen med e-postlänken (eller en passkey du redan har) och försök igen.",
+        "limit": "Du har redan {max} passkeys. Ta bort en som du inte använder, så kan du lägga till en ny."
+      },
+      "account": "för {name}",
+      "accountWithEmail": "för {name} ({email})"
+    },
+    "surveys": {
+      "title": "Enkäter",
+      "intro": "Korta enkäter efter våra evenemang. Det tar ett par minuter, och det är så vi får veta vad som fungerade och vad vi borde göra annorlunda nästa gång. Styrelsen ser svaren.",
+      "deadlineOn": "sista svarsdag {date}",
+      "responses": "{count} svar | {count} svar",
+      "fields": {
+        "title": "Titel",
+        "intro": "Ingress (valfritt)",
+        "deadline": "Sista svarsdag (valfritt)"
+      },
+      "create": {
+        "newSurvey": "Ny enkät",
+        "event": "Evenemang",
+        "eventOption": "{date} · {theme}",
+        "eventOptionTaken": "{date} · {theme} (har en enkät)",
+        "noTheme": "Utan tema",
+        "englishNote": "Evenemanget hör till {group}, så enkäten blir på engelska.",
+        "defaultQuestions": "Standardfrågor:",
+        "draftHint": "Vill du ändra frågorna, skapa ett utkast. Då kan du redigera innan någon ser den.",
+        "openWithDefaults": "Öppna med standardfrågor",
+        "draftAndEdit": "Skapa utkast och redigera"
+      },
+      "typeLabel": {
+        "rating": "skala 1 till {max}",
+        "multi": "flera val",
+        "text": "fritext"
+      },
+      "sections": {
+        "open": "Öppna",
+        "none": "Inga öppna enkäter just nu.",
+        "drafts": "Utkast",
+        "closed": "Avslutade"
+      },
+      "tags": {
+        "answered": "Besvarad",
+        "notAnswered": "Inte besvarad",
+        "draft": "Utkast",
+        "sweden": "Sverige"
+      },
+      "errors": {
+        "load": "Kunde inte hämta enkäterna. Försök igen.",
+        "events": "Kunde inte hämta evenemangen.",
+        "create": "Kunde inte skapa enkäten. Försök igen."
+      },
+      "admin": {
+        "heading": "Hantering",
+        "seeResults": "Se resultat",
+        "open": "Öppna enkäten",
+        "reopen": "Öppna igen",
+        "close": "Stäng enkäten",
+        "expired": "Sista svarsdagen har passerat, så ingen kan svara längre. Flytta datumet för att öppna igen.",
+        "status": {
+          "draft": "Utkast",
+          "open": "Öppen",
+          "closed": "Stängd"
+        },
+        "questionsHeading": "Frågor",
+        "locked": "Frågorna är låsta eftersom någon redan har svarat. På så sätt stämmer svaren alltid med frågan de gavs till.",
+        "types": {
+          "rating": "Skala",
+          "text": "Fritext",
+          "choice": "Ett val",
+          "multi": "Flera val"
+        },
+        "question": "Fråga",
+        "options": "Svarsalternativ, ett per rad",
+        "scaleMax": "Skala 1 till",
+        "required": "Obligatorisk",
+        "moveUp": "Flytta upp",
+        "moveDown": "Flytta ned",
+        "deleteQuestion": "Ta bort fråga",
+        "addQuestion": "Lägg till fråga",
+        "saveQuestions": "Spara frågor",
+        "errors": {
+          "status": "Kunde inte ändra status.",
+          "save": "Kunde inte spara.",
+          "questions": "Kunde inte spara frågorna."
+        }
+      },
+      "answer": {
+        "back": "Alla enkäter",
+        "yourAnswer": "Ditt svar",
+        "notEligible": "Du är inte med i gruppen som evenemanget hör till, så du kan inte svara själv. Som styrelseledamot ser du ändå resultaten.",
+        "draft": "Det här är ett utkast. Medlemmarna ser det inte förrän det har öppnats.",
+        "closed": "Enkäten är stängd.",
+        "thanks": "Tack! Ditt svar är sparat.",
+        "answeredAt": "Du svarade {date}.",
+        "canEdit": "Du kan ändra ditt svar så länge enkäten är öppen.",
+        "seeResults": "Se resultaten",
+        "required": "Obligatorisk",
+        "scaleHint": "1 = inte alls, {max} = mycket",
+        "submit": "Skicka svar",
+        "update": "Uppdatera svaret",
+        "failed": "Kunde inte spara svaret. Försök igen.",
+        "loadFailed": "Enkäten hittades inte."
+      },
+      "results": {
+        "back": "Tillbaka till enkäten",
+        "answered": "{count} har svarat på den här",
+        "open": "öppen",
+        "closed": "stängd",
+        "boardNote": "Styrelsevy. Fritextsvar visas med namn, eftersom vi är en liten krets som bygger på förtroende. Dela dem inte vidare med namn.",
+        "memberNote": "Du ser sammanställda siffror utan namn. Fritextsvaren ser bara styrelsen.",
+        "none": "Ingen har svarat än.",
+        "noText": "Ingen har skrivit något här.",
+        "textHidden": "Fritext, synlig för styrelsen.",
+        "loadFailed": "Kunde inte hämta resultaten."
+      }
+    }
+  }
+}

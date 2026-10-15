@@ -2,31 +2,32 @@
   <div v-if="!loading && data" class="ai-onboarding text-left">
     <header class="mb-6">
       <div class="d-flex align-center flex-wrap mb-2" style="gap: 12px;">
-        <h1 class="font-weight-bold mb-0" style="font-size: 1.6rem;">AI-onboarding</h1>
+        <h1 class="font-weight-bold mb-0" style="font-size: 1.6rem;">{{ t('member.onboarding.title') }}</h1>
         <v-chip color="#4caf50" variant="flat" size="small" class="font-weight-bold">
           {{ data.roleLabel }}
         </v-chip>
       </div>
       <p style="color: #aaa; font-size: 14px;">
-        Koble Claude Code til CTO Roundtable-verktøyene. Prompten under er tilpasset rollen din.
+        {{ t('member.onboarding.intro') }}
       </p>
     </header>
 
     <section class="mb-8">
-      <h2 class="section-title">Før du starter</h2>
+      <h2 class="section-title">{{ t('member.onboarding.before.heading') }}</h2>
       <ul class="prereq-list">
-        <li>GitHub-konto med akseptert invitasjon til <code>cto-roundtable</code>-org</li>
-        <li>
-          <a href="https://claude.com/claude-code" target="_blank" rel="noopener" class="link">
-            Claude Code
-          </a>
-          installert
-        </li>
+        <i18n-t keypath="member.onboarding.before.github" tag="li">
+          <template #org><code>cto-roundtable</code></template>
+        </i18n-t>
+        <i18n-t keypath="member.onboarding.before.claudeCode" tag="li">
+          <template #link>
+            <a href="https://claude.com/claude-code" target="_blank" rel="noopener" class="link">Claude Code</a>
+          </template>
+        </i18n-t>
       </ul>
     </section>
 
     <section class="mb-8">
-      <h2 class="section-title">Dette blir satt opp for deg</h2>
+      <h2 class="section-title">{{ t('member.onboarding.toolsHeading') }}</h2>
       <ul class="prereq-list">
         <li v-for="tool in data.tools" :key="tool">{{ tool }}</li>
       </ul>
@@ -34,7 +35,7 @@
 
     <section class="mb-8">
       <div class="d-flex align-center justify-space-between flex-wrap mb-3" style="gap: 12px;">
-        <h2 class="section-title mb-0">Din prompt</h2>
+        <h2 class="section-title mb-0">{{ t('member.onboarding.promptHeading') }}</h2>
         <v-btn
           size="small"
           variant="outlined"
@@ -42,17 +43,19 @@
           style="color: #fff; border-color: rgba(255,255,255,0.3);"
           @click="copyPrompt"
         >
-          {{ copied ? 'Kopiert!' : 'Kopier prompt' }}
+          {{ copied ? t('common.copied') : t('member.onboarding.copyPrompt') }}
         </v-btn>
       </div>
       <pre class="prompt-block">{{ data.prompt }}</pre>
     </section>
 
     <section class="mb-8">
-      <h2 class="section-title">Slik gjør du det</h2>
+      <h2 class="section-title">{{ t('member.onboarding.howTo.heading') }}</h2>
       <ol class="steps-list">
-        <li>Start <code>claude</code> i en terminal</li>
-        <li>Lim inn prompten og følg stegene</li>
+        <i18n-t keypath="member.onboarding.howTo.step1" tag="li">
+          <template #cmd><code>claude</code></template>
+        </i18n-t>
+        <li>{{ t('member.onboarding.howTo.step2') }}</li>
       </ol>
     </section>
   </div>
@@ -64,6 +67,8 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'member' })
+
+const { t } = useI18n()
 
 interface OnboardingData {
   name: string

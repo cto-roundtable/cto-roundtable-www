@@ -1,17 +1,15 @@
 <template>
   <div class="member-host text-left">
     <header class="mb-6">
-      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">Verting</h1>
+      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">{{ t('member.host.title') }}</h1>
       <p style="color: #aaa; font-size: 14px; line-height: 1.6; max-width: 640px;">
-        Meld deg som interessert i å være vert. Det er ikke en forpliktelse — styret tar kontakt
-        når vi planlegger neste samling og matcher deg mot et passende tema og gruppe. Faktiske
-        samlinger booker vi via Luma.
+        {{ t('member.host.intro') }}
       </p>
     </header>
 
     <!-- Volunteer form / existing offer -->
     <section class="mb-10">
-      <h2 class="section-title">Din interesse</h2>
+      <h2 class="section-title">{{ t('member.host.yourInterest') }}</h2>
 
       <div v-if="loadingVolunteer" class="text-center py-3">
         <v-progress-circular indeterminate size="24" color="white" />
@@ -20,29 +18,26 @@
       <v-card v-else-if="volunteer" variant="outlined" class="pa-4">
         <div class="d-flex align-center mb-3" style="gap: 10px;">
           <v-icon color="green" size="20">mdi-check-circle</v-icon>
-          <p class="font-weight-bold mb-0">Du står på listen</p>
+          <p class="font-weight-bold mb-0">{{ t('member.host.onList') }}</p>
         </div>
         <div style="font-size: 14px; color: #ccc; line-height: 1.7;">
           <p v-if="volunteer.location" class="mb-1">
-            <strong>Lokasjon:</strong> {{ volunteer.location }}
+            <strong>{{ t('member.host.summary.location') }}:</strong> {{ volunteer.location }}
           </p>
           <p v-if="volunteer.participantLimit" class="mb-1">
-            <strong>Kapasitet:</strong> {{ volunteer.participantLimit }} personer
+            <strong>{{ t('member.host.summary.capacity') }}:</strong> {{ t('member.host.summary.capacityValue', volunteer.participantLimit) }}
           </p>
           <p v-if="volunteer.preferredTimeframe" class="mb-1">
-            <strong>Tidsrom:</strong> {{ volunteer.preferredTimeframe }}
+            <strong>{{ t('member.host.summary.timeframe') }}:</strong> {{ volunteer.preferredTimeframe }}
           </p>
           <p v-if="volunteer.sponsorFood || volunteer.sponsorDrinks" class="mb-1">
-            <strong>Sponser:</strong>
-            <span v-if="volunteer.sponsorFood"> mat</span><span
-              v-if="volunteer.sponsorFood && volunteer.sponsorDrinks">,</span><span
-              v-if="volunteer.sponsorDrinks"> drikke</span>
+            <strong>{{ t('member.host.summary.sponsors') }}:</strong> {{ sponsorList }}
           </p>
           <p v-if="volunteer.notes" class="mb-1">
-            <strong>Notater:</strong> {{ volunteer.notes }}
+            <strong>{{ t('member.host.summary.notes') }}:</strong> {{ volunteer.notes }}
           </p>
           <p class="mb-0" style="color: #888;">
-            Registrert {{ formatDate(volunteer.createdAt) }}
+            {{ t('member.host.summary.registered', { date: formatDate(volunteer.createdAt) }) }}
           </p>
         </div>
         <v-btn
@@ -53,20 +48,19 @@
           :loading="withdrawing"
           @click="withdrawOffer"
         >
-          Trekk interessen
+          {{ t('member.host.withdraw') }}
         </v-btn>
       </v-card>
 
       <v-card v-else variant="outlined" class="pa-4">
         <p class="mb-4" style="color: #ccc; font-size: 14px; line-height: 1.6;">
-          Alle felt er valgfrie — bare å melde seg er nok signal. Styret setter opp samlingen i
-          Luma når det er din tur.
+          {{ t('member.host.formIntro') }}
         </p>
         <form @submit.prevent="submitVolunteer">
           <v-text-field
             v-model="form.location"
-            label="Lokasjon"
-            placeholder="f.eks. City center, Torggata, Asker"
+            :label="t('member.host.form.location')"
+            :placeholder="t('member.host.form.locationPlaceholder')"
             variant="outlined"
             density="comfortable"
             hide-details="auto"
@@ -74,7 +68,7 @@
           />
           <v-text-field
             v-model.number="form.participantLimit"
-            label="Hvor mange kan dere ta i mot?"
+            :label="t('member.host.form.capacity')"
             type="number"
             min="1"
             variant="outlined"
@@ -84,8 +78,8 @@
           />
           <v-text-field
             v-model="form.preferredTimeframe"
-            label="Tidsrom (valgfritt)"
-            placeholder="f.eks. Q3 2026, før sommeren, fleksibel"
+            :label="t('member.host.form.timeframe')"
+            :placeholder="t('member.host.form.timeframePlaceholder')"
             variant="outlined"
             density="comfortable"
             hide-details="auto"
@@ -94,20 +88,20 @@
           <div class="d-flex flex-wrap mb-2" style="gap: 16px;">
             <v-checkbox
               v-model="form.sponsorFood"
-              label="Vi sponser mat"
+              :label="t('member.host.form.sponsorFood')"
               density="compact"
               hide-details
             />
             <v-checkbox
               v-model="form.sponsorDrinks"
-              label="Vi sponser drikke"
+              :label="t('member.host.form.sponsorDrinks')"
               density="compact"
               hide-details
             />
           </div>
           <v-textarea
             v-model="form.notes"
-            label="Notater (valgfritt)"
+            :label="t('member.host.form.notes')"
             rows="3"
             variant="outlined"
             density="comfortable"
@@ -121,7 +115,7 @@
             block
             style="background-color: white; color: #111;"
           >
-            Meld interesse
+            {{ t('member.host.form.submit') }}
           </v-btn>
           <v-alert
             v-if="submitError"
@@ -138,11 +132,11 @@
     <!-- Past hosting history -->
     <section class="mb-8">
       <h2 class="section-title">
-        Din verthistorikk<span
+        {{ t('member.host.history.heading') }}<span
           v-if="!loadingHistory && history.length"
           style="font-weight: normal; color: #999; font-size: 14px;"
         >
-          · {{ history.length }} {{ history.length === 1 ? 'gang' : 'ganger' }}
+          · {{ t('member.host.history.count', history.length) }}
         </span>
       </h2>
 
@@ -154,15 +148,15 @@
         class="text-muted"
         style="font-size: 15px;"
       >
-        Ingen tidligere verthistorikk enda.
+        {{ t('member.host.history.empty') }}
       </div>
       <v-table v-else density="comfortable" class="history-table">
         <thead>
           <tr>
-            <th>Dato</th>
-            <th>Tema</th>
-            <th>Gruppe</th>
-            <th class="d-none d-sm-table-cell">Co-hosts</th>
+            <th>{{ t('member.host.history.date') }}</th>
+            <th>{{ t('member.host.history.theme') }}</th>
+            <th>{{ t('member.host.history.group') }}</th>
+            <th class="d-none d-sm-table-cell">{{ t('member.host.history.coHosts') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -189,6 +183,9 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'member' })
+
+const { t } = useI18n()
+const { tag, formatDate } = useLocaleDate()
 
 interface HostedEvent {
   id: string
@@ -231,6 +228,16 @@ const submitting = ref(false)
 const submitError = ref('')
 const withdrawing = ref(false)
 
+// "mat og drikke" / "food and drinks": joined by the active language's list rules.
+const sponsorList = computed(() => {
+  const v = volunteer.value
+  if (!v) return ''
+  const items: string[] = []
+  if (v.sponsorFood) items.push(t('member.host.summary.food'))
+  if (v.sponsorDrinks) items.push(t('member.host.summary.drinks'))
+  return new Intl.ListFormat(tag.value, { type: 'conjunction' }).format(items)
+})
+
 async function loadAll() {
   const [hist, vol] = await Promise.allSettled([
     $fetch<HostedEvent[]>('/api/member/host/history'),
@@ -261,7 +268,7 @@ async function submitVolunteer() {
       notes: '',
     }
   } catch (err: any) {
-    submitError.value = err?.statusMessage || err?.data?.message || 'Kunne ikke registrere. Prøv igjen.'
+    submitError.value = err?.statusMessage || err?.data?.message || t('member.host.form.error')
   } finally {
     submitting.value = false
   }
@@ -282,15 +289,6 @@ watchEffect(() => {
     loadAll()
   }
 })
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('nb-NO', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
 </script>
 
 <style scoped>

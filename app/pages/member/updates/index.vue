@@ -1,12 +1,12 @@
 <template>
   <div class="updates text-left">
     <header class="mb-6">
-      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">Investoroppdateringer</h1>
+      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">{{ t('member.updates.title') }}</h1>
       <p style="color: #aaa; font-size: 14px;">
-        Oppdateringer fra porteføljeselskapene i kohortene du er med i.
+        {{ t('member.updates.intro') }}
       </p>
       <div v-if="memberCohorts.length" class="d-flex align-center flex-wrap mt-3" style="gap: 8px;">
-        <span style="color: #888; font-size: 13px;">Dine investeringsgrupper:</span>
+        <span style="color: #888; font-size: 13px;">{{ t('member.updates.yourCohorts') }}</span>
         <v-chip
           v-for="cohort in memberCohorts"
           :key="cohort"
@@ -26,8 +26,8 @@
         :items="companyItems"
         item-title="company"
         item-value="slug"
-        label="Filtrer på selskap"
-        placeholder="Alle selskaper"
+        :label="t('member.updates.filterLabel')"
+        :placeholder="t('member.updates.filterPlaceholder')"
         density="comfortable"
         variant="outlined"
         hide-details
@@ -45,7 +45,7 @@
     </div>
 
     <div v-else-if="!updates.length" style="color: #aaa;">
-      Ingen oppdateringer er lagt inn ennå.
+      {{ t('member.updates.empty') }}
     </div>
 
     <section v-else class="feed">
@@ -73,14 +73,14 @@
             size="x-small"
             class="text-uppercase font-weight-bold"
           >
-            Notis
+            {{ t('member.updates.notice') }}
           </v-chip>
         </div>
 
         <NuxtLink :to="`/member/updates/${u.slug}/${u.id}`" class="update-link">
           <p class="latest-title mb-1">{{ u.title }}</p>
           <p v-if="u.headline" class="latest-headline mb-2">{{ u.headline }}</p>
-          <span class="meta">{{ formatDate(u.updateDate) }}</span>
+          <span class="meta">{{ formatDate(u.updateDate, 'short') }}</span>
         </NuxtLink>
       </v-card>
 
@@ -91,11 +91,11 @@
           color="white"
           @click="loadMore"
         >
-          Last inn flere
+          {{ t('member.updates.loadMore') }}
         </v-btn>
       </div>
       <p v-else class="text-center meta mt-5">
-        Viser alle {{ total }} {{ total === 1 ? 'oppdatering' : 'oppdateringer' }}
+        {{ t('member.updates.showingAll', total) }}
       </p>
     </section>
   </div>
@@ -103,6 +103,9 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'member' })
+
+const { t } = useI18n()
+const { formatDate } = useLocaleDate()
 
 const PAGE_SIZE = 20
 
@@ -199,10 +202,6 @@ watch(
   },
   { deep: true },
 )
-
-function formatDate(d: string): string {
-  return new Date(d).toLocaleDateString('nb-NO', { year: 'numeric', month: 'short', day: 'numeric' })
-}
 </script>
 
 <style scoped>

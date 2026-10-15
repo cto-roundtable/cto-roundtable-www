@@ -7,6 +7,7 @@
 - **Analytics**: PostHog
 - **Deployment**: Google Cloud Run (europe-north1) via Artifact Registry
 - **Linting**: Biome
+- **i18n**: `@nuxtjs/i18n` v10 for the member portal (nb, en, sv)
 - **Design**: Pencil.dev (`design/design.pen`)
 
 ## Development
@@ -111,6 +112,24 @@ gate themselves (`requirePortalSession` in `server/utils/passkeys.ts`).
   `nuxt.config.ts` routeRules (anti-framing, and it stops a cross-site page from
   clobbering the challenge cookie).
 - `attestationType: 'none'` and no aaguid stored: accepted on purpose.
+
+### Member portal languages (i18n)
+
+The member portal (`/member/**`) speaks Norwegian (`nb`, default), English (`en`) and Swedish (`sv`) through `@nuxtjs/i18n` with `strategy: 'no_prefix'`, so URLs do not change. The public site is not translated.
+
+- **Messages** live in `i18n/locales/{nb,en,sv}.json`, grouped per page: `nav.*`, `layout.*`, `auth.*`, `common.*` (words used by several pages), `member.<page>.*`. The three files have identical keys. When you add a string, add it to all three. The Swedish texts were machine-drafted and want a native check.
+- **In a page**: `const { t, n } = useI18n()` and `t('member.page.key')`. Whole sentences go in one key with named interpolation (`{name}`). Plurals use `t(key, count)` with `singular | plural`. Bold or links inside a sentence use `<i18n-t>` with slots, never `v-html`. Labels in script arrays must be resolved in a `computed`, or they won't follow a language switch.
+- **Dates** go through `useLocaleDate()` (`formatDate(value, 'long' | 'short')`, `format(value, options)`): nb-NO, en-GB or sv-SE, always `Europe/Oslo`. Do not hard-code `'nb-NO'`.
+- **Which language** (`app/composables/useMemberLocale.ts`, applied in `app/layouts/member.vue`):
+  1. The member's own choice from the switcher (`MemberLocaleSwitcher.vue`, cookie `ctr_locale`, one year).
+  2. Otherwise, after sign-in, their chapter: Swedish chapter only means `sv`, everyone else gets `nb`. This needs `chapters` on `/api/auth/session`, which the Sweden build adds.
+  3. Otherwise, on the login card, the browser language, or English if it names none of ours.
+
+  The module's own browser detection is off because it would write the cookie on the first visit and hide the chapter default.
+- **Not translated**:
+  - the board-only pages (`/member/board/**`, `/member/activity`, `BoardProtocolPanel`, `BoardMeetingDoc`), which hold the Norwegian association's board documents;
+  - messages that come from the server (API errors, the onboarding prompt);
+  - survey content stored in the database. The page around a survey follows the visitor's language, and the questions stay in the language the survey was written in.
 
 ### Undersøkelser etter arrangement (`/member/surveys`)
 

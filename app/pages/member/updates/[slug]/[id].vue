@@ -26,7 +26,7 @@
             size="x-small"
             class="text-uppercase font-weight-bold"
           >
-            Notis
+            {{ t('member.updates.notice') }}
           </v-chip>
           <span class="update-date">{{ formatDate(data.update.updateDate) }}</span>
         </div>
@@ -37,7 +37,7 @@
         <div class="update-body" v-html="renderMarkdown(data.update.bodyMd)" />
 
         <div v-if="data.update.attachments.length" class="attachments mt-4">
-          <p class="attachments-label mb-2">Vedlegg</p>
+          <p class="attachments-label mb-2">{{ t('member.updates.attachments') }}</p>
           <a
             v-for="a in data.update.attachments"
             :key="a.id"
@@ -58,6 +58,9 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'member' })
+
+const { t, n } = useI18n()
+const { formatDate } = useLocaleDate()
 
 interface Attachment {
   id: string
@@ -102,7 +105,9 @@ onMounted(() => {
 })
 const backTo = computed(() => (cameFromCompany.value ? companyPath : '/member/updates'))
 const backLabel = computed(() =>
-  cameFromCompany.value ? `Alle oppdateringer${data.value ? ` fra ${data.value.company}` : ''}` : 'Alle oppdateringer',
+  cameFromCompany.value && data.value
+    ? t('member.updates.allUpdatesFrom', { company: data.value.company })
+    : t('member.updates.allUpdates'),
 )
 
 watchEffect(async () => {
@@ -120,14 +125,10 @@ watchEffect(async () => {
   }
 })
 
-function formatDate(d: string): string {
-  return new Date(d).toLocaleDateString('nb-NO', { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  return `${n(bytes / (1024 * 1024), { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MB`
 }
 </script>
 

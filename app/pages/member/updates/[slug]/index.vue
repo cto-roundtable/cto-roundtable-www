@@ -1,7 +1,7 @@
 <template>
   <div class="company-updates text-left">
     <NuxtLink to="/member/updates" class="back-link mb-4 d-inline-flex align-center">
-      <v-icon size="16" class="mr-1">mdi-arrow-left</v-icon> Alle oppdateringer
+      <v-icon size="16" class="mr-1">mdi-arrow-left</v-icon> {{ t('member.updates.allUpdates') }}
     </NuxtLink>
 
     <div v-if="loading" class="d-flex justify-center py-10">
@@ -12,7 +12,7 @@
       <header class="mb-6">
         <h1 class="font-weight-bold mb-1" style="font-size: 1.6rem;">{{ data.company }}</h1>
         <p style="color: #aaa; font-size: 14px;">
-          {{ data.updates.length }} {{ data.updates.length === 1 ? 'oppdatering' : 'oppdateringer' }}
+          {{ t('member.updates.count', data.updates.length) }}
         </p>
       </header>
 
@@ -25,7 +25,7 @@
             size="x-small"
             class="text-uppercase font-weight-bold"
           >
-            Notis
+            {{ t('member.updates.notice') }}
           </v-chip>
           <span class="update-date">{{ formatDate(u.updateDate) }}</span>
         </div>
@@ -36,7 +36,7 @@
         <div class="update-body" v-html="renderMarkdown(u.bodyMd)" />
 
         <div v-if="u.attachments.length" class="attachments mt-4">
-          <p class="attachments-label mb-2">Vedlegg</p>
+          <p class="attachments-label mb-2">{{ t('member.updates.attachments') }}</p>
           <a
             v-for="a in u.attachments"
             :key="a.id"
@@ -57,6 +57,9 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'member' })
+
+const { t, n } = useI18n()
+const { formatDate } = useLocaleDate()
 
 interface Attachment {
   id: string
@@ -105,14 +108,10 @@ watchEffect(async () => {
   }
 })
 
-function formatDate(d: string): string {
-  return new Date(d).toLocaleDateString('nb-NO', { year: 'numeric', month: 'long', day: 'numeric' })
-}
-
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  return `${n(bytes / (1024 * 1024), { minimumFractionDigits: 1, maximumFractionDigits: 1 })} MB`
 }
 </script>
 

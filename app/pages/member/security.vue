@@ -1,36 +1,40 @@
 <template>
   <div class="member-security text-left">
     <header class="mb-6">
-      <h1 class="font-weight-bold mb-1" style="font-size: 1.6rem;">Innlogging</h1>
+      <h1 class="font-weight-bold mb-1" style="font-size: 1.6rem;">{{ t('member.security.title') }}</h1>
       <!-- Names the account, so a member who was signed in to someone else's
            account (e.g. by a planted link) sees it before binding a passkey. -->
-      <p v-if="session.authenticated" class="mb-3" style="color: #fff; font-size: 14px;">
-        for <strong>{{ session.name }}</strong><span v-if="session.email"> ({{ session.email }})</span>
-      </p>
+      <i18n-t
+        v-if="session.authenticated"
+        :keypath="session.email ? 'member.security.accountWithEmail' : 'member.security.account'"
+        tag="p"
+        class="mb-3"
+        style="color: #fff; font-size: 14px;"
+      >
+        <template #name><strong>{{ session.name }}</strong></template>
+        <template #email>{{ session.email }}</template>
+      </i18n-t>
       <p style="color: #aaa; font-size: 14px; line-height: 1.6; max-width: 640px;">
-        Du logger inn med en lenke på e-post. Med en passkey kan du i stedet logge inn med Face ID,
-        fingeravtrykk eller en sikkerhetsnøkkel, uten å vente på e-posten. E-postlenken fungerer
-        fortsatt, så mister du enheten, logger du bare inn med lenken og fjerner passkeyen her.
+        {{ t('member.security.intro') }}
       </p>
     </header>
 
     <section class="mb-10">
-      <h2 class="section-title">{{ onboarding ? `Ett steg til: sett opp en passkey for ${session.name}` : 'Legg til en passkey' }}</h2>
+      <h2 class="section-title">{{ onboarding ? t('member.security.add.headingOnboarding', { name: session.name }) : t('member.security.add.heading') }}</h2>
 
       <v-alert v-if="supported === false" type="info" variant="outlined" class="text-left">
-        Denne nettleseren støtter ikke passkeys. Du kan fortsatt logge inn med e-postlenken.
+        {{ t('member.security.add.unsupported') }}
       </v-alert>
 
       <v-card v-else variant="outlined" class="pa-4">
         <p class="mb-4" style="color: #ccc; font-size: 14px; line-height: 1.6;">
-          Passkeyen lagres på denne enheten (eller i iCloud-nøkkelringen / Google Password Manager,
-          så den følger med til de andre enhetene dine). Vi lagrer bare den offentlige nøkkelen.
+          {{ t('member.security.add.storage') }}
         </p>
         <form @submit.prevent="addPasskey">
           <v-text-field
             v-model="newName"
-            label="Navn (valgfritt)"
-            placeholder="f.eks. MacBook, iPhone"
+            :label="t('member.security.add.nameLabel')"
+            :placeholder="t('member.security.add.namePlaceholder')"
             variant="outlined"
             density="comfortable"
             maxlength="60"
@@ -45,7 +49,7 @@
             prepend-icon="mdi-fingerprint"
             style="background-color: white; color: #111;"
           >
-            {{ onboarding ? 'Sett opp passkey' : 'Legg til passkey' }}
+            {{ onboarding ? t('member.security.add.submitOnboarding') : t('member.security.add.submit') }}
           </v-btn>
           <v-btn
             v-if="onboarding && !added"
@@ -55,27 +59,27 @@
             style="color: #999;"
             @click="skipOnboarding"
           >
-            Ikke nå
+            {{ t('member.security.add.skip') }}
           </v-btn>
         </form>
         <v-alert v-if="addError" type="warning" variant="outlined" class="mt-3 text-left">
           {{ addError }}
           <div v-if="needsReauth" class="mt-2">
-            <v-btn size="small" variant="outlined" color="white" @click="logout">Logg ut og logg inn på nytt</v-btn>
+            <v-btn size="small" variant="outlined" color="white" @click="logout">{{ t('member.security.add.signOutAndIn') }}</v-btn>
           </div>
         </v-alert>
         <v-alert v-if="added" type="success" variant="outlined" class="mt-3 text-left">
-          Passkeyen er lagt til. Neste gang kan du velge «Sign in with passkey» på innloggingssiden.
+          {{ t('member.security.add.added', { button: t('auth.login.passkeyButton') }) }}
         </v-alert>
         <v-btn v-if="onboarding && added" to="/member" variant="outlined" color="white" block class="mt-3">
-          Gå til oversikten
+          {{ t('member.security.add.goToOverview') }}
         </v-btn>
       </v-card>
     </section>
 
     <section class="mb-8">
       <h2 class="section-title">
-        Dine passkeys<span
+        {{ t('member.security.list.heading') }}<span
           v-if="!loadingList && passkeys.length"
           style="font-weight: normal; color: #999; font-size: 14px;"
         >
@@ -92,7 +96,7 @@
       </v-alert>
 
       <p v-else-if="!passkeys.length" style="color: #888; font-size: 14px;">
-        Ingen passkeys ennå. Du logger inn med e-postlenken.
+        {{ t('member.security.list.empty') }}
       </p>
 
       <template v-else>
@@ -105,7 +109,7 @@
         <form v-if="editingId === passkey.id" @submit.prevent="saveName(passkey.id)">
           <v-text-field
             v-model="editName"
-            label="Navn"
+            :label="t('member.security.list.nameLabel')"
             variant="outlined"
             density="comfortable"
             maxlength="60"
@@ -115,27 +119,31 @@
           />
           <div class="d-flex" style="gap: 8px;">
             <v-btn type="submit" size="small" :loading="busyId === passkey.id" style="background-color: white; color: #111;">
-              Lagre
+              {{ t('common.save') }}
             </v-btn>
-            <v-btn size="small" variant="text" style="color: #999;" @click="editingId = ''">Avbryt</v-btn>
+            <v-btn size="small" variant="text" style="color: #999;" @click="editingId = ''">{{ t('common.cancel') }}</v-btn>
           </div>
         </form>
 
         <template v-else>
           <div class="d-flex align-center flex-wrap" style="gap: 8px;">
             <v-icon size="20" color="white">mdi-fingerprint</v-icon>
-            <p class="font-weight-bold mb-0">{{ passkey.name || 'Passkey uten navn' }}</p>
+            <p class="font-weight-bold mb-0">{{ passkey.name || t('member.security.list.unnamed') }}</p>
             <v-chip v-if="passkey.backedUp" size="x-small" variant="outlined" style="color: #aaa;">
-              Synkronisert
+              {{ t('member.security.list.synced') }}
             </v-chip>
           </div>
           <p class="mb-0 mt-1" style="color: #888; font-size: 13px;">
-            Lagt til {{ formatDate(passkey.createdAt) }} ·
-            {{ passkey.lastUsedAt ? `sist brukt ${formatDate(passkey.lastUsedAt)}` : 'ikke brukt ennå' }}
+            {{ t('member.security.list.addedOn', { date: formatDate(passkey.createdAt) }) }} ·
+            {{
+              passkey.lastUsedAt
+                ? t('member.security.list.lastUsed', { date: formatDate(passkey.lastUsedAt) })
+                : t('member.security.list.neverUsed')
+            }}
           </p>
           <div class="d-flex mt-2" style="gap: 4px;">
             <v-btn variant="text" size="small" class="pl-0" style="color: #ccc;" @click="startRename(passkey)">
-              Gi nytt navn
+              {{ t('member.security.list.rename') }}
             </v-btn>
             <v-btn
               variant="text"
@@ -144,7 +152,7 @@
               :loading="busyId === passkey.id"
               @click="remove(passkey)"
             >
-              Fjern
+              {{ t('member.security.list.remove') }}
             </v-btn>
           </div>
         </template>
@@ -169,6 +177,8 @@ interface Passkey {
 }
 
 const route = useRoute()
+const { t } = useI18n()
+const { formatDate } = useLocaleDate()
 const { session, checked, logout } = useAuthSession()
 // Arrived here straight after a magic-link sign-in (see the member layout).
 const onboarding = computed(() => route.query.onboarding === '1')
@@ -195,7 +205,7 @@ async function loadPasskeys() {
   try {
     passkeys.value = await $fetch<Passkey[]>('/api/auth/passkey/credentials')
   } catch {
-    listError.value = 'Kunne ikke hente passkeys. Prøv igjen.'
+    listError.value = t('member.security.errors.loadList')
   } finally {
     loadingList.value = false
   }
@@ -225,9 +235,9 @@ async function addPasskey() {
       response = await startRegistration({ optionsJSON })
     } catch (err: any) {
       if (err?.code === 'ERROR_AUTHENTICATOR_PREVIOUSLY_REGISTERED') {
-        addError.value = 'Denne enheten har allerede en passkey for deg.'
+        addError.value = t('member.security.errors.alreadyOnDevice')
       } else if ((err?.cause?.name || err?.name) !== 'NotAllowedError') {
-        addError.value = 'Kunne ikke lage en passkey på denne enheten.'
+        addError.value = t('member.security.errors.createFailed')
       }
       return
     }
@@ -244,16 +254,13 @@ async function addPasskey() {
     if (code === 'reauth') {
       // The server only adds a passkey within 10 minutes of a sign-in.
       needsReauth.value = true
-      addError.value =
-        'Av sikkerhetshensyn kan du bare legge til en passkey rett etter at du har logget inn. ' +
-        'Logg ut, logg inn igjen med e-postlenken (eller en passkey du allerede har), og prøv på nytt.'
+      addError.value = t('member.security.errors.reauth')
     } else if (code === 'limit') {
-      addError.value = `Du har allerede ${err.data.max} passkeys. Fjern en du ikke bruker, så kan du legge til en ny.`
+      addError.value = t('member.security.errors.limit', { max: err.data.max })
     } else if (err?.statusCode === 409) {
-      addError.value = 'Denne passkeyen er allerede lagt til.'
+      addError.value = t('member.security.errors.duplicate')
     } else {
-      addError.value =
-        'Kunne ikke lagre passkeyen. Prøv igjen, og sjekk at enheten ber om Face ID, fingeravtrykk eller PIN.'
+      addError.value = t('member.security.errors.saveFailed')
     }
   } finally {
     adding.value = false
@@ -279,21 +286,21 @@ async function saveName(id: string) {
     editingId.value = ''
     await loadPasskeys()
   } catch {
-    listError.value = 'Kunne ikke endre navnet. Prøv igjen.'
+    listError.value = t('member.security.errors.rename')
   } finally {
     busyId.value = ''
   }
 }
 
 async function remove(passkey: Passkey) {
-  const label = passkey.name || 'denne passkeyen'
-  if (!window.confirm(`Fjerne ${label}? Du kan fortsatt logge inn med e-postlenken.`)) return
+  const label = passkey.name || t('member.security.list.thisPasskey')
+  if (!window.confirm(t('member.security.list.confirmRemove', { label }))) return
   busyId.value = passkey.id
   try {
     await $fetch(`/api/auth/passkey/credentials/${passkey.id}`, { method: 'DELETE' })
     await loadPasskeys()
   } catch {
-    listError.value = 'Kunne ikke fjerne passkeyen. Prøv igjen.'
+    listError.value = t('member.security.errors.remove')
   } finally {
     busyId.value = ''
   }
@@ -307,14 +314,6 @@ onMounted(() => {
 watchEffect(() => {
   if (checked.value && session.value.authenticated) loadPasskeys()
 })
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('nb-NO', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
 </script>
 
 <style scoped>

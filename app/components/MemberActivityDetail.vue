@@ -5,7 +5,7 @@
     </div>
 
     <div v-else-if="error" style="color: #ef9a9a; font-size: 14px;">
-      Kunne ikke laste aktivitet.
+      {{ t('member.activityDetail.error') }}
     </div>
 
     <template v-else-if="data">
@@ -24,21 +24,27 @@
         </v-chip>
       </div>
       <p style="color: #888; font-size: 12.5px;" class="mb-4">
-        Score {{ data.score }} · aktiv {{ formatDate(data.firstSeen) }} til {{ formatDate(data.lastSeen) }}
-        · siste {{ Math.round(data.windowDays / 30) }} mnd
+        {{
+          t('member.activityDetail.summary', {
+            score: data.score,
+            from: formatDay(data.firstSeen),
+            to: formatDay(data.lastSeen),
+            months: Math.round(data.windowDays / 30),
+          })
+        }}
       </p>
 
       <!-- Score breakdown tiles -->
       <div class="tiles mb-5">
-        <div v-for="t in tiles" :key="t.key" class="tile">
-          <div class="tile-count">{{ t.count }}</div>
-          <div class="tile-label">{{ t.label }}</div>
-          <div class="tile-points">{{ t.points }} p</div>
+        <div v-for="tile in tiles" :key="tile.key" class="tile">
+          <div class="tile-count">{{ tile.count }}</div>
+          <div class="tile-label">{{ tile.label }}</div>
+          <div class="tile-points">{{ t('member.activityDetail.tiles.points', { points: tile.points }) }}</div>
         </div>
       </div>
 
       <!-- Weekly activity chart -->
-      <div class="section-head">Aktivitet per uke</div>
+      <div class="section-head">{{ t('member.activityDetail.weeklyHeading') }}</div>
       <div v-if="hasWeeklyData" class="chart mb-2">
         <div
           v-for="(w, i) in data.weekly"
@@ -53,33 +59,33 @@
           </div>
         </div>
       </div>
-      <p v-else style="color: #777; font-size: 12.5px;" class="mb-2">Ingen Slack-aktivitet i vinduet.</p>
+      <p v-else style="color: #777; font-size: 12.5px;" class="mb-2">{{ t('member.activityDetail.noSlack') }}</p>
       <div class="legend mb-1">
-        <span><i class="dot seg-posts" /> post</span>
-        <span><i class="dot seg-replies" /> tråd-svar</span>
-        <span><i class="dot seg-reactions" /> reaksjon</span>
-        <span class="ml-auto">{{ data.messagesPerActiveWeek }} meldinger / aktiv uke</span>
+        <span><i class="dot seg-posts" /> {{ t('member.activityDetail.legend.post') }}</span>
+        <span><i class="dot seg-replies" /> {{ t('member.activityDetail.legend.reply') }}</span>
+        <span><i class="dot seg-reactions" /> {{ t('member.activityDetail.legend.reaction') }}</span>
+        <span class="ml-auto">{{ t('member.activityDetail.legend.perActiveWeek', { count: n(data.messagesPerActiveWeek, { maximumFractionDigits: 1 }) }) }}</span>
       </div>
 
       <div class="grid mt-5">
         <!-- Events -->
         <div>
-          <div class="section-head">Eventer ({{ data.events.length }})</div>
+          <div class="section-head">{{ t('member.activityDetail.events', { count: data.events.length }) }}</div>
           <ul v-if="data.events.length" class="plain">
             <li v-for="(e, i) in data.events" :key="i" class="d-flex align-center" style="gap: 8px;">
               <v-icon size="14" :color="e.role === 'hosted' ? '#ffb74d' : '#90caf9'">
                 {{ e.role === 'hosted' ? 'mdi-account-star' : 'mdi-check-circle-outline' }}
               </v-icon>
               <span class="flex-grow-1">{{ e.title }}</span>
-              <span style="color: #777; font-size: 12px; white-space: nowrap;">{{ formatDate(e.at) }}</span>
+              <span style="color: #777; font-size: 12px; white-space: nowrap;">{{ formatDay(e.at) }}</span>
             </li>
           </ul>
-          <p v-else style="color: #777; font-size: 12.5px;">Ingen registrerte eventer.</p>
+          <p v-else style="color: #777; font-size: 12.5px;">{{ t('member.activityDetail.noEvents') }}</p>
         </div>
 
         <!-- Received engagement + channels -->
         <div>
-          <div class="section-head">Reaksjoner mottatt</div>
+          <div class="section-head">{{ t('member.activityDetail.reactionsReceived') }}</div>
           <div class="d-flex align-center mb-4" style="gap: 10px; flex-wrap: wrap;">
             <span class="font-weight-bold" style="font-size: 1.4rem;">{{ data.reactionsReceived }}</span>
             <span v-if="data.topEmojis.length" style="color: #aaa; font-size: 13px;">
@@ -87,12 +93,12 @@
             </span>
           </div>
 
-          <div class="section-head">Mest aktiv i</div>
+          <div class="section-head">{{ t('member.activityDetail.mostActiveIn') }}</div>
           <div class="d-flex flex-wrap" style="gap: 6px;">
             <v-chip v-for="c in data.topChannels" :key="c.name" variant="outlined" size="small">
               #{{ c.name }} · {{ c.n }}
             </v-chip>
-            <span v-if="!data.topChannels.length" style="color: #777; font-size: 12.5px;">Ingen kanaler.</span>
+            <span v-if="!data.topChannels.length" style="color: #777; font-size: 12.5px;">{{ t('member.activityDetail.noChannels') }}</span>
           </div>
         </div>
       </div>
@@ -104,6 +110,9 @@
 
 <script setup lang="ts">
 const props = defineProps<{ personId: string; context?: 'self' | 'board' }>()
+
+const { t, te, n } = useI18n()
+const { formatDate } = useLocaleDate()
 
 const loading = ref(true)
 const error = ref(false)
@@ -131,11 +140,11 @@ const tiles = computed(() => {
   const b = data.value.breakdown
   const p = data.value.points
   return [
-    { key: 'posts', label: 'poster', count: b.posts, points: p.posts },
-    { key: 'replies', label: 'tråd-svar', count: b.replies, points: p.replies },
-    { key: 'reactions', label: 'reaksjoner', count: b.reactions, points: p.reactions },
-    { key: 'attended', label: 'oppmøte', count: b.attended, points: p.attended },
-    { key: 'hosted', label: 'hosting', count: b.hosted, points: p.hosted },
+    { key: 'posts', label: t('member.activityDetail.tiles.posts'), count: b.posts, points: p.posts },
+    { key: 'replies', label: t('member.activityDetail.tiles.replies'), count: b.replies, points: p.replies },
+    { key: 'reactions', label: t('member.activityDetail.tiles.reactions'), count: b.reactions, points: p.reactions },
+    { key: 'attended', label: t('member.activityDetail.tiles.attended'), count: b.attended, points: p.attended },
+    { key: 'hosted', label: t('member.activityDetail.tiles.hosted'), count: b.hosted, points: p.hosted },
   ]
 })
 
@@ -150,18 +159,23 @@ function segStyle(n: number) {
   return { height: `${h}%` }
 }
 function barTitle(w: any) {
-  return `${formatDate(w.week)}: ${w.posts} post, ${w.replies} svar, ${w.reactions} reaksjon`
+  return t('member.activityDetail.barTitle', {
+    week: formatDay(w.week),
+    posts: w.posts,
+    replies: w.replies,
+    reactions: w.reactions,
+  })
 }
 
 function statusColor(s: string): string {
   return { active: '#4caf50', low: '#ff9800', dormant: '#ef5350' }[s] || '#9e9e9e'
 }
 function statusLabel(s: string): string {
-  return { active: 'Aktiv', low: 'Lav', dormant: 'Sovende' }[s] || s
+  const key = `member.activityDetail.status.${s}`
+  return s && te(key) ? t(key) : s
 }
-function formatDate(d: string | null): string {
-  if (!d) return '–'
-  return new Date(d).toLocaleDateString('nb-NO', { year: 'numeric', month: 'short', day: 'numeric' })
+function formatDay(d: string | null): string {
+  return formatDate(d, 'short') || '–'
 }
 </script>
 
