@@ -7,6 +7,25 @@
       </p>
     </header>
 
+    <!-- Open surveys the member has not answered yet (/member/surveys) -->
+    <NuxtLink
+      v-for="s in pendingSurveys"
+      :key="s.id"
+      :to="`/member/surveys/${s.id}`"
+      class="survey-banner mb-6"
+    >
+      <v-icon color="white" size="22">mdi-clipboard-text-outline</v-icon>
+      <div class="flex-grow-1">
+        <p class="font-weight-bold mb-0" style="color: #fff;">
+          {{ s.lang === 'en' ? 'How was' : 'Hvordan var' }} {{ s.event.theme || s.title }}?
+        </p>
+        <p class="mb-0" style="color: #ccc; font-size: 14px;">
+          {{ s.lang === 'en' ? 'A short survey, a couple of minutes.' : 'En kort undersøkelse, et par minutter.' }}
+        </p>
+      </div>
+      <span class="survey-banner-cta">{{ s.lang === 'en' ? 'Answer' : 'Svar nå' }}</span>
+    </NuxtLink>
+
     <section class="mb-8">
       <div class="d-flex align-center mb-4" style="gap: 12px;">
         <h2 class="section-title mb-0">Status</h2>
@@ -49,10 +68,24 @@ definePageMeta({ layout: 'member' })
 
 const { session, checked } = useAuthSession()
 const memberInfo = ref<any>(null)
+const surveys = ref<any[]>([])
+
+const pendingSurveys = computed(() => surveys.value.filter((s) => s.isOpen && s.eligible && !s.answered))
 
 watchEffect(async () => {
   if (checked.value && session.value.authenticated && !memberInfo.value) {
     memberInfo.value = await $fetch('/api/member/info')
+  }
+})
+
+// The survey banner is a nudge, so a failure here must not break the overview.
+watchEffect(() => {
+  if (checked.value && session.value.authenticated) {
+    $fetch<{ surveys: any[] }>('/api/member/surveys')
+      .then((data) => {
+        surveys.value = data.surveys
+      })
+      .catch(() => {})
   }
 })
 
@@ -94,6 +127,32 @@ function formatDate(dateStr: string): string {
   font-weight: 700;
   color: #fff;
   margin-bottom: 0.75rem;
+}
+
+.survey-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  text-decoration: none;
+  transition: border-color 0.15s ease;
+}
+
+.survey-banner:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.survey-banner-cta {
+  flex-shrink: 0;
+  background: #fff;
+  color: #111;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 4px;
 }
 
 .membership-table {
