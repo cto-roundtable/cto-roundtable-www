@@ -40,7 +40,23 @@ export default defineNuxtConfig({
 
   css: ['vuetify/dist/vuetify.min.css'],
 
-  modules: ['vuetify-nuxt-module', '@nuxt/image'],
+  modules: ['vuetify-nuxt-module', '@nuxt/image', '@nuxtjs/i18n'],
+
+  // Member portal languages. URLs do not change (no_prefix); the locale is picked in
+  // app/composables/useMemberLocale.ts: the member's own choice (cookie ctr_locale), else
+  // their chapter after sign-in, else the browser language on the login card. The module's
+  // own browser detection is off because it would write the cookie on the first visit and
+  // so hide the chapter default. Messages live in i18n/locales/*.json.
+  i18n: {
+    strategy: 'no_prefix',
+    defaultLocale: 'nb',
+    locales: [
+      { code: 'nb', language: 'nb-NO', name: 'Norsk', file: 'nb.json' },
+      { code: 'en', language: 'en-GB', name: 'English', file: 'en.json' },
+      { code: 'sv', language: 'sv-SE', name: 'Svenska', file: 'sv.json' },
+    ],
+    detectBrowserLanguage: false,
+  },
 
   vuetify: {
     moduleOptions: {

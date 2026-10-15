@@ -1,18 +1,15 @@
 <template>
   <div class="member-jobb text-left">
     <header class="mb-6">
-      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">Åpen for jobb</h1>
+      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">{{ t('member.openToWork.title') }}</h1>
       <p style="color: #aaa; font-size: 14px; line-height: 1.6; max-width: 640px;">
-        Vi får jevnlig spørsmål om vi kjenner noen til en CTO-rolle. Står du i en ny situasjon,
-        eller bare er nysgjerrig på hva som finnes, kan du sette deg som åpen her. Standard er at
-        du ikke står oppført. Listen er kun synlig for medlemmene i investeringsgruppene og
-        styret, siden det er der henvendelsene kommer inn. Du kan trekke deg når som helst.
+        {{ t('member.openToWork.intro') }}
       </p>
     </header>
 
     <!-- The caller's own flag -->
     <section class="mb-10">
-      <h2 class="section-title">Din status</h2>
+      <h2 class="section-title">{{ t('member.openToWork.yourStatus') }}</h2>
 
       <div v-if="loadingOwn" class="text-center py-3">
         <v-progress-circular indeterminate size="24" color="white" />
@@ -21,17 +18,17 @@
       <v-card v-else variant="outlined" class="pa-4">
         <div v-if="own" class="d-flex align-center mb-3" style="gap: 10px;">
           <v-icon color="green" size="20">mdi-check-circle</v-icon>
-          <p class="font-weight-bold mb-0">Du står som åpen for nye muligheter</p>
+          <p class="font-weight-bold mb-0">{{ t('member.openToWork.isOpen') }}</p>
         </div>
         <p v-else class="mb-4" style="color: #ccc; font-size: 14px; line-height: 1.6;">
-          Du står ikke oppført. Alle felt er valgfrie, det holder å melde seg.
+          {{ t('member.openToWork.notListed') }}
         </p>
 
         <form @submit.prevent="save">
           <v-text-field
             v-model="form.lookingFor"
-            label="Hva ser du etter? (valgfritt)"
-            placeholder="f.eks. CTO, VP Engineering, deltid/rådgiver"
+            :label="t('member.openToWork.form.lookingFor')"
+            :placeholder="t('member.openToWork.form.lookingForPlaceholder')"
             variant="outlined"
             density="comfortable"
             hide-details="auto"
@@ -39,8 +36,8 @@
           />
           <v-text-field
             v-model="form.availability"
-            label="Når er du tilgjengelig? (valgfritt)"
-            placeholder="f.eks. nå, fra januar, 3 mnd oppsigelse"
+            :label="t('member.openToWork.form.availability')"
+            :placeholder="t('member.openToWork.form.availabilityPlaceholder')"
             variant="outlined"
             density="comfortable"
             hide-details="auto"
@@ -48,8 +45,8 @@
           />
           <v-textarea
             v-model="form.note"
-            label="Noe mer de bør vite? (valgfritt)"
-            placeholder="Bransje, fase, remote, hva du ikke vil"
+            :label="t('member.openToWork.form.note')"
+            :placeholder="t('member.openToWork.form.notePlaceholder')"
             rows="3"
             variant="outlined"
             density="comfortable"
@@ -63,7 +60,7 @@
             block
             style="background-color: white; color: #111;"
           >
-            {{ own ? 'Lagre endringer' : 'Sett meg som åpen' }}
+            {{ own ? t('member.openToWork.form.saveChanges') : t('member.openToWork.form.setOpen') }}
           </v-btn>
           <v-alert
             v-if="saveError"
@@ -77,8 +74,11 @@
 
         <div v-if="own" class="mt-3">
           <p class="mb-0" style="color: #888; font-size: 13px;">
-            Satt {{ formatDate(own.createdAt) }}<span v-if="own.updatedAt !== own.createdAt">,
-              oppdatert {{ formatDate(own.updatedAt) }}</span>
+            {{
+              own.updatedAt !== own.createdAt
+                ? t('member.openToWork.setOnUpdated', { date: formatDate(own.createdAt), updated: formatDate(own.updatedAt) })
+                : t('member.openToWork.setOn', { date: formatDate(own.createdAt) })
+            }}
           </p>
           <v-btn
             variant="text"
@@ -88,7 +88,7 @@
             :loading="withdrawing"
             @click="withdraw"
           >
-            Jeg er ikke åpen lenger
+            {{ t('member.openToWork.withdraw') }}
           </v-btn>
         </div>
       </v-card>
@@ -99,7 +99,7 @@
     <section v-if="canSeeList" class="mb-8">
       <div class="d-flex align-center mb-3" style="gap: 12px; flex-wrap: wrap;">
         <h2 class="section-title mb-0">
-          Åpne for nye muligheter<span
+          {{ t('member.openToWork.list.heading') }}<span
             v-if="!loadingList && list.length"
             style="font-weight: normal; color: #999; font-size: 14px;"
           >
@@ -107,32 +107,31 @@
           </span>
         </h2>
         <v-chip color="#7e57c2" variant="flat" size="small" class="text-uppercase font-weight-bold" style="letter-spacing: 0.05em;">
-          Invest + styret
+          {{ t('member.openToWork.list.chip') }}
         </v-chip>
       </div>
       <p class="mb-4" style="color: #aaa; font-size: 13px; line-height: 1.6; max-width: 640px;">
-        Dette er delt i tillit. Ta kontakt med personen selv før du sender navnet videre til
-        noen utenfor nettverket.
+        {{ t('member.openToWork.list.trustNote') }}
       </p>
 
       <div v-if="loadingList" class="text-center py-3">
         <v-progress-circular indeterminate size="24" color="white" />
       </div>
       <div v-else-if="listError" style="color: #aaa; font-size: 15px;">
-        {{ listError }}
+        {{ t(listError) }}
       </div>
       <div v-else-if="list.length === 0" class="text-muted" style="font-size: 15px;">
-        Ingen står som åpne akkurat nå.
+        {{ t('member.openToWork.list.empty') }}
       </div>
       <div v-else class="d-flex flex-column" style="gap: 12px;">
         <v-card v-for="m in list" :key="m.personId" variant="outlined" class="pa-4">
           <p class="font-weight-bold mb-1">{{ m.name }}</p>
           <p v-if="m.company" class="mb-2" style="color: #aaa; font-size: 14px;">
-            {{ m.roleTitle ? `${m.roleTitle}, ` : '' }}{{ m.company }}
+            {{ m.roleTitle ? t('member.openToWork.list.roleAtCompany', { role: m.roleTitle, company: m.company }) : m.company }}
           </p>
           <div style="font-size: 14px; color: #ccc; line-height: 1.7;">
-            <p v-if="m.lookingFor" class="mb-1"><strong>Ser etter:</strong> {{ m.lookingFor }}</p>
-            <p v-if="m.availability" class="mb-1"><strong>Tilgjengelig:</strong> {{ m.availability }}</p>
+            <p v-if="m.lookingFor" class="mb-1"><strong>{{ t('member.openToWork.list.lookingFor') }}:</strong> {{ m.lookingFor }}</p>
+            <p v-if="m.availability" class="mb-1"><strong>{{ t('member.openToWork.list.availability') }}:</strong> {{ m.availability }}</p>
             <p v-if="m.note" class="mb-1" style="white-space: pre-line;">{{ m.note }}</p>
           </div>
           <div class="d-flex align-center mt-2" style="gap: 16px; flex-wrap: wrap; font-size: 14px;">
@@ -144,7 +143,7 @@
               rel="noopener"
               style="color: #fff; text-decoration: underline;"
             >LinkedIn</a>
-            <span style="color: #888; font-size: 13px;">Oppdatert {{ formatDate(m.updatedAt) }}</span>
+            <span style="color: #888; font-size: 13px;">{{ t('member.openToWork.list.updated', { date: formatDate(m.updatedAt) }) }}</span>
           </div>
         </v-card>
       </div>
@@ -154,6 +153,9 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'member' })
+
+const { t } = useI18n()
+const { formatDate } = useLocaleDate()
 
 interface OwnFlag {
   id: string
@@ -191,6 +193,7 @@ const withdrawing = ref(false)
 
 const list = ref<OpenMember[]>([])
 const loadingList = ref(true)
+// Holds a message key, so the text follows a language switch.
 const listError = ref('')
 
 function fillForm(flag: OwnFlag | null) {
@@ -217,10 +220,7 @@ async function loadList() {
     const data = await $fetch<{ members: OpenMember[] }>('/api/member/open-to-work/list')
     list.value = data.members
   } catch (err: any) {
-    listError.value =
-      err?.statusCode === 403
-        ? 'Listen er kun for investeringsgruppene og styret.'
-        : 'Kunne ikke hente listen. Prøv igjen.'
+    listError.value = err?.statusCode === 403 ? 'member.openToWork.list.forbidden' : 'member.openToWork.list.error'
   } finally {
     loadingList.value = false
   }
@@ -234,7 +234,7 @@ async function save() {
     await loadOwn()
     if (canSeeList.value) await loadList()
   } catch (err: any) {
-    saveError.value = err?.statusMessage || err?.data?.message || 'Kunne ikke lagre. Prøv igjen.'
+    saveError.value = err?.statusMessage || err?.data?.message || t('member.openToWork.form.error')
   } finally {
     saving.value = false
   }
@@ -258,15 +258,6 @@ watchEffect(() => {
     if (canSeeList.value) loadList()
   }
 })
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('nb-NO', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
 </script>
 
 <style scoped>

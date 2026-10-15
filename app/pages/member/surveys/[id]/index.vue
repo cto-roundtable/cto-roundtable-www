@@ -1,6 +1,6 @@
 <template>
   <div class="member-survey text-left">
-    <NuxtLink to="/member/surveys" class="back-link mb-4 d-inline-block">← {{ t.back }}</NuxtLink>
+    <NuxtLink to="/member/surveys" class="back-link mb-4 d-inline-block">← {{ t('member.surveys.answer.back') }}</NuxtLink>
 
     <div v-if="loading" class="text-center py-6">
       <v-progress-circular indeterminate color="white" />
@@ -11,7 +11,7 @@
       <header class="mb-6">
         <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">{{ survey.title }}</h1>
         <p class="mb-1" style="color: #aaa; font-size: 14px;">
-          {{ eventLine }}<span v-if="survey.closesAt"> · {{ t.deadline }} {{ formatDate(survey.closesAt) }}</span>
+          {{ eventLine }}<span v-if="survey.closesAt"> · {{ t('member.surveys.deadlineOn', { date: formatDate(survey.closesAt) }) }}</span>
         </p>
         <p v-if="survey.intro" class="mt-3 mb-0" style="color: #ccc; font-size: 15px; white-space: pre-line; max-width: 640px;">
           {{ survey.intro }}
@@ -21,16 +21,16 @@
       <!-- Board: status, settings, questions. The API checks requireBoard on its own. -->
       <section v-if="survey.isBoard" class="mb-10">
         <div class="d-flex align-center mb-3" style="gap: 12px; flex-wrap: wrap;">
-          <h2 class="section-title mb-0">Styring</h2>
+          <h2 class="section-title mb-0">{{ t('member.surveys.admin.heading') }}</h2>
           <v-chip color="#7e57c2" variant="flat" size="small" class="text-uppercase font-weight-bold" style="letter-spacing: 0.05em;">
-            Styret
+            {{ t('common.board') }}
           </v-chip>
         </div>
         <v-card variant="outlined" class="pa-4">
           <div class="d-flex align-center flex-wrap mb-4" style="gap: 12px;">
             <span class="tag" :class="`tag-${statusKey}`">{{ statusText }}</span>
-            <span style="color: #aaa; font-size: 14px;">{{ survey.responseCount }} svar</span>
-            <NuxtLink :to="`/member/surveys/${survey.id}/results`" class="inline-link">Se resultater</NuxtLink>
+            <span style="color: #aaa; font-size: 14px;">{{ t('member.surveys.responses', survey.responseCount ?? 0) }}</span>
+            <NuxtLink :to="`/member/surveys/${survey.id}/results`" class="inline-link">{{ t('member.surveys.admin.seeResults') }}</NuxtLink>
           </div>
           <div class="d-flex flex-wrap mb-4" style="gap: 12px;">
             <v-btn
@@ -39,19 +39,19 @@
               style="background-color: white; color: #111;"
               @click="setStatus('open')"
             >
-              {{ survey.status === 'draft' ? 'Åpne undersøkelsen' : 'Gjenåpne' }}
+              {{ survey.status === 'draft' ? t('member.surveys.admin.open') : t('member.surveys.admin.reopen') }}
             </v-btn>
             <v-btn v-if="survey.status === 'open'" variant="outlined" :loading="statusSaving" @click="setStatus('closed')">
-              Lukk undersøkelsen
+              {{ t('member.surveys.admin.close') }}
             </v-btn>
           </div>
           <p v-if="survey.status === 'open' && !survey.isOpen" class="mb-4" style="color: #ffb74d; font-size: 13px;">
-            Fristen har gått ut, så ingen kan svare lenger. Flytt fristen for å åpne igjen.
+            {{ t('member.surveys.admin.expired') }}
           </p>
 
           <v-text-field
             v-model="settings.title"
-            label="Tittel"
+            :label="t('member.surveys.fields.title')"
             variant="outlined"
             density="comfortable"
             hide-details="auto"
@@ -59,7 +59,7 @@
           />
           <v-textarea
             v-model="settings.intro"
-            label="Ingress (valgfritt)"
+            :label="t('member.surveys.fields.intro')"
             rows="2"
             variant="outlined"
             density="comfortable"
@@ -68,19 +68,19 @@
           />
           <v-text-field
             v-model="settings.closesAt"
-            label="Frist (valgfritt)"
+            :label="t('member.surveys.fields.deadline')"
             type="date"
             variant="outlined"
             density="comfortable"
             hide-details="auto"
             class="mb-3"
           />
-          <v-btn variant="outlined" :loading="settingsSaving" @click="saveSettings">Lagre</v-btn>
+          <v-btn variant="outlined" :loading="settingsSaving" @click="saveSettings">{{ t('common.save') }}</v-btn>
           <v-alert v-if="adminError" type="warning" variant="outlined" class="mt-3 text-left">{{ adminError }}</v-alert>
 
-          <h3 class="sub-title mt-8 mb-2">Spørsmål</h3>
+          <h3 class="sub-title mt-8 mb-2">{{ t('member.surveys.admin.questionsHeading') }}</h3>
           <p v-if="survey.responseCount" class="mb-0" style="color: #aaa; font-size: 14px;">
-            Spørsmålene er låst fordi noen allerede har svart. Da stemmer svarene alltid med spørsmålet de ble gitt til.
+            {{ t('member.surveys.admin.locked') }}
           </p>
           <template v-else>
             <div v-for="(q, i) in editQuestions" :key="q.key" class="question-editor mb-3">
@@ -97,19 +97,33 @@
                   style="max-width: 200px;"
                 />
                 <v-spacer />
-                <v-btn icon="mdi-arrow-up" size="x-small" variant="text" :disabled="i === 0" @click="move(i, -1)" />
+                <v-btn
+                  icon="mdi-arrow-up"
+                  size="x-small"
+                  variant="text"
+                  :aria-label="t('member.surveys.admin.moveUp')"
+                  :disabled="i === 0"
+                  @click="move(i, -1)"
+                />
                 <v-btn
                   icon="mdi-arrow-down"
                   size="x-small"
                   variant="text"
+                  :aria-label="t('member.surveys.admin.moveDown')"
                   :disabled="i === editQuestions.length - 1"
                   @click="move(i, 1)"
                 />
-                <v-btn icon="mdi-delete-outline" size="x-small" variant="text" @click="editQuestions.splice(i, 1)" />
+                <v-btn
+                  icon="mdi-delete-outline"
+                  size="x-small"
+                  variant="text"
+                  :aria-label="t('member.surveys.admin.deleteQuestion')"
+                  @click="editQuestions.splice(i, 1)"
+                />
               </div>
               <v-text-field
                 v-model="q.label"
-                label="Spørsmål"
+                :label="t('member.surveys.admin.question')"
                 variant="outlined"
                 density="compact"
                 hide-details="auto"
@@ -118,7 +132,7 @@
               <v-textarea
                 v-if="q.type === 'choice' || q.type === 'multi'"
                 v-model="q.optionsText"
-                label="Svaralternativer, ett per linje"
+                :label="t('member.surveys.admin.options')"
                 rows="3"
                 variant="outlined"
                 density="compact"
@@ -128,7 +142,7 @@
               <v-text-field
                 v-if="q.type === 'rating'"
                 v-model.number="q.scale"
-                label="Skala 1 til"
+                :label="t('member.surveys.admin.scaleMax')"
                 type="number"
                 min="2"
                 max="10"
@@ -138,11 +152,11 @@
                 class="mb-2"
                 style="max-width: 140px;"
               />
-              <v-checkbox v-model="q.required" label="Må besvares" density="compact" hide-details />
+              <v-checkbox v-model="q.required" :label="t('member.surveys.admin.required')" density="compact" hide-details />
             </div>
             <div class="d-flex flex-wrap" style="gap: 12px;">
-              <v-btn variant="text" prepend-icon="mdi-plus" @click="addQuestion">Legg til spørsmål</v-btn>
-              <v-btn variant="outlined" :loading="questionsSaving" @click="saveQuestions">Lagre spørsmål</v-btn>
+              <v-btn variant="text" prepend-icon="mdi-plus" @click="addQuestion">{{ t('member.surveys.admin.addQuestion') }}</v-btn>
+              <v-btn variant="outlined" :loading="questionsSaving" @click="saveQuestions">{{ t('member.surveys.admin.saveQuestions') }}</v-btn>
             </div>
             <v-alert v-if="questionsError" type="warning" variant="outlined" class="mt-3 text-left">
               {{ questionsError }}
@@ -153,32 +167,33 @@
 
       <!-- The answer form -->
       <section>
-        <h2 v-if="survey.isBoard" class="section-title">{{ t.yourAnswer }}</h2>
+        <h2 v-if="survey.isBoard" class="section-title">{{ t('member.surveys.answer.yourAnswer') }}</h2>
 
         <v-alert v-if="!survey.eligible" type="info" variant="outlined" class="text-left mb-4">
-          {{ t.notEligible }}
+          {{ t('member.surveys.answer.notEligible') }}
         </v-alert>
         <v-alert v-else-if="!survey.isOpen" type="info" variant="outlined" class="text-left mb-4">
-          {{ survey.status === 'draft' ? t.draft : t.closed }}
+          {{ survey.status === 'draft' ? t('member.surveys.answer.draft') : t('member.surveys.answer.closed') }}
           <NuxtLink v-if="survey.mySubmittedAt" :to="`/member/surveys/${survey.id}/results`" class="inline-link">
-            {{ t.seeResults }}
+            {{ t('member.surveys.answer.seeResults') }}
           </NuxtLink>
         </v-alert>
 
         <v-alert v-if="justSaved" type="success" variant="outlined" class="text-left mb-4">
-          {{ t.thanks }}
-          <NuxtLink :to="`/member/surveys/${survey.id}/results`" class="inline-link">{{ t.seeResults }}</NuxtLink>
+          {{ t('member.surveys.answer.thanks') }}
+          <NuxtLink :to="`/member/surveys/${survey.id}/results`" class="inline-link">{{ t('member.surveys.answer.seeResults') }}</NuxtLink>
         </v-alert>
         <p v-else-if="survey.mySubmittedAt && survey.isOpen" class="mb-4" style="color: #aaa; font-size: 14px;">
-          {{ t.answeredAt }} {{ formatDate(survey.myUpdatedAt || survey.mySubmittedAt) }}. {{ t.canEdit }}
-          <NuxtLink :to="`/member/surveys/${survey.id}/results`" class="inline-link">{{ t.seeResults }}</NuxtLink>
+          {{ t('member.surveys.answer.answeredAt', { date: formatDate(survey.myUpdatedAt || survey.mySubmittedAt) }) }}
+          {{ t('member.surveys.answer.canEdit') }}
+          <NuxtLink :to="`/member/surveys/${survey.id}/results`" class="inline-link">{{ t('member.surveys.answer.seeResults') }}</NuxtLink>
         </p>
 
         <form v-if="survey.eligible" style="max-width: 640px;" @submit.prevent="submit">
           <fieldset :disabled="!survey.canAnswer" class="answer-fieldset">
             <div v-for="q in survey.questions" :key="q.id" class="question mb-6">
               <p class="question-label mb-2">
-                {{ q.label }}<span v-if="q.required" class="required" :title="t.required"> *</span>
+                {{ q.label }}<span v-if="q.required" class="required" :title="t('member.surveys.answer.required')"> *</span>
               </p>
 
               <div v-if="q.type === 'rating'">
@@ -197,7 +212,7 @@
                     {{ n }}
                   </v-btn>
                 </div>
-                <p class="scale-hint mb-0">{{ t.scaleHint(q.scale ?? 5) }}</p>
+                <p class="scale-hint mb-0">{{ t('member.surveys.answer.scaleHint', { max: q.scale ?? 5 }) }}</p>
               </div>
 
               <v-textarea
@@ -246,7 +261,7 @@
             block
             style="background-color: white; color: #111;"
           >
-            {{ survey.mySubmittedAt ? t.update : t.submit }}
+            {{ survey.mySubmittedAt ? t('member.surveys.answer.update') : t('member.surveys.answer.submit') }}
           </v-btn>
           <v-alert v-if="submitError" type="warning" variant="outlined" class="mt-3 text-left">
             {{ submitError }}
@@ -300,49 +315,9 @@ interface EditQuestion {
   scale: number
 }
 
-// Member-facing copy. A survey on a roundtable-sweden event is in English.
-const COPY = {
-  nb: {
-    back: 'Alle undersøkelser',
-    deadline: 'frist',
-    yourAnswer: 'Ditt svar',
-    notEligible:
-      'Du er ikke med i gruppen dette arrangementet hører til, så du kan ikke svare selv. Som styremedlem ser du likevel resultatene.',
-    draft: 'Dette er et utkast. Medlemmene ser det ikke før det er åpnet.',
-    closed: 'Undersøkelsen er lukket.',
-    thanks: 'Takk! Svaret ditt er lagret.',
-    answeredAt: 'Du svarte',
-    canEdit: 'Du kan endre svaret så lenge undersøkelsen er åpen.',
-    seeResults: 'Se resultatene',
-    required: 'Må besvares',
-    scaleHint: (n: number) => `1 = lite, ${n} = svært`,
-    submit: 'Send svar',
-    update: 'Oppdater svaret',
-    failed: 'Kunne ikke lagre svaret. Prøv igjen.',
-    loadFailed: 'Fant ikke undersøkelsen.',
-  },
-  en: {
-    back: 'All surveys',
-    deadline: 'closes',
-    yourAnswer: 'Your answer',
-    notEligible:
-      'You are not in the group this event belongs to, so you cannot answer yourself. As a board member you can still see the results.',
-    draft: 'This is a draft. Members cannot see it until it is opened.',
-    closed: 'This survey is closed.',
-    thanks: 'Thank you! Your answer is saved.',
-    answeredAt: 'You answered on',
-    canEdit: 'You can change your answer while the survey is open.',
-    seeResults: 'See the results',
-    required: 'Required',
-    scaleHint: (n: number) => `1 = not at all, ${n} = very`,
-    submit: 'Send answer',
-    update: 'Update answer',
-    failed: 'Could not save your answer. Please try again.',
-    loadFailed: 'Survey not found.',
-  },
-}
-
 const route = useRoute()
+const { t } = useI18n()
+const { formatDate } = useLocaleDate()
 const { session, checked } = useAuthSession()
 
 const survey = ref<Survey | null>(null)
@@ -363,22 +338,17 @@ const questionsSaving = ref(false)
 const questionsError = ref('')
 let nextKey = 1
 
-const t = computed(() => COPY[survey.value?.lang ?? 'nb'])
-
-const typeItems = [
-  { title: 'Skala', value: 'rating' },
-  { title: 'Fritekst', value: 'text' },
-  { title: 'Ett valg', value: 'choice' },
-  { title: 'Flere valg', value: 'multi' },
-]
+const typeItems = computed(() =>
+  (['rating', 'text', 'choice', 'multi'] as const).map((value) => ({
+    title: t(`member.surveys.admin.types.${value}`),
+    value,
+  })),
+)
 
 const eventLine = computed(() => {
   const e = survey.value?.event
   if (!e) return ''
-  const locale = survey.value?.lang === 'en' ? 'en-GB' : 'nb-NO'
-  const date = e.date
-    ? new Date(e.date).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })
-    : null
+  const date = e.date ? formatDate(e.date) : null
   return [e.theme, date, e.location].filter(Boolean).join(', ')
 })
 
@@ -387,9 +357,7 @@ const statusKey = computed(() => {
   if (survey.value.status === 'open' && !survey.value.isOpen) return 'closed'
   return survey.value.status
 })
-const statusText = computed(
-  () => ({ draft: 'Utkast', open: 'Åpen', closed: 'Lukket' })[statusKey.value as 'draft' | 'open' | 'closed'],
-)
+const statusText = computed(() => t(`member.surveys.admin.status.${statusKey.value}`))
 
 function toDateInput(iso: string | null): string {
   if (!iso) return ''
@@ -429,7 +397,7 @@ async function load() {
   try {
     fill(await $fetch<Survey>(`/api/member/surveys/${route.params.id}`))
   } catch {
-    loadError.value = COPY.nb.loadFailed
+    loadError.value = t('member.surveys.answer.loadFailed')
   } finally {
     loading.value = false
   }
@@ -450,7 +418,7 @@ async function submit() {
     justSaved.value = true
   } catch (err: any) {
     fieldErrors.value = err?.data?.data?.errors ?? {}
-    submitError.value = err?.data?.message || t.value.failed
+    submitError.value = err?.data?.message || t('member.surveys.answer.failed')
   } finally {
     submitting.value = false
   }
@@ -467,7 +435,7 @@ async function setStatus(status: 'open' | 'closed') {
   try {
     await patch({ status })
   } catch (err: any) {
-    adminError.value = err?.data?.message || 'Kunne ikke endre status.'
+    adminError.value = err?.data?.message || t('member.surveys.admin.errors.status')
   } finally {
     statusSaving.value = false
   }
@@ -483,7 +451,7 @@ async function saveSettings() {
       closesAt: fromDateInput(settings.value.closesAt),
     })
   } catch (err: any) {
-    adminError.value = err?.data?.message || 'Kunne ikke lagre.'
+    adminError.value = err?.data?.message || t('member.surveys.admin.errors.save')
   } finally {
     settingsSaving.value = false
   }
@@ -530,7 +498,7 @@ async function saveQuestions() {
       })),
     })
   } catch (err: any) {
-    questionsError.value = err?.data?.message || 'Kunne ikke lagre spørsmålene.'
+    questionsError.value = err?.data?.message || t('member.surveys.admin.errors.questions')
   } finally {
     questionsSaving.value = false
   }
@@ -539,12 +507,6 @@ async function saveQuestions() {
 watchEffect(() => {
   if (checked.value && session.value.authenticated) load()
 })
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return ''
-  const locale = survey.value?.lang === 'en' ? 'en-GB' : 'nb-NO'
-  return new Date(dateStr).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })
-}
 </script>
 
 <style scoped>

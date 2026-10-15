@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <!-- Loading -->
-    <v-main v-if="loading" class="member-layout">
+    <v-main v-if="loading || !localeReady" class="member-layout">
       <div class="d-flex justify-center align-center" style="min-height: 100vh;">
         <v-progress-circular indeterminate color="white" />
       </div>
@@ -14,15 +14,19 @@
         variant="text"
         to="/"
         class="home-icon"
+        :aria-label="t('layout.homeAria')"
         style="position: absolute; top: 16px; left: 16px; z-index: 10;"
       >
         <v-icon color="white">mdi-home</v-icon>
       </v-btn>
+      <div style="position: absolute; top: 16px; right: 16px; z-index: 10;">
+        <MemberLocaleSwitcher />
+      </div>
 
       <div class="login-section text-center" style="max-width: 420px; margin: 0 auto; padding: 80px 24px 40px;">
-        <h1 class="font-weight-bold mb-4">Member Portal</h1>
+        <h1 class="font-weight-bold mb-4">{{ t('auth.login.title') }}</h1>
         <p class="text-muted mb-6">
-          Sign in with your membership email to access member information.
+          {{ t('auth.login.intro') }}
         </p>
 
         <v-alert
@@ -31,20 +35,15 @@
           variant="outlined"
           class="mb-4 text-left"
         >
-          <span v-if="error === 'expired'">
-            This link has expired or has already been used. Please request a new one.
-          </span>
-          <span v-else-if="error === 'invalid'">
-            Invalid sign-in link. Please request a new one.
-          </span>
-          <span v-else-if="error === 'passkey'">
-            Passkey sign-in did not work. Try again, or get a sign-in link by email.
-          </span>
-          <span v-else>Something went wrong. Please try again.</span>
+          <span v-if="error === 'expired'">{{ t('auth.login.errorExpired') }}</span>
+          <span v-else-if="error === 'invalid'">{{ t('auth.login.errorInvalid') }}</span>
+          <span v-else-if="error === 'passkey'">{{ t('auth.login.errorPasskey') }}</span>
+          <span v-else>{{ t('auth.login.errorUnknown') }}</span>
         </v-alert>
 
         <!-- Passkey: an option next to the email link, only where the browser can do it.
-             English like the rest of this card: it is shown before we know who is signing in. -->
+             The card is shown before we know who is signing in, so it follows the browser
+             language (useMemberLocale), English when the browser names none of ours. -->
         <template v-if="passkeySupported">
           <v-btn
             size="large"
@@ -55,15 +54,15 @@
             :loading="passkeyBusy"
             @click="signInWithPasskey"
           >
-            Sign in with passkey
+            {{ t('auth.login.passkeyButton') }}
           </v-btn>
-          <div class="login-or">or get a sign-in link by email</div>
+          <div class="login-or">{{ t('auth.login.orEmail') }}</div>
         </template>
 
         <form @submit.prevent="submitMagicLink">
           <v-text-field
             v-model="email"
-            label="Email address"
+            :label="t('auth.login.emailLabel')"
             type="email"
             autocomplete="username webauthn"
             variant="outlined"
@@ -79,10 +78,10 @@
             :loading="submitting"
             style="background-color: white; color: #111;"
           >
-            Send sign-in link
+            {{ t('auth.login.sendLink') }}
           </v-btn>
           <v-alert v-if="sent" type="success" variant="outlined" class="text-left">
-            Check your email for a sign-in link. It expires in 15 minutes.
+            {{ t('auth.login.sent') }}
           </v-alert>
         </form>
       </div>
@@ -99,6 +98,7 @@
         <v-app-bar-nav-icon
           v-if="mobile"
           color="white"
+          :aria-label="t('layout.menuAria')"
           @click="drawer = !drawer"
         />
         <v-app-bar-title class="font-weight-bold" style="color: #fff;">
@@ -112,13 +112,15 @@
         >
           {{ session.name }}
         </span>
+        <!-- On a phone the bar has no room: the switcher sits in the drawer instead. -->
+        <MemberLocaleSwitcher v-if="!mobile" class="mr-1" />
         <v-btn
           variant="text"
           size="small"
           style="color: #999;"
           @click="logout"
         >
-          Sign out
+          {{ t('auth.signOut') }}
         </v-btn>
       </v-app-bar>
 
@@ -132,11 +134,12 @@
       >
         <div class="pa-4" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
           <p class="mb-1" style="font-size: 11px; color: #888; letter-spacing: 0.08em; text-transform: uppercase;">
-            Signed in as
+            {{ t('layout.signedInAs') }}
           </p>
           <p class="font-weight-bold mb-0" style="color: #fff; font-size: 15px; line-height: 1.3;">
             {{ session.name }}
           </p>
+          <MemberLocaleSwitcher v-if="mobile" class="mt-2 ml-n2" />
         </div>
 
         <v-list nav density="comfortable" color="white">
@@ -164,9 +167,8 @@
               class="mb-6 text-left"
               @click:close="dismissPasskeyNudge"
             >
-              Slipp e-postlenken neste gang: legg til en passkey, så logger du inn med Face ID,
-              fingeravtrykk eller sikkerhetsnøkkel.
-              <NuxtLink to="/member/security" style="color: inherit; font-weight: 600;">Legg til under Innlogging</NuxtLink>
+              {{ t('layout.passkeyNudge.body') }}
+              <NuxtLink to="/member/security" style="color: inherit; font-weight: 600;">{{ t('layout.passkeyNudge.link') }}</NuxtLink>
             </v-alert>
             <slot />
           </div>
@@ -183,6 +185,14 @@ import { useDisplay } from 'vuetify'
 const route = useRoute()
 const { session, loading, checkSession, loginWithPasskey, requestMagicLink, logout } = useAuthSession()
 const { mobile } = useDisplay()
+const { t, locale } = useI18n()
+const { applyDefault: applyLocale } = useMemberLocale()
+// Hold the spinner until the language is set, so a Swedish member never sees a flash of Norwegian.
+const localeReady = ref(false)
+
+// The page html lang follows the portal language, so screen readers and the
+// browser's own translate offer read it right.
+useHead({ htmlAttrs: { lang: locale } })
 
 const email = ref('')
 const sent = ref(false)
@@ -197,16 +207,17 @@ watchEffect(() => {
   else drawer.value = true
 })
 
+// Titles are message keys, resolved in navItems so they follow a language switch.
 const baseNavItems = [
-  { to: '/member', title: 'Oversikt', icon: 'mdi-view-dashboard-outline', exact: true },
-  { to: '/member/host', title: 'Verting', icon: 'mdi-silverware-fork-knife', exact: false },
-  { to: '/member/jobb', title: 'Åpen for jobb', icon: 'mdi-briefcase-search-outline', exact: false },
-  { to: '/member/min-aktivitet', title: 'Min aktivitet', icon: 'mdi-chart-line', exact: false },
-  { to: '/member/discounts', title: 'Fordeler', icon: 'mdi-tag-multiple-outline', exact: false },
-  { to: '/member/surveys', title: 'Undersøkelser', icon: 'mdi-clipboard-text-outline', exact: false },
-  { to: '/member/onboarding', title: 'AI-onboarding', icon: 'mdi-robot-outline', exact: false },
-  { to: '/member/security', title: 'Innlogging', icon: 'mdi-fingerprint', exact: false },
-  { to: '/member/faq', title: 'FAQ', icon: 'mdi-help-circle-outline', exact: false },
+  { to: '/member', key: 'nav.overview', icon: 'mdi-view-dashboard-outline', exact: true },
+  { to: '/member/host', key: 'nav.hosting', icon: 'mdi-silverware-fork-knife', exact: false },
+  { to: '/member/jobb', key: 'nav.openToWork', icon: 'mdi-briefcase-search-outline', exact: false },
+  { to: '/member/min-aktivitet', key: 'nav.myActivity', icon: 'mdi-chart-line', exact: false },
+  { to: '/member/discounts', key: 'nav.discounts', icon: 'mdi-tag-multiple-outline', exact: false },
+  { to: '/member/surveys', key: 'nav.surveys', icon: 'mdi-clipboard-text-outline', exact: false },
+  { to: '/member/onboarding', key: 'nav.aiOnboarding', icon: 'mdi-robot-outline', exact: false },
+  { to: '/member/security', key: 'nav.signIn', icon: 'mdi-fingerprint', exact: false },
+  { to: '/member/faq', key: 'nav.faq', icon: 'mdi-help-circle-outline', exact: false },
 ]
 
 // Role-scoped links, shown only when the session says so. The pages and their
@@ -215,13 +226,13 @@ const navItems = computed(() => {
   const items = [...baseNavItems]
   // Investor-updates: any member of an investment cohort (invest-*).
   if (session.value.isInvestor) {
-    items.push({ to: '/member/updates', title: 'Investoroppdateringer', icon: 'mdi-finance', exact: false })
+    items.push({ to: '/member/updates', key: 'nav.investorUpdates', icon: 'mdi-finance', exact: false })
   }
   if (session.value.isBoard) {
-    items.push({ to: '/member/board', title: 'Styremøter', icon: 'mdi-gavel', exact: false })
-    items.push({ to: '/member/activity', title: 'Aktivitet (styret)', icon: 'mdi-pulse', exact: false })
+    items.push({ to: '/member/board', key: 'nav.boardMeetings', icon: 'mdi-gavel', exact: false })
+    items.push({ to: '/member/activity', key: 'nav.boardActivity', icon: 'mdi-pulse', exact: false })
   }
-  return items
+  return items.map(({ key, ...item }) => ({ ...item, title: t(key) }))
 })
 
 async function submitMagicLink() {
@@ -322,6 +333,7 @@ function dismissPasskeyNudge() {
 watch(
   () => session.value.authenticated,
   (authenticated) => {
+    applyLocale(session.value)
     if (authenticated) checkPasskeyNudge()
     else {
       passkeyNudge.value = false
@@ -337,6 +349,8 @@ onMounted(async () => {
   document.addEventListener('visibilitychange', refreshStalePasskeyAutofill)
   passkeySupported.value = browserSupportsWebAuthn()
   await checkSession()
+  await applyLocale(session.value)
+  localeReady.value = true
   if (session.value.authenticated) checkPasskeyNudge()
   else if (passkeySupported.value) startPasskeyAutofill()
 })

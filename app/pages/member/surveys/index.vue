@@ -1,19 +1,18 @@
 <template>
   <div class="member-surveys text-left">
     <header class="mb-6">
-      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">Undersøkelser</h1>
+      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">{{ t('member.surveys.title') }}</h1>
       <p style="color: #aaa; font-size: 14px; line-height: 1.6; max-width: 640px;">
-        Korte undersøkelser etter arrangementene våre. Det tar et par minutter, og det er sånn vi finner ut hva
-        som funket og hva vi bør gjøre annerledes neste gang. Styret ser svarene.
+        {{ t('member.surveys.intro') }}
       </p>
     </header>
 
     <!-- Board: create a survey from a recent event. The API is gated on its own. -->
     <section v-if="isBoard" class="mb-10">
       <div class="d-flex align-center mb-3" style="gap: 12px; flex-wrap: wrap;">
-        <h2 class="section-title mb-0">Ny undersøkelse</h2>
+        <h2 class="section-title mb-0">{{ t('member.surveys.create.newSurvey') }}</h2>
         <v-chip color="#7e57c2" variant="flat" size="small" class="text-uppercase font-weight-bold" style="letter-spacing: 0.05em;">
-          Styret
+          {{ t('common.board') }}
         </v-chip>
       </div>
 
@@ -23,7 +22,7 @@
         prepend-icon="mdi-plus"
         @click="openCreate"
       >
-        Ny undersøkelse
+        {{ t('member.surveys.create.newSurvey') }}
       </v-btn>
 
       <v-card v-else variant="outlined" class="pa-4">
@@ -37,18 +36,18 @@
             item-title="label"
             item-value="id"
             item-props="props"
-            label="Arrangement"
+            :label="t('member.surveys.create.event')"
             variant="outlined"
             density="comfortable"
             hide-details="auto"
             class="mb-3"
           />
           <p v-if="selectedEvent?.lang === 'en'" class="mb-3" style="color: #aaa; font-size: 13px;">
-            Arrangementet hører til {{ selectedEvent.group }}, så undersøkelsen blir på engelsk.
+            {{ t('member.surveys.create.englishNote', { group: selectedEvent.group }) }}
           </p>
           <v-text-field
             v-model="form.title"
-            label="Tittel"
+            :label="t('member.surveys.fields.title')"
             variant="outlined"
             density="comfortable"
             hide-details="auto"
@@ -56,7 +55,7 @@
           />
           <v-textarea
             v-model="form.intro"
-            label="Ingress (valgfritt)"
+            :label="t('member.surveys.fields.intro')"
             rows="2"
             variant="outlined"
             density="comfortable"
@@ -65,7 +64,7 @@
           />
           <v-text-field
             v-model="form.closesAt"
-            label="Frist (valgfritt)"
+            :label="t('member.surveys.fields.deadline')"
             type="date"
             variant="outlined"
             density="comfortable"
@@ -74,14 +73,14 @@
           />
 
           <div v-if="template.length" class="mb-4">
-            <p class="mb-1" style="color: #ccc; font-size: 14px;">Standardspørsmål:</p>
+            <p class="mb-1" style="color: #ccc; font-size: 14px;">{{ t('member.surveys.create.defaultQuestions') }}</p>
             <ol class="template-list">
               <li v-for="q in template" :key="q.id">
                 {{ q.label }} <span style="color: #888;">({{ typeLabel(q) }})</span>
               </li>
             </ol>
             <p class="mt-1 mb-0" style="color: #888; font-size: 13px;">
-              Vil du endre spørsmålene, lag et utkast. Da kan du redigere før noen ser den.
+              {{ t('member.surveys.create.draftHint') }}
             </p>
           </div>
 
@@ -92,7 +91,7 @@
               style="background-color: white; color: #111;"
               @click="create('open')"
             >
-              Åpne med standardspørsmål
+              {{ t('member.surveys.create.openWithDefaults') }}
             </v-btn>
             <v-btn
               variant="outlined"
@@ -100,9 +99,9 @@
               :disabled="!form.eventId || Boolean(saving)"
               @click="create('draft')"
             >
-              Lag utkast og rediger
+              {{ t('member.surveys.create.draftAndEdit') }}
             </v-btn>
-            <v-btn variant="text" :disabled="Boolean(saving)" @click="creating = false">Avbryt</v-btn>
+            <v-btn variant="text" :disabled="Boolean(saving)" @click="creating = false">{{ t('common.cancel') }}</v-btn>
           </div>
           <v-alert v-if="createError" type="warning" variant="outlined" class="mt-3 text-left">
             {{ createError }}
@@ -118,22 +117,22 @@
 
     <template v-else>
       <section class="mb-8">
-        <h2 class="section-title">Åpne</h2>
+        <h2 class="section-title">{{ t('member.surveys.sections.open') }}</h2>
         <div v-if="openSurveys.length === 0" class="text-muted" style="font-size: 15px;">
-          Ingen åpne undersøkelser akkurat nå.
+          {{ t('member.surveys.sections.none') }}
         </div>
         <div v-else class="feed">
           <NuxtLink v-for="s in openSurveys" :key="s.id" :to="`/member/surveys/${s.id}`" class="survey-link">
             <div class="feed-card">
               <div class="d-flex align-center flex-wrap mb-1" style="gap: 8px;">
                 <span class="survey-title">{{ s.title }}</span>
-                <span v-if="s.answered" class="tag tag-done">{{ s.lang === 'en' ? 'Answered' : 'Besvart' }}</span>
-                <span v-else-if="s.eligible" class="tag tag-todo">{{ s.lang === 'en' ? 'Not answered' : 'Ikke besvart' }}</span>
-                <span v-if="s.lang === 'en'" class="tag tag-lang">Sverige</span>
+                <span v-if="s.answered" class="tag tag-done">{{ t('member.surveys.tags.answered') }}</span>
+                <span v-else-if="s.eligible" class="tag tag-todo">{{ t('member.surveys.tags.notAnswered') }}</span>
+                <span v-if="s.lang === 'en'" class="tag tag-lang">{{ t('member.surveys.tags.sweden') }}</span>
               </div>
               <p class="meta mb-0">
-                {{ eventLine(s) }}<span v-if="s.closesAt"> · frist {{ formatDate(s.closesAt) }}</span>
-                <span v-if="s.responseCount !== null"> · {{ s.responseCount }} svar</span>
+                {{ eventLine(s) }}<span v-if="s.closesAt"> · {{ t('member.surveys.deadlineOn', { date: formatDate(s.closesAt) }) }}</span>
+                <span v-if="s.responseCount !== null"> · {{ t('member.surveys.responses', s.responseCount) }}</span>
               </p>
             </div>
           </NuxtLink>
@@ -141,13 +140,13 @@
       </section>
 
       <section v-if="isBoard && drafts.length" class="mb-8">
-        <h2 class="section-title">Utkast</h2>
+        <h2 class="section-title">{{ t('member.surveys.sections.drafts') }}</h2>
         <div class="feed">
           <NuxtLink v-for="s in drafts" :key="s.id" :to="`/member/surveys/${s.id}`" class="survey-link">
             <div class="feed-card">
               <div class="d-flex align-center flex-wrap mb-1" style="gap: 8px;">
                 <span class="survey-title">{{ s.title }}</span>
-                <span class="tag tag-draft">Utkast</span>
+                <span class="tag tag-draft">{{ t('member.surveys.tags.draft') }}</span>
               </div>
               <p class="meta mb-0">{{ eventLine(s) }}</p>
             </div>
@@ -156,7 +155,7 @@
       </section>
 
       <section v-if="closedSurveys.length" class="mb-8">
-        <h2 class="section-title">Avsluttet</h2>
+        <h2 class="section-title">{{ t('member.surveys.sections.closed') }}</h2>
         <div class="feed">
           <NuxtLink
             v-for="s in closedSurveys"
@@ -167,10 +166,10 @@
             <div class="feed-card">
               <div class="d-flex align-center flex-wrap mb-1" style="gap: 8px;">
                 <span class="survey-title">{{ s.title }}</span>
-                <span v-if="s.answered" class="tag tag-done">{{ s.lang === 'en' ? 'Answered' : 'Besvart' }}</span>
+                <span v-if="s.answered" class="tag tag-done">{{ t('member.surveys.tags.answered') }}</span>
               </div>
               <p class="meta mb-0">
-                {{ eventLine(s) }}<span v-if="s.responseCount !== null"> · {{ s.responseCount }} svar</span>
+                {{ eventLine(s) }}<span v-if="s.responseCount !== null"> · {{ t('member.surveys.responses', s.responseCount) }}</span>
               </p>
             </div>
           </NuxtLink>
@@ -217,6 +216,8 @@ interface PickerEvent {
   surveyId: string | null
 }
 
+const { t } = useI18n()
+const { formatDate } = useLocaleDate()
 const { session, checked } = useAuthSession()
 
 const surveys = ref<SurveySummary[]>([])
@@ -237,11 +238,15 @@ const drafts = computed(() => surveys.value.filter((s) => s.status === 'draft'))
 const closedSurveys = computed(() => surveys.value.filter((s) => s.status !== 'draft' && !s.isOpen))
 
 const selectedEvent = computed(() => events.value.find((e) => e.id === form.value.eventId) ?? null)
+// The default questions follow the EVENT's language (English for roundtable-sweden), not the visitor's.
 const template = computed(() => (selectedEvent.value ? templates.value[selectedEvent.value.lang] : []))
 const eventItems = computed(() =>
   events.value.map((e) => ({
     id: e.id,
-    label: `${formatDate(e.date)} · ${e.theme || 'Uten tema'}${e.surveyId ? ' (har undersøkelse)' : ''}`,
+    label: t(e.surveyId ? 'member.surveys.create.eventOptionTaken' : 'member.surveys.create.eventOption', {
+      date: formatDate(e.date),
+      theme: e.theme || t('member.surveys.create.noTheme'),
+    }),
     props: { disabled: Boolean(e.surveyId) },
   })),
 )
@@ -265,7 +270,7 @@ async function load() {
     surveys.value = data.surveys
     isBoard.value = data.isBoard
   } catch {
-    loadError.value = 'Kunne ikke hente undersøkelsene. Prøv igjen.'
+    loadError.value = t('member.surveys.errors.load')
   } finally {
     loading.value = false
   }
@@ -285,7 +290,7 @@ async function openCreate() {
     const first = data.events.find((e) => !e.surveyId)
     if (first) form.value.eventId = first.id
   } catch {
-    createError.value = 'Kunne ikke hente arrangementene.'
+    createError.value = t('member.surveys.errors.events')
   } finally {
     loadingEvents.value = false
   }
@@ -308,7 +313,7 @@ async function create(status: 'open' | 'draft') {
     })
     await navigateTo(`/member/surveys/${res.id}`)
   } catch (err: any) {
-    createError.value = err?.data?.message || 'Kunne ikke opprette undersøkelsen. Prøv igjen.'
+    createError.value = err?.data?.message || t('member.surveys.errors.create')
   } finally {
     saving.value = ''
   }
@@ -319,19 +324,14 @@ watchEffect(() => {
 })
 
 function typeLabel(q: Question): string {
-  if (q.type === 'rating') return `skala 1 til ${q.scale ?? 5}`
+  if (q.type === 'rating') return t('member.surveys.typeLabel.rating', { max: q.scale ?? 5 })
   if (q.type === 'choice') return (q.options ?? []).join(' / ')
-  if (q.type === 'multi') return 'flere valg'
-  return 'fritekst'
+  if (q.type === 'multi') return t('member.surveys.typeLabel.multi')
+  return t('member.surveys.typeLabel.text')
 }
 
 function eventLine(s: SurveySummary): string {
   return [s.event.theme, s.event.date ? formatDate(s.event.date) : null].filter(Boolean).join(', ')
-}
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('nb-NO', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 </script>
 

@@ -1,9 +1,9 @@
 <template>
   <div v-if="memberInfo" class="member-overview text-left">
     <header class="mb-6">
-      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">Oversikt</h1>
+      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">{{ t('member.overview.title') }}</h1>
       <p style="color: #aaa; font-size: 14px;">
-        Medlem siden {{ formatDate(memberInfo.memberSince) }}
+        {{ t('member.overview.memberSince', { date: formatDate(memberInfo.memberSince) }) }}
       </p>
     </header>
 
@@ -17,18 +17,18 @@
       <v-icon color="white" size="22">mdi-clipboard-text-outline</v-icon>
       <div class="flex-grow-1">
         <p class="font-weight-bold mb-0" style="color: #fff;">
-          {{ s.lang === 'en' ? 'How was' : 'Hvordan var' }} {{ s.event.theme || s.title }}?
+          {{ t('member.overview.surveyBanner.title', { event: s.event.theme || s.title }) }}
         </p>
         <p class="mb-0" style="color: #ccc; font-size: 14px;">
-          {{ s.lang === 'en' ? 'A short survey, a couple of minutes.' : 'En kort undersøkelse, et par minutter.' }}
+          {{ t('member.overview.surveyBanner.body') }}
         </p>
       </div>
-      <span class="survey-banner-cta">{{ s.lang === 'en' ? 'Answer' : 'Svar nå' }}</span>
+      <span class="survey-banner-cta">{{ t('member.overview.surveyBanner.cta') }}</span>
     </NuxtLink>
 
     <section class="mb-8">
       <div class="d-flex align-center mb-4" style="gap: 12px;">
-        <h2 class="section-title mb-0">Status</h2>
+        <h2 class="section-title mb-0">{{ t('member.overview.statusHeading') }}</h2>
         <v-chip
           :color="statusColor(memberInfo.status)"
           variant="flat"
@@ -42,19 +42,19 @@
     </section>
 
     <section class="mb-8">
-      <h2 class="section-title">Dine medlemskap</h2>
+      <h2 class="section-title">{{ t('member.overview.membershipsHeading') }}</h2>
       <v-table density="comfortable" class="membership-table">
         <thead>
           <tr>
-            <th>Gruppe</th>
-            <th>Rolle</th>
-            <th class="d-none d-sm-table-cell">Medlem siden</th>
+            <th>{{ t('member.overview.table.group') }}</th>
+            <th>{{ t('member.overview.table.role') }}</th>
+            <th class="d-none d-sm-table-cell">{{ t('member.overview.table.memberSince') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="m in memberInfo.memberships" :key="m.slug">
             <td>{{ m.group }}</td>
-            <td>{{ m.role || 'member' }}</td>
+            <td>{{ m.role || t('member.overview.roleFallback') }}</td>
             <td class="d-none d-sm-table-cell">{{ formatDate(m.joinedAt) }}</td>
           </tr>
         </tbody>
@@ -65,6 +65,9 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'member' })
+
+const { t, te } = useI18n()
+const { formatDate } = useLocaleDate()
 
 const { session, checked } = useAuthSession()
 const memberInfo = ref<any>(null)
@@ -99,21 +102,8 @@ function statusColor(status: string): string {
 }
 
 function statusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    active: 'Aktiv',
-    retired: 'Pensjonert',
-    inactive: 'Inaktiv',
-  }
-  return labels[status] || status
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('nb-NO', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  const key = `member.overview.status.${status}`
+  return status && te(key) ? t(key) : status
 }
 </script>
 

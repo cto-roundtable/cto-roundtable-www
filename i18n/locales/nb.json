@@ -1,0 +1,418 @@
+{
+  "common": {
+    "save": "Lagre",
+    "cancel": "Avbryt",
+    "copied": "Kopiert!",
+    "board": "Styret"
+  },
+  "nav": {
+    "overview": "Oversikt",
+    "hosting": "Verting",
+    "openToWork": "Åpen for jobb",
+    "myActivity": "Min aktivitet",
+    "discounts": "Fordeler",
+    "surveys": "Undersøkelser",
+    "aiOnboarding": "AI-onboarding",
+    "signIn": "Innlogging",
+    "faq": "FAQ",
+    "investorUpdates": "Investoroppdateringer",
+    "boardMeetings": "Styremøter",
+    "boardActivity": "Aktivitet (styret)"
+  },
+  "layout": {
+    "signedInAs": "Innlogget som",
+    "homeAria": "Til forsiden",
+    "menuAria": "Meny",
+    "passkeyNudge": {
+      "body": "Slipp e-postlenken neste gang: legg til en passkey, så logger du inn med Face ID, fingeravtrykk eller sikkerhetsnøkkel.",
+      "link": "Legg til under Innlogging"
+    },
+    "language": "Språk"
+  },
+  "auth": {
+    "signOut": "Logg ut",
+    "login": {
+      "title": "Medlemsportal",
+      "intro": "Logg inn med e-postadressen du er medlem med for å se medlemsinformasjon.",
+      "errorExpired": "Lenken har utløpt eller er allerede brukt. Be om en ny.",
+      "errorInvalid": "Ugyldig innloggingslenke. Be om en ny.",
+      "errorPasskey": "Innlogging med passkey fungerte ikke. Prøv igjen, eller få en innloggingslenke på e-post.",
+      "errorUnknown": "Noe gikk galt. Prøv igjen.",
+      "passkeyButton": "Logg inn med passkey",
+      "orEmail": "eller få en innloggingslenke på e-post",
+      "emailLabel": "E-postadresse",
+      "sendLink": "Send innloggingslenke",
+      "sent": "Sjekk e-posten din for en innloggingslenke. Den utløper om 15 minutter."
+    }
+  },
+  "member": {
+    "overview": {
+      "title": "Oversikt",
+      "memberSince": "Medlem siden {date}",
+      "surveyBanner": {
+        "title": "Hvordan var {event}?",
+        "body": "En kort undersøkelse, et par minutter.",
+        "cta": "Svar nå"
+      },
+      "statusHeading": "Status",
+      "status": {
+        "active": "Aktiv",
+        "retired": "Pensjonert",
+        "inactive": "Inaktiv"
+      },
+      "membershipsHeading": "Dine medlemskap",
+      "table": {
+        "group": "Gruppe",
+        "role": "Rolle",
+        "memberSince": "Medlem siden"
+      },
+      "roleFallback": "medlem"
+    },
+    "discounts": {
+      "title": "Fordeler",
+      "intro": "Rabatter og tilbud medlemmer gir hverandre på sine produkter.",
+      "empty": "Ingen tilbud er publisert ennå.",
+      "request": "Jeg ønsker denne",
+      "requested": "✓ Du har meldt interesse (angre)",
+      "demand": "{count} medlem ønsker dette | {count} medlemmer ønsker dette",
+      "boardRequests": "{count} forespørsel · kun synlig for styret | {count} forespørsler · kun synlig for styret",
+      "offeredBy": "Tilbys av {name}",
+      "status": {
+        "active": "Aktiv",
+        "testing": "Til testing",
+        "pending": "Under vurdering"
+      }
+    },
+    "faq": {
+      "title": "FAQ",
+      "intro": "Aktivitetskrav og pensjonering.",
+      "activity": {
+        "heading": "Aktivitetskrav",
+        "lead": "For å opprettholde et aktivt og verdifullt fellesskap, forventes medlemmer å:",
+        "attend": {
+          "title": "Delta på minst 2 samlinger per år.",
+          "body": "Samlinger inkluderer fysiske møter, workshops og sosiale arrangementer."
+        },
+        "slack": {
+          "title": "Være aktiv i Slack-kanalen.",
+          "body": "Bidra til diskusjoner, del erfaringer og still spørsmål."
+        },
+        "absence": {
+          "title": "Gi beskjed ved fravær.",
+          "body": "Hvis du vet at du kommer til å være mindre aktiv en periode, gi styret beskjed."
+        },
+        "review": "Styret vurderer aktivitetsnivå jevnlig. Hvis kravene ikke oppfylles over tid, kan styret ta kontakt for en samtale om veien videre."
+      },
+      "retirement": {
+        "heading": "Pensjonering",
+        "body": "Et medlem som over lengre tid ikke oppfyller aktivitetskravene kan pensjoneres av styret. Pensjonering er ikke en straff, men en anerkjennelse av at livet og prioriteringene endrer seg.",
+        "meaningHeading": "Hva pensjonering innebærer",
+        "meaning": {
+          "slack": "Du beholder tilgang til Slack, men mister tilgang til private kanaler og flyttes til en pensjonert-rolle.",
+          "events": "Du kan ikke delta på roundtable-samlinger, men er velkommen på sosiale arrangementer.",
+          "vote": "Du har ikke stemmerett på årsmøte.",
+          "rejoin": "Du kan når som helst søke styret om gjenopptak av aktivt medlemskap."
+        }
+      },
+      "reinstatement": {
+        "heading": "Gjenopptak",
+        "body": "Ønsker du å bli aktivt medlem igjen? Ta kontakt med styret. Vi vurderer gjenopptak basert på din intensjon og kapasitet til å delta aktivt."
+      }
+    },
+    "host": {
+      "title": "Verting",
+      "intro": "Meld deg som interessert i å være vert. Det er ikke en forpliktelse: styret tar kontakt når vi planlegger neste samling og matcher deg mot et passende tema og gruppe. Faktiske samlinger booker vi via Luma.",
+      "yourInterest": "Din interesse",
+      "onList": "Du står på listen",
+      "summary": {
+        "location": "Lokasjon",
+        "capacity": "Kapasitet",
+        "capacityValue": "{count} person | {count} personer",
+        "timeframe": "Tidsrom",
+        "sponsors": "Sponser",
+        "food": "mat",
+        "drinks": "drikke",
+        "notes": "Notater",
+        "registered": "Registrert {date}"
+      },
+      "withdraw": "Trekk interessen",
+      "formIntro": "Alle felt er valgfrie: bare å melde seg er nok signal. Styret setter opp samlingen i Luma når det er din tur.",
+      "form": {
+        "location": "Lokasjon",
+        "locationPlaceholder": "f.eks. City center, Torggata, Asker",
+        "capacity": "Hvor mange kan dere ta i mot?",
+        "timeframe": "Tidsrom (valgfritt)",
+        "timeframePlaceholder": "f.eks. Q3 2026, før sommeren, fleksibel",
+        "sponsorFood": "Vi sponser mat",
+        "sponsorDrinks": "Vi sponser drikke",
+        "notes": "Notater (valgfritt)",
+        "submit": "Meld interesse",
+        "error": "Kunne ikke registrere. Prøv igjen."
+      },
+      "history": {
+        "heading": "Din verthistorikk",
+        "count": "{count} gang | {count} ganger",
+        "empty": "Ingen tidligere verthistorikk enda.",
+        "date": "Dato",
+        "theme": "Tema",
+        "group": "Gruppe",
+        "coHosts": "Co-hosts"
+      }
+    },
+    "openToWork": {
+      "title": "Åpen for jobb",
+      "intro": "Vi får jevnlig spørsmål om vi kjenner noen til en CTO-rolle. Står du i en ny situasjon, eller bare er nysgjerrig på hva som finnes, kan du sette deg som åpen her. Standard er at du ikke står oppført. Listen er kun synlig for medlemmene i investeringsgruppene og styret, siden det er der henvendelsene kommer inn. Du kan trekke deg når som helst.",
+      "yourStatus": "Din status",
+      "isOpen": "Du står som åpen for nye muligheter",
+      "notListed": "Du står ikke oppført. Alle felt er valgfrie, det holder å melde seg.",
+      "form": {
+        "lookingFor": "Hva ser du etter? (valgfritt)",
+        "lookingForPlaceholder": "f.eks. CTO, VP Engineering, deltid/rådgiver",
+        "availability": "Når er du tilgjengelig? (valgfritt)",
+        "availabilityPlaceholder": "f.eks. nå, fra januar, 3 mnd oppsigelse",
+        "note": "Noe mer de bør vite? (valgfritt)",
+        "notePlaceholder": "Bransje, fase, remote, hva du ikke vil",
+        "saveChanges": "Lagre endringer",
+        "setOpen": "Sett meg som åpen",
+        "error": "Kunne ikke lagre. Prøv igjen."
+      },
+      "setOn": "Satt {date}",
+      "setOnUpdated": "Satt {date}, oppdatert {updated}",
+      "withdraw": "Jeg er ikke åpen lenger",
+      "list": {
+        "heading": "Åpne for nye muligheter",
+        "chip": "Invest + styret",
+        "trustNote": "Dette er delt i tillit. Ta kontakt med personen selv før du sender navnet videre til noen utenfor nettverket.",
+        "empty": "Ingen står som åpne akkurat nå.",
+        "roleAtCompany": "{role}, {company}",
+        "lookingFor": "Ser etter",
+        "availability": "Tilgjengelig",
+        "updated": "Oppdatert {date}",
+        "forbidden": "Listen er kun for investeringsgruppene og styret.",
+        "error": "Kunne ikke hente listen. Prøv igjen."
+      }
+    },
+    "myActivity": {
+      "title": "Min aktivitet",
+      "intro": "Din aktivitet fra Slack (poster, tråd-svar, reaksjoner) og Luma (oppmøte + hosting), siste 12 måneder.",
+      "signInPrompt": "Logg inn for å se din aktivitet."
+    },
+    "activityDetail": {
+      "error": "Kunne ikke laste aktivitet.",
+      "summary": "Score {score} · aktiv {from} til {to} · siste {months} mnd",
+      "tiles": {
+        "posts": "poster",
+        "replies": "tråd-svar",
+        "reactions": "reaksjoner",
+        "attended": "oppmøte",
+        "hosted": "hosting",
+        "points": "{points} p"
+      },
+      "weeklyHeading": "Aktivitet per uke",
+      "noSlack": "Ingen Slack-aktivitet i vinduet.",
+      "legend": {
+        "post": "post",
+        "reply": "tråd-svar",
+        "reaction": "reaksjon",
+        "perActiveWeek": "{count} meldinger / aktiv uke"
+      },
+      "barTitle": "{week}: {posts} post, {replies} svar, {reactions} reaksjon",
+      "events": "Eventer ({count})",
+      "noEvents": "Ingen registrerte eventer.",
+      "reactionsReceived": "Reaksjoner mottatt",
+      "mostActiveIn": "Mest aktiv i",
+      "noChannels": "Ingen kanaler.",
+      "status": {
+        "active": "Aktiv",
+        "low": "Lav",
+        "dormant": "Sovende"
+      }
+    },
+    "onboarding": {
+      "title": "AI-onboarding",
+      "intro": "Koble Claude Code til CTO Roundtable-verktøyene. Prompten under er tilpasset rollen din.",
+      "before": {
+        "heading": "Før du starter",
+        "github": "GitHub-konto med akseptert invitasjon til {org}-org",
+        "claudeCode": "{link} installert"
+      },
+      "toolsHeading": "Dette blir satt opp for deg",
+      "promptHeading": "Din prompt",
+      "copyPrompt": "Kopier prompt",
+      "howTo": {
+        "heading": "Slik gjør du det",
+        "step1": "Start {cmd} i en terminal",
+        "step2": "Lim inn prompten og følg stegene"
+      }
+    },
+    "updates": {
+      "title": "Investoroppdateringer",
+      "intro": "Oppdateringer fra porteføljeselskapene i kohortene du er med i.",
+      "yourCohorts": "Dine investeringsgrupper:",
+      "filterLabel": "Filtrer på selskap",
+      "filterPlaceholder": "Alle selskaper",
+      "empty": "Ingen oppdateringer er lagt inn ennå.",
+      "notice": "Notis",
+      "loadMore": "Last inn flere",
+      "showingAll": "Viser alle {count} oppdatering | Viser alle {count} oppdateringer",
+      "count": "{count} oppdatering | {count} oppdateringer",
+      "allUpdates": "Alle oppdateringer",
+      "allUpdatesFrom": "Alle oppdateringer fra {company}",
+      "attachments": "Vedlegg"
+    },
+    "security": {
+      "title": "Innlogging",
+      "intro": "Du logger inn med en lenke på e-post. Med en passkey kan du i stedet logge inn med Face ID, fingeravtrykk eller en sikkerhetsnøkkel, uten å vente på e-posten. E-postlenken fungerer fortsatt, så mister du enheten, logger du bare inn med lenken og fjerner passkeyen her.",
+      "add": {
+        "heading": "Legg til en passkey",
+        "headingOnboarding": "Ett steg til: sett opp en passkey for {name}",
+        "unsupported": "Denne nettleseren støtter ikke passkeys. Du kan fortsatt logge inn med e-postlenken.",
+        "storage": "Passkeyen lagres på denne enheten (eller i iCloud-nøkkelringen / Google Password Manager, så den følger med til de andre enhetene dine). Vi lagrer bare den offentlige nøkkelen.",
+        "nameLabel": "Navn (valgfritt)",
+        "namePlaceholder": "f.eks. MacBook, iPhone",
+        "submit": "Legg til passkey",
+        "submitOnboarding": "Sett opp passkey",
+        "skip": "Ikke nå",
+        "added": "Passkeyen er lagt til. Neste gang kan du velge «{button}» på innloggingssiden.",
+        "goToOverview": "Gå til oversikten",
+        "signOutAndIn": "Logg ut og logg inn på nytt"
+      },
+      "list": {
+        "heading": "Dine passkeys",
+        "empty": "Ingen passkeys ennå. Du logger inn med e-postlenken.",
+        "nameLabel": "Navn",
+        "unnamed": "Passkey uten navn",
+        "synced": "Synkronisert",
+        "addedOn": "Lagt til {date}",
+        "lastUsed": "sist brukt {date}",
+        "neverUsed": "ikke brukt ennå",
+        "rename": "Gi nytt navn",
+        "remove": "Fjern",
+        "confirmRemove": "Fjerne {label}? Du kan fortsatt logge inn med e-postlenken.",
+        "thisPasskey": "denne passkeyen"
+      },
+      "errors": {
+        "loadList": "Kunne ikke hente passkeys. Prøv igjen.",
+        "alreadyOnDevice": "Denne enheten har allerede en passkey for deg.",
+        "createFailed": "Kunne ikke lage en passkey på denne enheten.",
+        "duplicate": "Denne passkeyen er allerede lagt til.",
+        "saveFailed": "Kunne ikke lagre passkeyen. Prøv igjen, og sjekk at enheten ber om Face ID, fingeravtrykk eller PIN.",
+        "rename": "Kunne ikke endre navnet. Prøv igjen.",
+        "remove": "Kunne ikke fjerne passkeyen. Prøv igjen.",
+        "reauth": "Av sikkerhetshensyn kan du bare legge til en passkey rett etter at du har logget inn. Logg ut, logg inn igjen med e-postlenken (eller en passkey du allerede har), og prøv på nytt.",
+        "limit": "Du har allerede {max} passkeys. Fjern en du ikke bruker, så kan du legge til en ny."
+      },
+      "account": "for {name}",
+      "accountWithEmail": "for {name} ({email})"
+    },
+    "surveys": {
+      "title": "Undersøkelser",
+      "intro": "Korte undersøkelser etter arrangementene våre. Det tar et par minutter, og det er sånn vi finner ut hva som funket og hva vi bør gjøre annerledes neste gang. Styret ser svarene.",
+      "deadlineOn": "frist {date}",
+      "responses": "{count} svar | {count} svar",
+      "fields": {
+        "title": "Tittel",
+        "intro": "Ingress (valgfritt)",
+        "deadline": "Frist (valgfritt)"
+      },
+      "create": {
+        "newSurvey": "Ny undersøkelse",
+        "event": "Arrangement",
+        "eventOption": "{date} · {theme}",
+        "eventOptionTaken": "{date} · {theme} (har undersøkelse)",
+        "noTheme": "Uten tema",
+        "englishNote": "Arrangementet hører til {group}, så undersøkelsen blir på engelsk.",
+        "defaultQuestions": "Standardspørsmål:",
+        "draftHint": "Vil du endre spørsmålene, lag et utkast. Da kan du redigere før noen ser den.",
+        "openWithDefaults": "Åpne med standardspørsmål",
+        "draftAndEdit": "Lag utkast og rediger"
+      },
+      "typeLabel": {
+        "rating": "skala 1 til {max}",
+        "multi": "flere valg",
+        "text": "fritekst"
+      },
+      "sections": {
+        "open": "Åpne",
+        "none": "Ingen åpne undersøkelser akkurat nå.",
+        "drafts": "Utkast",
+        "closed": "Avsluttet"
+      },
+      "tags": {
+        "answered": "Besvart",
+        "notAnswered": "Ikke besvart",
+        "draft": "Utkast",
+        "sweden": "Sverige"
+      },
+      "errors": {
+        "load": "Kunne ikke hente undersøkelsene. Prøv igjen.",
+        "events": "Kunne ikke hente arrangementene.",
+        "create": "Kunne ikke opprette undersøkelsen. Prøv igjen."
+      },
+      "admin": {
+        "heading": "Styring",
+        "seeResults": "Se resultater",
+        "open": "Åpne undersøkelsen",
+        "reopen": "Gjenåpne",
+        "close": "Lukk undersøkelsen",
+        "expired": "Fristen har gått ut, så ingen kan svare lenger. Flytt fristen for å åpne igjen.",
+        "status": {
+          "draft": "Utkast",
+          "open": "Åpen",
+          "closed": "Lukket"
+        },
+        "questionsHeading": "Spørsmål",
+        "locked": "Spørsmålene er låst fordi noen allerede har svart. Da stemmer svarene alltid med spørsmålet de ble gitt til.",
+        "types": {
+          "rating": "Skala",
+          "text": "Fritekst",
+          "choice": "Ett valg",
+          "multi": "Flere valg"
+        },
+        "question": "Spørsmål",
+        "options": "Svaralternativer, ett per linje",
+        "scaleMax": "Skala 1 til",
+        "required": "Må besvares",
+        "moveUp": "Flytt opp",
+        "moveDown": "Flytt ned",
+        "deleteQuestion": "Slett spørsmål",
+        "addQuestion": "Legg til spørsmål",
+        "saveQuestions": "Lagre spørsmål",
+        "errors": {
+          "status": "Kunne ikke endre status.",
+          "save": "Kunne ikke lagre.",
+          "questions": "Kunne ikke lagre spørsmålene."
+        }
+      },
+      "answer": {
+        "back": "Alle undersøkelser",
+        "yourAnswer": "Ditt svar",
+        "notEligible": "Du er ikke med i gruppen dette arrangementet hører til, så du kan ikke svare selv. Som styremedlem ser du likevel resultatene.",
+        "draft": "Dette er et utkast. Medlemmene ser det ikke før det er åpnet.",
+        "closed": "Undersøkelsen er lukket.",
+        "thanks": "Takk! Svaret ditt er lagret.",
+        "answeredAt": "Du svarte {date}.",
+        "canEdit": "Du kan endre svaret så lenge undersøkelsen er åpen.",
+        "seeResults": "Se resultatene",
+        "required": "Må besvares",
+        "scaleHint": "1 = lite, {max} = svært",
+        "submit": "Send svar",
+        "update": "Oppdater svaret",
+        "failed": "Kunne ikke lagre svaret. Prøv igjen.",
+        "loadFailed": "Fant ikke undersøkelsen."
+      },
+      "results": {
+        "back": "Tilbake til undersøkelsen",
+        "answered": "{count} har svart på dette",
+        "open": "åpen",
+        "closed": "lukket",
+        "boardNote": "Styrevisning. Fritekstsvar vises med navn, fordi vi er en liten krets som bygger på tillit. Del dem ikke videre med navn.",
+        "memberNote": "Du ser samlede tall uten navn. Fritekstsvarene ser bare styret.",
+        "none": "Ingen har svart ennå.",
+        "noText": "Ingen har skrevet noe her.",
+        "textHidden": "Fritekst, synlig for styret.",
+        "loadFailed": "Kunne ikke hente resultatene."
+      }
+    }
+  }
+}

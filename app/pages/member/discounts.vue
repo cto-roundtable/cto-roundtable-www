@@ -1,9 +1,9 @@
 <template>
   <div class="discounts text-left">
     <header class="mb-6">
-      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">Fordeler</h1>
+      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">{{ t('member.discounts.title') }}</h1>
       <p style="color: #aaa; font-size: 14px;">
-        Rabatter og tilbud medlemmer gir hverandre på sine produkter.
+        {{ t('member.discounts.intro') }}
       </p>
     </header>
 
@@ -12,7 +12,7 @@
     </div>
 
     <div v-else-if="!offers.length" style="color: #aaa;">
-      Ingen tilbud er publisert ennå.
+      {{ t('member.discounts.empty') }}
     </div>
 
     <section v-else class="offer-grid">
@@ -49,7 +49,7 @@
         <div v-if="offer.status === 'active' && offer.code" class="mb-3">
           <button class="code-pill" @click="copyCode(offer)">
             <v-icon size="14" class="mr-1">mdi-content-copy</v-icon>
-            <span>{{ copiedCode === offer.code ? 'Kopiert!' : offer.code }}</span>
+            <span>{{ copiedCode === offer.code ? t('common.copied') : offer.code }}</span>
           </button>
         </div>
 
@@ -63,7 +63,7 @@
             style="background-color: #fff; color: #111;"
             @click="request(offer)"
           >
-            Jeg ønsker denne
+            {{ t('member.discounts.request') }}
           </v-btn>
           <v-btn
             v-else
@@ -73,18 +73,18 @@
             :loading="busy === offer.id"
             @click="unrequest(offer)"
           >
-            ✓ Du har meldt interesse (angre)
+            {{ t('member.discounts.requested') }}
           </v-btn>
-          <span class="signal ml-3">{{ offer.requestCount }} medlemmer ønsker dette</span>
+          <span class="signal ml-3">{{ t('member.discounts.demand', offer.requestCount) }}</span>
         </div>
 
         <!-- Board-only signal on pending offers -->
         <div v-if="isBoard && offer.status === 'pending'" class="mb-3">
-          <span class="signal">{{ offer.requestCount }} forespørsler · kun synlig for styret</span>
+          <span class="signal">{{ t('member.discounts.boardRequests', offer.requestCount) }}</span>
         </div>
 
         <p v-if="offer.contactName" class="offer-contact mb-0">
-          Tilbys av {{ offer.contactName }}
+          {{ t('member.discounts.offeredBy', { name: offer.contactName }) }}
         </p>
 
         <p v-if="isBoard && offer.notes" class="offer-notes mt-2 mb-0">
@@ -97,6 +97,8 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'member' })
+
+const { t, te } = useI18n()
 
 interface Offer {
   id: string
@@ -193,12 +195,8 @@ function statusColor(status: string): string {
 }
 
 function statusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    active: 'Aktiv',
-    testing: 'Til testing',
-    pending: 'Under vurdering',
-  }
-  return labels[status] || status
+  const key = `member.discounts.status.${status}`
+  return status && te(key) ? t(key) : status
 }
 </script>
 

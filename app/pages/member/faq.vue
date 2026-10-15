@@ -1,58 +1,48 @@
 <template>
   <div class="member-faq text-left">
     <header class="mb-6">
-      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">FAQ</h1>
+      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">{{ t('member.faq.title') }}</h1>
       <p style="color: #aaa; font-size: 14px;">
-        Aktivitetskrav og pensjonering.
+        {{ t('member.faq.intro') }}
       </p>
     </header>
 
     <section class="mb-8">
-      <h2 class="font-weight-bold mb-3">Aktivitetskrav</h2>
-      <p>For å opprettholde et aktivt og verdifullt fellesskap, forventes medlemmer å:</p>
+      <h2 class="font-weight-bold mb-3">{{ t('member.faq.activity.heading') }}</h2>
+      <p>{{ t('member.faq.activity.lead') }}</p>
       <ul class="mt-2">
         <li>
-          <strong>Delta på minst 2 samlinger per år.</strong> Samlinger inkluderer fysiske møter,
-          workshops og sosiale arrangementer.
+          <strong>{{ t('member.faq.activity.attend.title') }}</strong> {{ t('member.faq.activity.attend.body') }}
         </li>
         <li>
-          <strong>Være aktiv i Slack-kanalen.</strong> Bidra til diskusjoner, del erfaringer og
-          still spørsmål.
+          <strong>{{ t('member.faq.activity.slack.title') }}</strong> {{ t('member.faq.activity.slack.body') }}
         </li>
         <li>
-          <strong>Gi beskjed ved fravær.</strong> Hvis du vet at du kommer til å være mindre
-          aktiv en periode, gi styret beskjed.
+          <strong>{{ t('member.faq.activity.absence.title') }}</strong> {{ t('member.faq.activity.absence.body') }}
         </li>
       </ul>
       <p class="mt-3">
-        Styret vurderer aktivitetsnivå jevnlig. Hvis kravene ikke oppfylles over tid, kan styret
-        ta kontakt for en samtale om veien videre.
+        {{ t('member.faq.activity.review') }}
       </p>
     </section>
 
     <section class="mb-8">
-      <h2 class="font-weight-bold mb-3">Pensjonering</h2>
+      <h2 class="font-weight-bold mb-3">{{ t('member.faq.retirement.heading') }}</h2>
       <p>
-        Et medlem som over lengre tid ikke oppfyller aktivitetskravene kan pensjoneres av styret.
-        Pensjonering er ikke en straff, men en anerkjennelse av at livet og prioriteringene
-        endrer seg.
+        {{ t('member.faq.retirement.body') }}
       </p>
 
-      <h3 class="font-weight-bold mt-4 mb-2">Hva pensjonering innebærer</h3>
+      <h3 class="font-weight-bold mt-4 mb-2">{{ t('member.faq.retirement.meaningHeading') }}</h3>
       <ul>
-        <li>
-          Du beholder tilgang til Slack, men mister tilgang til private kanaler og flyttes til en
-          pensjonert-rolle.
-        </li>
-        <li>Du kan ikke delta på roundtable-samlinger, men er velkommen på sosiale arrangementer.</li>
-        <li>Du har ikke stemmerett på årsmøte.</li>
-        <li>Du kan når som helst søke styret om gjenopptak av aktivt medlemskap.</li>
+        <li>{{ t('member.faq.retirement.meaning.slack') }}</li>
+        <li>{{ t('member.faq.retirement.meaning.events') }}</li>
+        <li>{{ t('member.faq.retirement.meaning.vote') }}</li>
+        <li>{{ t('member.faq.retirement.meaning.rejoin') }}</li>
       </ul>
 
-      <h3 class="font-weight-bold mt-4 mb-2">Gjenopptak</h3>
+      <h3 class="font-weight-bold mt-4 mb-2">{{ t('member.faq.reinstatement.heading') }}</h3>
       <p>
-        Ønsker du å bli aktivt medlem igjen? Ta kontakt med styret. Vi vurderer gjenopptak basert
-        på din intensjon og kapasitet til å delta aktivt.
+        {{ t('member.faq.reinstatement.body') }}
       </p>
     </section>
   </div>
@@ -60,6 +50,8 @@
 
 <script setup lang="ts">
 definePageMeta({ layout: 'member' })
+
+const { t } = useI18n()
 </script>
 
 <style scoped>

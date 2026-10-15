@@ -1,0 +1,418 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "copied": "Copied!",
+    "board": "Board"
+  },
+  "nav": {
+    "overview": "Overview",
+    "hosting": "Hosting",
+    "openToWork": "Open to work",
+    "myActivity": "My activity",
+    "discounts": "Offers",
+    "surveys": "Surveys",
+    "aiOnboarding": "AI onboarding",
+    "signIn": "Sign-in",
+    "faq": "FAQ",
+    "investorUpdates": "Investor updates",
+    "boardMeetings": "Board meetings",
+    "boardActivity": "Activity (board)"
+  },
+  "layout": {
+    "signedInAs": "Signed in as",
+    "homeAria": "Go to the home page",
+    "menuAria": "Menu",
+    "passkeyNudge": {
+      "body": "Skip the email link next time: add a passkey and sign in with Face ID, your fingerprint or a security key.",
+      "link": "Add one under Sign-in"
+    },
+    "language": "Language"
+  },
+  "auth": {
+    "signOut": "Sign out",
+    "login": {
+      "title": "Member Portal",
+      "intro": "Sign in with your membership email to access member information.",
+      "errorExpired": "This link has expired or has already been used. Please request a new one.",
+      "errorInvalid": "Invalid sign-in link. Please request a new one.",
+      "errorPasskey": "Passkey sign-in did not work. Try again, or get a sign-in link by email.",
+      "errorUnknown": "Something went wrong. Please try again.",
+      "passkeyButton": "Sign in with passkey",
+      "orEmail": "or get a sign-in link by email",
+      "emailLabel": "Email address",
+      "sendLink": "Send sign-in link",
+      "sent": "Check your email for a sign-in link. It expires in 15 minutes."
+    }
+  },
+  "member": {
+    "overview": {
+      "title": "Overview",
+      "memberSince": "Member since {date}",
+      "surveyBanner": {
+        "title": "How was {event}?",
+        "body": "A short survey, a couple of minutes.",
+        "cta": "Answer"
+      },
+      "statusHeading": "Status",
+      "status": {
+        "active": "Active",
+        "retired": "Retired",
+        "inactive": "Inactive"
+      },
+      "membershipsHeading": "Your memberships",
+      "table": {
+        "group": "Group",
+        "role": "Role",
+        "memberSince": "Member since"
+      },
+      "roleFallback": "member"
+    },
+    "discounts": {
+      "title": "Offers",
+      "intro": "Discounts and offers members give each other on their products.",
+      "empty": "No offers published yet.",
+      "request": "I want this",
+      "requested": "✓ You have registered interest (undo)",
+      "demand": "{count} member wants this | {count} members want this",
+      "boardRequests": "{count} request · visible to the board only | {count} requests · visible to the board only",
+      "offeredBy": "Offered by {name}",
+      "status": {
+        "active": "Active",
+        "testing": "Testing",
+        "pending": "Under review"
+      }
+    },
+    "faq": {
+      "title": "FAQ",
+      "intro": "Activity requirements and retirement.",
+      "activity": {
+        "heading": "Activity requirements",
+        "lead": "To keep the community active and worthwhile, members are expected to:",
+        "attend": {
+          "title": "Attend at least 2 gatherings a year.",
+          "body": "Gatherings include in-person meetings, workshops and social events."
+        },
+        "slack": {
+          "title": "Be active in the Slack channel.",
+          "body": "Join discussions, share experiences and ask questions."
+        },
+        "absence": {
+          "title": "Let us know if you will be away.",
+          "body": "If you know you will be less active for a while, tell the board."
+        },
+        "review": "The board reviews activity levels regularly. If the requirements are not met over time, the board may get in touch for a conversation about the way forward."
+      },
+      "retirement": {
+        "heading": "Retirement",
+        "body": "A member who does not meet the activity requirements over a longer period may be retired by the board. Retirement is not a punishment, but a recognition that life and priorities change.",
+        "meaningHeading": "What retirement means",
+        "meaning": {
+          "slack": "You keep access to Slack, but lose access to private channels and are moved to a retired role.",
+          "events": "You cannot attend roundtable gatherings, but you are welcome at social events.",
+          "vote": "You have no vote at the annual general meeting.",
+          "rejoin": "You can ask the board at any time to become an active member again."
+        }
+      },
+      "reinstatement": {
+        "heading": "Rejoining",
+        "body": "Want to become an active member again? Get in touch with the board. We consider rejoining based on your intent and your capacity to take an active part."
+      }
+    },
+    "host": {
+      "title": "Hosting",
+      "intro": "Let us know you are interested in hosting. It is not a commitment: the board gets in touch when we plan the next gathering and matches you with a suitable topic and group. The gatherings themselves are booked through Luma.",
+      "yourInterest": "Your interest",
+      "onList": "You are on the list",
+      "summary": {
+        "location": "Location",
+        "capacity": "Capacity",
+        "capacityValue": "{count} person | {count} people",
+        "timeframe": "Timeframe",
+        "sponsors": "Sponsoring",
+        "food": "food",
+        "drinks": "drinks",
+        "notes": "Notes",
+        "registered": "Registered {date}"
+      },
+      "withdraw": "Withdraw interest",
+      "formIntro": "All fields are optional: signing up is signal enough. The board sets up the gathering in Luma when it is your turn.",
+      "form": {
+        "location": "Location",
+        "locationPlaceholder": "e.g. city centre, Torggata, Asker",
+        "capacity": "How many people can you host?",
+        "timeframe": "Timeframe (optional)",
+        "timeframePlaceholder": "e.g. Q3 2026, before the summer, flexible",
+        "sponsorFood": "We sponsor food",
+        "sponsorDrinks": "We sponsor drinks",
+        "notes": "Notes (optional)",
+        "submit": "Register interest",
+        "error": "Could not register. Please try again."
+      },
+      "history": {
+        "heading": "Your hosting history",
+        "count": "{count} time | {count} times",
+        "empty": "No hosting history yet.",
+        "date": "Date",
+        "theme": "Topic",
+        "group": "Group",
+        "coHosts": "Co-hosts"
+      }
+    },
+    "openToWork": {
+      "title": "Open to work",
+      "intro": "We are regularly asked whether we know someone for a CTO role. If you are in a new situation, or just curious about what is out there, you can mark yourself as open here. By default you are not listed. The list is only visible to members of the investment groups and the board, since that is where the requests come in. You can withdraw at any time.",
+      "yourStatus": "Your status",
+      "isOpen": "You are listed as open to new opportunities",
+      "notListed": "You are not listed. All fields are optional, signing up is enough.",
+      "form": {
+        "lookingFor": "What are you looking for? (optional)",
+        "lookingForPlaceholder": "e.g. CTO, VP Engineering, part-time/advisor",
+        "availability": "When are you available? (optional)",
+        "availabilityPlaceholder": "e.g. now, from January, 3 months' notice",
+        "note": "Anything else they should know? (optional)",
+        "notePlaceholder": "Industry, stage, remote, what you do not want",
+        "saveChanges": "Save changes",
+        "setOpen": "Mark me as open",
+        "error": "Could not save. Please try again."
+      },
+      "setOn": "Set {date}",
+      "setOnUpdated": "Set {date}, updated {updated}",
+      "withdraw": "I am no longer open",
+      "list": {
+        "heading": "Open to new opportunities",
+        "chip": "Invest + board",
+        "trustNote": "This is shared in confidence. Contact the person yourself before passing their name on to anyone outside the network.",
+        "empty": "Nobody is listed as open right now.",
+        "roleAtCompany": "{role}, {company}",
+        "lookingFor": "Looking for",
+        "availability": "Available",
+        "updated": "Updated {date}",
+        "forbidden": "The list is only for the investment groups and the board.",
+        "error": "Could not load the list. Please try again."
+      }
+    },
+    "myActivity": {
+      "title": "My activity",
+      "intro": "Your activity from Slack (posts, thread replies, reactions) and Luma (attendance + hosting), last 12 months.",
+      "signInPrompt": "Sign in to see your activity."
+    },
+    "activityDetail": {
+      "error": "Could not load activity.",
+      "summary": "Score {score} · active {from} to {to} · last {months} months",
+      "tiles": {
+        "posts": "posts",
+        "replies": "thread replies",
+        "reactions": "reactions",
+        "attended": "attendance",
+        "hosted": "hosting",
+        "points": "{points} pts"
+      },
+      "weeklyHeading": "Activity per week",
+      "noSlack": "No Slack activity in this period.",
+      "legend": {
+        "post": "post",
+        "reply": "thread reply",
+        "reaction": "reaction",
+        "perActiveWeek": "{count} messages / active week"
+      },
+      "barTitle": "{week}: {posts} posts, {replies} replies, {reactions} reactions",
+      "events": "Events ({count})",
+      "noEvents": "No recorded events.",
+      "reactionsReceived": "Reactions received",
+      "mostActiveIn": "Most active in",
+      "noChannels": "No channels.",
+      "status": {
+        "active": "Active",
+        "low": "Low",
+        "dormant": "Dormant"
+      }
+    },
+    "onboarding": {
+      "title": "AI onboarding",
+      "intro": "Connect Claude Code to the CTO Roundtable tools. The prompt below is tailored to your role.",
+      "before": {
+        "heading": "Before you start",
+        "github": "A GitHub account with an accepted invitation to the {org} org",
+        "claudeCode": "{link} installed"
+      },
+      "toolsHeading": "This is set up for you",
+      "promptHeading": "Your prompt",
+      "copyPrompt": "Copy prompt",
+      "howTo": {
+        "heading": "How to do it",
+        "step1": "Start {cmd} in a terminal",
+        "step2": "Paste the prompt and follow the steps"
+      }
+    },
+    "updates": {
+      "title": "Investor updates",
+      "intro": "Updates from the portfolio companies in the cohorts you belong to.",
+      "yourCohorts": "Your investment groups:",
+      "filterLabel": "Filter by company",
+      "filterPlaceholder": "All companies",
+      "empty": "No updates have been added yet.",
+      "notice": "Notice",
+      "loadMore": "Load more",
+      "showingAll": "Showing all {count} update | Showing all {count} updates",
+      "count": "{count} update | {count} updates",
+      "allUpdates": "All updates",
+      "allUpdatesFrom": "All updates from {company}",
+      "attachments": "Attachments"
+    },
+    "security": {
+      "title": "Sign-in",
+      "intro": "You sign in with a link sent by email. With a passkey you can sign in with Face ID, your fingerprint or a security key instead, without waiting for the email. The email link keeps working, so if you lose your device, just sign in with the link and remove the passkey here.",
+      "add": {
+        "heading": "Add a passkey",
+        "headingOnboarding": "One more step: set up a passkey for {name}",
+        "unsupported": "This browser does not support passkeys. You can still sign in with the email link.",
+        "storage": "The passkey is stored on this device (or in iCloud Keychain / Google Password Manager, so it follows you to your other devices). We only store the public key.",
+        "nameLabel": "Name (optional)",
+        "namePlaceholder": "e.g. MacBook, iPhone",
+        "submit": "Add passkey",
+        "submitOnboarding": "Set up passkey",
+        "skip": "Not now",
+        "added": "Passkey added. Next time you can choose \"{button}\" on the sign-in page.",
+        "goToOverview": "Go to the overview",
+        "signOutAndIn": "Sign out and sign in again"
+      },
+      "list": {
+        "heading": "Your passkeys",
+        "empty": "No passkeys yet. You sign in with the email link.",
+        "nameLabel": "Name",
+        "unnamed": "Unnamed passkey",
+        "synced": "Synced",
+        "addedOn": "Added {date}",
+        "lastUsed": "last used {date}",
+        "neverUsed": "not used yet",
+        "rename": "Rename",
+        "remove": "Remove",
+        "confirmRemove": "Remove {label}? You can still sign in with the email link.",
+        "thisPasskey": "this passkey"
+      },
+      "errors": {
+        "loadList": "Could not load your passkeys. Please try again.",
+        "alreadyOnDevice": "This device already has a passkey for you.",
+        "createFailed": "Could not create a passkey on this device.",
+        "duplicate": "This passkey has already been added.",
+        "saveFailed": "Could not save the passkey. Try again, and check that your device asks for Face ID, your fingerprint or a PIN.",
+        "rename": "Could not rename it. Please try again.",
+        "remove": "Could not remove the passkey. Please try again.",
+        "reauth": "For security reasons you can only add a passkey right after you have signed in. Sign out, sign in again with the email link (or a passkey you already have), and try again.",
+        "limit": "You already have {max} passkeys. Remove one you do not use, then you can add a new one."
+      },
+      "account": "for {name}",
+      "accountWithEmail": "for {name} ({email})"
+    },
+    "surveys": {
+      "title": "Surveys",
+      "intro": "Short surveys after our events. They take a couple of minutes, and they are how we find out what worked and what we should do differently next time. The board sees the answers.",
+      "deadlineOn": "closes {date}",
+      "responses": "{count} response | {count} responses",
+      "fields": {
+        "title": "Title",
+        "intro": "Intro (optional)",
+        "deadline": "Closing date (optional)"
+      },
+      "create": {
+        "newSurvey": "New survey",
+        "event": "Event",
+        "eventOption": "{date} · {theme}",
+        "eventOptionTaken": "{date} · {theme} (has a survey)",
+        "noTheme": "No topic",
+        "englishNote": "This event belongs to {group}, so the survey will be in English.",
+        "defaultQuestions": "Standard questions:",
+        "draftHint": "To change the questions, create a draft. You can then edit it before anyone sees it.",
+        "openWithDefaults": "Open with standard questions",
+        "draftAndEdit": "Create draft and edit"
+      },
+      "typeLabel": {
+        "rating": "scale 1 to {max}",
+        "multi": "multiple choice",
+        "text": "free text"
+      },
+      "sections": {
+        "open": "Open",
+        "none": "No open surveys right now.",
+        "drafts": "Drafts",
+        "closed": "Closed"
+      },
+      "tags": {
+        "answered": "Answered",
+        "notAnswered": "Not answered",
+        "draft": "Draft",
+        "sweden": "Sweden"
+      },
+      "errors": {
+        "load": "Could not load the surveys. Please try again.",
+        "events": "Could not load the events.",
+        "create": "Could not create the survey. Please try again."
+      },
+      "admin": {
+        "heading": "Manage",
+        "seeResults": "See results",
+        "open": "Open the survey",
+        "reopen": "Reopen",
+        "close": "Close the survey",
+        "expired": "The closing date has passed, so nobody can answer any more. Move the date to open it again.",
+        "status": {
+          "draft": "Draft",
+          "open": "Open",
+          "closed": "Closed"
+        },
+        "questionsHeading": "Questions",
+        "locked": "The questions are locked because someone has already answered. That way the answers always match the question they were given to.",
+        "types": {
+          "rating": "Scale",
+          "text": "Free text",
+          "choice": "Single choice",
+          "multi": "Multiple choice"
+        },
+        "question": "Question",
+        "options": "Answer options, one per line",
+        "scaleMax": "Scale 1 to",
+        "required": "Required",
+        "moveUp": "Move up",
+        "moveDown": "Move down",
+        "deleteQuestion": "Delete question",
+        "addQuestion": "Add question",
+        "saveQuestions": "Save questions",
+        "errors": {
+          "status": "Could not change the status.",
+          "save": "Could not save.",
+          "questions": "Could not save the questions."
+        }
+      },
+      "answer": {
+        "back": "All surveys",
+        "yourAnswer": "Your answer",
+        "notEligible": "You are not in the group this event belongs to, so you cannot answer yourself. As a board member you can still see the results.",
+        "draft": "This is a draft. Members cannot see it until it is opened.",
+        "closed": "This survey is closed.",
+        "thanks": "Thank you! Your answer is saved.",
+        "answeredAt": "You answered on {date}.",
+        "canEdit": "You can change your answer while the survey is open.",
+        "seeResults": "See the results",
+        "required": "Required",
+        "scaleHint": "1 = not at all, {max} = very",
+        "submit": "Send answer",
+        "update": "Update answer",
+        "failed": "Could not save your answer. Please try again.",
+        "loadFailed": "Survey not found."
+      },
+      "results": {
+        "back": "Back to the survey",
+        "answered": "{count} answered this",
+        "open": "open",
+        "closed": "closed",
+        "boardNote": "Board view. Free-text answers show names, because we are a small circle built on trust. Do not pass them on with names.",
+        "memberNote": "You see totals without names. Only the board sees the free-text answers.",
+        "none": "No responses yet.",
+        "noText": "Nobody wrote anything here.",
+        "textHidden": "Free text, visible to the board.",
+        "loadFailed": "Could not load the results."
+      }
+    }
+  }
+}
