@@ -37,14 +37,35 @@
           <span v-else-if="error === 'invalid'">
             Invalid sign-in link. Please request a new one.
           </span>
+          <span v-else-if="error === 'passkey'">
+            Passkey sign-in did not work. Try again, or get a sign-in link by email.
+          </span>
           <span v-else>Something went wrong. Please try again.</span>
         </v-alert>
+
+        <!-- Passkey: an option next to the email link, only where the browser can do it.
+             English like the rest of this card: it is shown before we know who is signing in. -->
+        <template v-if="passkeySupported">
+          <v-btn
+            size="large"
+            block
+            variant="outlined"
+            color="white"
+            prepend-icon="mdi-fingerprint"
+            :loading="passkeyBusy"
+            @click="signInWithPasskey"
+          >
+            Sign in with passkey
+          </v-btn>
+          <div class="login-or">or get a sign-in link by email</div>
+        </template>
 
         <form @submit.prevent="submitMagicLink">
           <v-text-field
             v-model="email"
             label="Email address"
             type="email"
+            autocomplete="username webauthn"
             variant="outlined"
             density="comfortable"
             :disabled="sent"
@@ -134,6 +155,19 @@
       <v-main class="member-layout">
         <v-container fluid class="py-6 py-md-10">
           <div class="member-content">
+            <v-alert
+              v-if="showPasskeyNudge"
+              type="info"
+              variant="tonal"
+              icon="mdi-fingerprint"
+              closable
+              class="mb-6 text-left"
+              @click:close="dismissPasskeyNudge"
+            >
+              Slipp e-postlenken neste gang: legg til en passkey, så logger du inn med Face ID,
+              fingeravtrykk eller sikkerhetsnøkkel.
+              <NuxtLink to="/member/security" style="color: inherit; font-weight: 600;">Legg til under Innlogging</NuxtLink>
+            </v-alert>
             <slot />
           </div>
         </v-container>
@@ -143,10 +177,11 @@
 </template>
 
 <script setup lang="ts">
+import { browserSupportsWebAuthn, browserSupportsWebAuthnAutofill } from '@simplewebauthn/browser'
 import { useDisplay } from 'vuetify'
 
 const route = useRoute()
-const { session, loading, checkSession, requestMagicLink, logout } = useAuthSession()
+const { session, loading, checkSession, loginWithPasskey, requestMagicLink, logout } = useAuthSession()
 const { mobile } = useDisplay()
 
 const email = ref('')
@@ -168,7 +203,9 @@ const baseNavItems = [
   { to: '/member/jobb', title: 'Åpen for jobb', icon: 'mdi-briefcase-search-outline', exact: false },
   { to: '/member/min-aktivitet', title: 'Min aktivitet', icon: 'mdi-chart-line', exact: false },
   { to: '/member/discounts', title: 'Fordeler', icon: 'mdi-tag-multiple-outline', exact: false },
+  { to: '/member/surveys', title: 'Undersøkelser', icon: 'mdi-clipboard-text-outline', exact: false },
   { to: '/member/onboarding', title: 'AI-onboarding', icon: 'mdi-robot-outline', exact: false },
+  { to: '/member/security', title: 'Innlogging', icon: 'mdi-fingerprint', exact: false },
   { to: '/member/faq', title: 'FAQ', icon: 'mdi-help-circle-outline', exact: false },
 ]
 
@@ -200,8 +237,108 @@ async function submitMagicLink() {
   }
 }
 
-onMounted(() => {
-  checkSession()
+// --- Passkeys -----------------------------------------------------------------
+// Decided on the client only: WebAuthn support is a browser fact, and SSR has none.
+const passkeySupported = ref(false)
+const passkeyBusy = ref(false)
+
+async function signInWithPasskey() {
+  passkeyBusy.value = true
+  error.value = ''
+  try {
+    // Starting a new ceremony aborts the autofill one, so offer autofill again
+    // if the member cancels the dialog.
+    if (!(await loginWithPasskey())) startPasskeyAutofill()
+  } catch {
+    error.value = 'passkey'
+  } finally {
+    passkeyBusy.value = false
+  }
+}
+
+/**
+ * Conditional UI: the browser offers saved passkeys in the email field's autofill.
+ * Its challenge lives 5 minutes, but the request can wait much longer for the
+ * member to pick a passkey, so: a 401 (most likely an expired challenge) restarts
+ * it once with a fresh challenge before showing an error, and coming back to a
+ * tab whose request is older than 4 minutes refreshes it.
+ */
+let autofillRun = 0
+let autofillStartedAt = 0
+
+async function startPasskeyAutofill(retried = false) {
+  if (session.value.authenticated || !(await browserSupportsWebAuthnAutofill())) return
+  await nextTick() // the email field (autocomplete="... webauthn") must be in the DOM
+  const run = ++autofillRun
+  autofillStartedAt = Date.now()
+  try {
+    await loginWithPasskey(true)
+  } catch (err: any) {
+    if (run !== autofillRun) return // superseded by a newer request
+    if (err?.statusCode === 401 && !retried) startPasskeyAutofill(true)
+    else error.value = 'passkey'
+  } finally {
+    if (run === autofillRun) autofillStartedAt = 0
+  }
+}
+
+function refreshStalePasskeyAutofill() {
+  const stale = autofillStartedAt && Date.now() - autofillStartedAt > 4 * 60 * 1000
+  if (document.visibilityState === 'visible' && stale) startPasskeyAutofill()
+}
+
+// Members without a passkey are offered one: right after a magic-link sign-in
+// (?via=link) as an onboarding step on /member/security, otherwise as a
+// dismissible nudge above the page. "Ikke nå" / closing the nudge stops both on
+// this browser. Shared state, so /member/security can hide the nudge the moment
+// a passkey is added.
+const NUDGE_DISMISSED_KEY = 'ctr-passkey-nudge-dismissed'
+const passkeyNudge = useState<boolean>('ctr-passkey-nudge', () => false)
+const showPasskeyNudge = computed(() => passkeyNudge.value && route.path !== '/member/security')
+
+let nudgeChecked = false
+
+async function checkPasskeyNudge() {
+  if (nudgeChecked || !passkeySupported.value || localStorage.getItem(NUDGE_DISMISSED_KEY)) return
+  nudgeChecked = true
+  try {
+    const passkeys = await $fetch<unknown[]>('/api/auth/passkey/credentials')
+    if (passkeys.length > 0) return
+    if (route.query.via === 'link') {
+      await navigateTo('/member/security?onboarding=1', { replace: true })
+    } else {
+      passkeyNudge.value = true
+    }
+  } catch {
+    passkeyNudge.value = false
+  }
+}
+
+function dismissPasskeyNudge() {
+  passkeyNudge.value = false
+  localStorage.setItem(NUDGE_DISMISSED_KEY, '1')
+}
+
+watch(
+  () => session.value.authenticated,
+  (authenticated) => {
+    if (authenticated) checkPasskeyNudge()
+    else {
+      passkeyNudge.value = false
+      nudgeChecked = false
+      if (passkeySupported.value) startPasskeyAutofill() // signed out: offer autofill again
+    }
+  },
+)
+
+onBeforeUnmount(() => document.removeEventListener('visibilitychange', refreshStalePasskeyAutofill))
+
+onMounted(async () => {
+  document.addEventListener('visibilitychange', refreshStalePasskeyAutofill)
+  passkeySupported.value = browserSupportsWebAuthn()
+  await checkSession()
+  if (session.value.authenticated) checkPasskeyNudge()
+  else if (passkeySupported.value) startPasskeyAutofill()
 })
 </script>
 
@@ -244,6 +381,12 @@ onMounted(() => {
   max-width: 900px;
   margin: 0 auto;
   padding: 0 4px;
+}
+
+.login-or {
+  margin: 20px 0 16px;
+  color: #888;
+  font-size: 13px;
 }
 
 .text-muted {

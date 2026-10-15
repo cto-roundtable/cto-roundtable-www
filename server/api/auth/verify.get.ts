@@ -7,7 +7,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const sql = useDatabase()
-  const config = useRuntimeConfig()
 
   // Atomically validate and consume token (prevents race condition on reuse)
   const tokens = await sql`
@@ -28,32 +27,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const record = tokens[0]!
+  issueSession(event, record.person_id, record.name)
 
-  // Create session payload
-  const session = JSON.stringify({
-    personId: record.person_id,
-    name: record.name,
-    exp: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
-  })
-
-  // Set signed session cookie
-  setCookie(event, 'ctr_session', session, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
-  })
-
-  // Set HMAC signature cookie
-  const hmac = createSessionHmac(session, config.sessionSecret)
-  setCookie(event, 'ctr_session_sig', hmac, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 30 * 24 * 60 * 60,
-  })
-
-  return sendRedirect(event, '/member')
+  // via=link tells the portal this was a mail sign-in, so a member without a
+  // passkey can be offered one (onboarding step on /member/security).
+  return sendRedirect(event, '/member?via=link')
 })

@@ -1,7 +1,9 @@
 export default defineEventHandler(async (event) => {
   const session = verifySession(event)
 
-  if (!session) {
+  // Same gate as every /api/member/ request: a session whose holder is no longer
+  // a portal member is reported as signed out.
+  if (!session || !(await isPortalMember(session.personId))) {
     return { authenticated: false }
   }
 

@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto'
+import type { H3Event } from 'h3'
 import { Resend } from 'resend'
 
 export default defineEventHandler(async (event) => {
@@ -9,29 +10,23 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Email is required' })
   }
 
-  const sql = useDatabase()
-  const config = useRuntimeConfig()
+  // The login gate (server/utils/membership.ts): active person in cto-roundtable.
+  const member = await findPortalMemberByEmail(email)
 
-  // Check if email belongs to an active member of cto-roundtable
-  const members = await sql`
-    SELECT p.id, p.name
-    FROM contact_infos ci
-    JOIN persons p ON ci.person_id = p.id
-    JOIN memberships m ON p.id = m.person_id
-    JOIN network_groups ng ON m.group_id = ng.id
-    WHERE ci.type = 'email'
-      AND LOWER(ci.value) = ${email}
-      AND p.status = 'active'
-      AND ng.slug = 'cto-roundtable'
-    LIMIT 1
-  `
-
-  // Always return same response to prevent user enumeration
-  if (members.length === 0) {
-    return { ok: true }
+  // Always return same response to prevent user enumeration. The member path's
+  // database work and mail run AFTER we answer (not awaited), so a member and a
+  // non-member get the same response in the same time: no timing oracle. The
+  // instance stays warm (min-instances 1), so the work still completes.
+  if (member) {
+    sendMagicLink(event, member, email).catch((err) => console.error('[auth/request] magic link failed', err))
   }
 
-  const member = members[0]!
+  return { ok: true }
+})
+
+async function sendMagicLink(event: H3Event, member: { id: string; name: string }, email: string) {
+  const sql = useDatabase()
+  const config = useRuntimeConfig()
 
   // Rate limit: max 3 tokens per email per hour
   const recentTokens = await sql`
@@ -41,7 +36,7 @@ export default defineEventHandler(async (event) => {
       AND created_at > now() - interval '1 hour'
   `
   if (Number(recentTokens[0]?.cnt) >= 3) {
-    return { ok: true }
+    return
   }
 
   // Generate secure token
@@ -64,17 +59,12 @@ export default defineEventHandler(async (event) => {
   const baseUrl = config.siteUrl || getRequestURL(event).origin
   const magicLink = `${baseUrl}/api/auth/verify?token=${token}`
 
-  // Fire-and-forget the email. Awaiting an outbound Resend round-trip here makes
-  // the member path hundreds of ms slower than the non-member early return,
-  // which is a membership-enumeration timing oracle despite the identical body.
-  // The instance stays warm (min-instances 1), so the send still completes.
   const resend = new Resend(config.resendApiKey)
-  resend.emails
-    .send({
-      from: 'CTO Roundtable <noreply@ctoroundtable.no>',
-      to: email,
-      subject: 'Sign in to CTO Roundtable',
-      html: `
+  await resend.emails.send({
+    from: 'CTO Roundtable <noreply@ctoroundtable.no>',
+    to: email,
+    subject: 'Sign in to CTO Roundtable',
+    html: `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
         <h2 style="color: #111; margin-bottom: 8px;">CTO Roundtable</h2>
         <p style="color: #555; font-size: 16px;">Hi ${member.name.split(' ')[0]},</p>
@@ -86,8 +76,5 @@ export default defineEventHandler(async (event) => {
         <p style="color: #999; font-size: 13px;">If you didn't request this, you can safely ignore this email.</p>
       </div>
     `,
-    })
-    .catch((err) => console.error('[auth/request] failed to send magic link', err))
-
-  return { ok: true }
-})
+  })
+}
