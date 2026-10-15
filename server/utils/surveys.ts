@@ -6,9 +6,16 @@ import type { H3Event } from 'h3'
  * event_survey_responses (ctoroundtable-hq/infrastructure/db/migrations/023_event_surveys.sql).
  *
  * Rules, all checked per request:
- * - Answer: a member of the event's group (events.group_id). A survey on a
- *   roundtable-sweden event is for Swedish members, a cto-roundtable event for
- *   the Norwegian network. An event with no group counts as cto-roundtable.
+ * - Answer: only those who attended (decisions/survey-attendees.md). Attended =
+ *   an `event_attended` or `event_hosted` row in activity_events (source 'luma')
+ *   for the event's luma_event_id, matched on person_id. An approved Luma guest
+ *   counts as attended, the house convention of track-event-attendance. An event
+ *   without luma_event_id has nobody eligible.
+ *   On top of that, a member of the event's group (events.group_id), which keeps
+ *   a roundtable-sweden survey for Swedish members and a cto-roundtable survey
+ *   for the Norwegian network. An event with no group counts as cto-roundtable.
+ *   The board lists every survey and sees all results, but answers only where it
+ *   attended, like everyone else.
  * - Only while status = 'open' and closes_at has not passed. Drafts are board only.
  * - Results: the board sees everything, text answers with names. A respondent
  *   sees aggregates only (no names, no free text), and only after answering.
@@ -53,6 +60,9 @@ export interface SurveyRow {
   groupId: string | null
   groupSlug: string | null
   lang: SurveyLang
+  lumaEventId: string | null
+  /** Distinct members recorded as attending or hosting the event: who may answer. */
+  attendeeCount: number
 }
 
 /** The portal's own group; also the eligibility fallback for an event with no group. */
@@ -291,7 +301,10 @@ export async function loadSurvey(id: string): Promise<SurveyRow | null> {
     SELECT s.id, s.event_id, s.title, s.intro, s.questions, s.status, s.closes_at,
            s.created_at, s.updated_at,
            to_char(e.date, 'YYYY-MM-DD') AS event_date, e.theme, e.location,
-           e.group_id, ng.slug AS group_slug
+           e.group_id, ng.slug AS group_slug, e.luma_event_id,
+           (SELECT COUNT(DISTINCT a.person_id)::int FROM activity_events a
+            WHERE a.source = 'luma' AND a.event_type IN ('event_attended', 'event_hosted')
+              AND a.channel_id = e.luma_event_id AND a.person_id IS NOT NULL) AS attendee_count
     FROM event_surveys s
     JOIN events e ON e.id = s.event_id
     LEFT JOIN network_groups ng ON ng.id = e.group_id
@@ -316,23 +329,53 @@ export async function loadSurvey(id: string): Promise<SurveyRow | null> {
     groupId: r.group_id,
     groupSlug: r.group_slug,
     lang: surveyLang(r.group_slug),
+    lumaEventId: r.luma_event_id,
+    attendeeCount: r.attendee_count,
   }
 }
 
-/** Member of the survey's event group (or of cto-roundtable when the event has none). */
-export async function isEligibleForSurvey(personId: string, survey: Pick<SurveyRow, 'groupId'>): Promise<boolean> {
+/** Why a person may not answer a survey; null when they may. */
+export type IneligibleReason = 'not_in_group' | 'no_luma' | 'not_attended' | null
+
+/**
+ * May this person answer the survey? Member of the event's group (or of
+ * cto-roundtable when the event has none) AND recorded as attending or hosting
+ * the event in Luma. The reason says which condition failed, in that order.
+ */
+export async function surveyEligibility(
+  personId: string,
+  survey: Pick<SurveyRow, 'groupId' | 'lumaEventId'>,
+): Promise<{ eligible: boolean; reason: IneligibleReason }> {
   const sql = useDatabase()
   const rows = await sql`
-    SELECT 1
-    FROM memberships m
-    WHERE m.person_id = ${personId}
-      AND m.group_id = COALESCE(
-        ${survey.groupId}::uuid,
-        (SELECT id FROM network_groups WHERE slug = ${SURVEY_FALLBACK_GROUP})
-      )
-    LIMIT 1
+    SELECT
+      EXISTS (
+        SELECT 1 FROM memberships m
+        WHERE m.person_id = ${personId}
+          AND m.group_id = COALESCE(
+            ${survey.groupId}::uuid,
+            (SELECT id FROM network_groups WHERE slug = ${SURVEY_FALLBACK_GROUP})
+          )
+      ) AS in_group,
+      EXISTS (
+        SELECT 1 FROM activity_events a
+        WHERE a.source = 'luma' AND a.event_type IN ('event_attended', 'event_hosted')
+          AND a.channel_id = ${survey.lumaEventId} AND a.person_id = ${personId}
+      ) AS attended
   `
-  return rows.length > 0
+  const r: any = rows[0]
+  if (!r?.in_group) return { eligible: false, reason: 'not_in_group' }
+  if (!survey.lumaEventId) return { eligible: false, reason: 'no_luma' }
+  if (!r.attended) return { eligible: false, reason: 'not_attended' }
+  return { eligible: true, reason: null }
+}
+
+/** Boolean form of surveyEligibility. */
+export async function isEligibleForSurvey(
+  personId: string,
+  survey: Pick<SurveyRow, 'groupId' | 'lumaEventId'>,
+): Promise<boolean> {
+  return (await surveyEligibility(personId, survey)).eligible
 }
 
 export interface QuestionResult {
@@ -413,6 +456,8 @@ export interface SurveySummary {
   lang: SurveyLang
   event: { id: string; date: string | null; theme: string | null; location: string | null; groupSlug: string | null }
   responseCount: number
+  /** Members recorded as attending: who may answer. */
+  attendeeCount: number
 }
 
 /** A survey as one member sees it in the list. */
@@ -432,6 +477,10 @@ export interface SurveyEventOption {
   lang: SurveyLang
   defaultTitle: string
   surveyId: string | null
+  /** Members recorded as attending or hosting; 0 means nobody could answer a survey. */
+  attendeeCount: number
+  /** False when the event has no luma_event_id, so no attendance can exist. */
+  hasLuma: boolean
 }
 
 export interface CreateSurveyInput {
@@ -464,13 +513,23 @@ async function querySurveys(personId: string | null): Promise<MemberSurveySummar
            ng.slug AS group_slug,
            r.submitted_at, r.updated_at AS answer_updated_at,
            (SELECT COUNT(*)::int FROM event_survey_responses x WHERE x.survey_id = s.id) AS response_count,
-           EXISTS (
-             SELECT 1 FROM memberships m
-             WHERE m.person_id = ${personId}::uuid
-               AND m.group_id = COALESCE(
-                 e.group_id,
-                 (SELECT id FROM network_groups WHERE slug = ${SURVEY_FALLBACK_GROUP})
-               )
+           (SELECT COUNT(DISTINCT a.person_id)::int FROM activity_events a
+            WHERE a.source = 'luma' AND a.event_type IN ('event_attended', 'event_hosted')
+              AND a.channel_id = e.luma_event_id AND a.person_id IS NOT NULL) AS attendee_count,
+           (
+             EXISTS (
+               SELECT 1 FROM memberships m
+               WHERE m.person_id = ${personId}::uuid
+                 AND m.group_id = COALESCE(
+                   e.group_id,
+                   (SELECT id FROM network_groups WHERE slug = ${SURVEY_FALLBACK_GROUP})
+                 )
+             )
+             AND EXISTS (
+               SELECT 1 FROM activity_events a
+               WHERE a.source = 'luma' AND a.event_type IN ('event_attended', 'event_hosted')
+                 AND a.channel_id = e.luma_event_id AND a.person_id = ${personId}::uuid
+             )
            ) AS eligible
     FROM event_surveys s
     JOIN events e ON e.id = s.event_id
@@ -488,6 +547,7 @@ async function querySurveys(personId: string | null): Promise<MemberSurveySummar
     lang: surveyLang(r.group_slug),
     event: { id: r.event_id, date: r.event_date, theme: r.theme, location: r.location, groupSlug: r.group_slug },
     responseCount: r.response_count,
+    attendeeCount: r.attendee_count,
     eligible: r.eligible,
     answered: Boolean(r.submitted_at),
     answeredAt: r.answer_updated_at ?? r.submitted_at ?? null,
@@ -514,7 +574,10 @@ export async function listSurveyEvents(limit = 15): Promise<SurveyEventOption[]>
   const sql = useDatabase()
   const rows = await sql`
     SELECT e.id, to_char(e.date, 'YYYY-MM-DD') AS date, e.theme, e.location,
-           ng.slug AS group_slug, ng.name AS group_name, s.id AS survey_id
+           ng.slug AS group_slug, ng.name AS group_name, s.id AS survey_id, e.luma_event_id,
+           (SELECT COUNT(DISTINCT a.person_id)::int FROM activity_events a
+            WHERE a.source = 'luma' AND a.event_type IN ('event_attended', 'event_hosted')
+              AND a.channel_id = e.luma_event_id AND a.person_id IS NOT NULL) AS attendee_count
     FROM events e
     LEFT JOIN network_groups ng ON ng.id = e.group_id
     LEFT JOIN event_surveys s ON s.event_id = e.id
@@ -534,6 +597,8 @@ export async function listSurveyEvents(limit = 15): Promise<SurveyEventOption[]>
       lang,
       defaultTitle: defaultTitle(r.theme, lang),
       surveyId: r.survey_id,
+      attendeeCount: r.attendee_count,
+      hasLuma: Boolean(r.luma_event_id),
     }
   })
 }
@@ -714,7 +779,7 @@ export interface SweepResult {
   created: { surveyId: string; eventId: string; date: string; group: string }[]
   /** Events in the window that already had a survey. */
   existing: number
-  /** Events the sweep could not create a survey for, with why. */
+  /** Events the sweep did not create a survey for, with why (e.g. 'no attendance recorded'). */
   skipped: { eventId: string; reason: string }[]
 }
 
@@ -723,7 +788,10 @@ export const SWEEP_OPEN_DAYS = 14
 
 /**
  * Give every event that has passed a survey. Window: events dated from
- * today - windowDays through yesterday, Oslo time. Each one without a survey gets
+ * today - windowDays through yesterday, Oslo time. An event nobody is recorded
+ * as attending is skipped ('no attendance recorded'), so a survey is never
+ * created that nobody can answer; once attendance is imported, the next sweep
+ * picks it up while the event is still in the window. Each other one gets
  * the default template in its group's language, status 'open', closing at the end
  * of event date + 14 days (Oslo), created_by NULL (= the system).
  *
@@ -746,7 +814,13 @@ export async function sweepPastEventSurveys(opts?: { dryRun?: boolean; windowDay
   const rows = await sql`
     WITH today AS (SELECT (NOW() AT TIME ZONE 'Europe/Oslo')::date AS d)
     SELECT e.id, to_char(e.date, 'YYYY-MM-DD') AS date, e.theme, ng.slug AS group_slug,
-           s.id AS survey_id,
+           s.id AS survey_id, e.luma_event_id,
+           (SELECT COUNT(*)::int FROM activity_events a
+            WHERE a.source = 'luma' AND a.event_type IN ('event_attended', 'event_hosted')
+              AND a.channel_id = e.luma_event_id) AS attendance_rows,
+           (SELECT COUNT(DISTINCT a.person_id)::int FROM activity_events a
+            WHERE a.source = 'luma' AND a.event_type IN ('event_attended', 'event_hosted')
+              AND a.channel_id = e.luma_event_id AND a.person_id IS NOT NULL) AS attendee_count,
            (((e.date + ${SWEEP_OPEN_DAYS}::int) + TIME '23:59:59') AT TIME ZONE 'Europe/Oslo') AS closes_at
     FROM events e
     CROSS JOIN today
@@ -760,6 +834,18 @@ export async function sweepPastEventSurveys(opts?: { dryRun?: boolean; windowDay
   for (const r of rows as any[]) {
     if (r.survey_id) {
       result.existing++
+      continue
+    }
+    if (!r.luma_event_id) {
+      result.skipped.push({ eventId: r.id, reason: 'no attendance recorded (event has no luma_event_id)' })
+      continue
+    }
+    if (r.attendance_rows === 0) {
+      result.skipped.push({ eventId: r.id, reason: 'no attendance recorded' })
+      continue
+    }
+    if (r.attendee_count === 0) {
+      result.skipped.push({ eventId: r.id, reason: 'no attendee matched to a member' })
       continue
     }
     const group = r.group_slug ?? SURVEY_FALLBACK_GROUP

@@ -9,7 +9,16 @@ export default defineEventHandler(async (event) => {
   if (!survey) throw createError({ statusCode: 404, message: 'Survey not found' })
 
   const eligible = await isEligibleForSurvey(session.personId, survey)
-  if (!eligible) throw createError({ statusCode: 404, message: 'Survey not found' })
+  if (!eligible) {
+    // The board can see every survey, so it gets the real reason; anyone else
+    // learns nothing about a survey they cannot see.
+    if (!(await isBoardMember(session.personId))) throw createError({ statusCode: 404, message: 'Survey not found' })
+    throw createError({
+      statusCode: 403,
+      message:
+        survey.lang === 'en' ? 'Only those who attended can answer.' : 'Bare de som var på arrangementet kan svare.',
+    })
+  }
   if (!isOpenForAnswers(survey)) {
     throw createError({
       statusCode: 409,
