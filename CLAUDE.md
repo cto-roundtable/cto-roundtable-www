@@ -135,6 +135,39 @@ The member portal (`/member/**`) speaks Norwegian (`nb`, default), English (`en`
 
 A short survey tied to an `events` row, answered in the portal. The board (`styret`, `requireBoard`) creates one per event from the default template, or as a draft to edit first. It can open, close and reopen the survey and set a deadline (`closes_at`). Members of the event's group (`events.group_id`) answer it and can edit their answer while it is open. A `roundtable-sweden` event gives an English survey. Results: the board sees everything, with text answers and names (a small circle that shares in trust, and the page says so). A respondent sees aggregates only, after answering. Answers are validated against the question schema in `server/utils/surveys.ts` on every write, and questions lock once the first answer is in. Tables: `event_surveys` and `event_survey_responses` (`ctoroundtable-hq/infrastructure/db/migrations/023_event_surveys.sql`). A banner on `/member` points at open surveys the member has not answered.
 
+### Admin API for agents (`/api/admin/**`, the `ctr` CLI)
+
+Machine access to portal data for agents on the boxes, so nothing automatic needs a
+browser session or the shared `INGEST_API_KEY`. Each agent has its own bearer token
+(`ctr_` + 43 base64url chars), owned by a board member who answers for it. Only the
+token's sha256 is stored (`api_tokens`, hq migration 026), so a request is a hash
+lookup. Scopes: `events:read`, `events:write`, `surveys:read`, `surveys:write`.
+
+- **The gate** is `requireApiToken` in `server/utils/apiTokens.ts`, checked on every
+  request: not revoked, not expired, the owner an active `styret` member right now
+  (leaving the board disables every token you answer for), and the route's scope.
+  Any token problem is the same 401 `Unauthorized`; a missing scope is a 403.
+- **Every route uses `defineAdminRoute({ GET: { scope, handler }, ... })`**. Route files
+  have no method suffix, so a wrong method is an authenticated, logged 405 rather than
+  a silent fall-through. `server/api/admin/[...].ts` logs and 404s everything else.
+- **Audit**: every `/api/admin/` request, refusals included, is one row in
+  `api_audit_log` (`server/utils/audit.ts`). The row holds the token, owner, method,
+  path, scope, target, status and a small `summary` (refusal reason, counts, dryRun).
+  It never holds the token, a response body, or a member's free text. A trigger refuses
+  UPDATE, DELETE and TRUNCATE.
+- **Routes**: `whoami`, `events`, `events/import` (one finished Luma event: upserts
+  `events` on `luma_event_id` and writes `event_hosted`/`event_attended` with the
+  track-event-attendance dedup keys; only the two network calendars), `surveys` (list, create), `surveys/:id` (show; PATCH
+  close/reopen only), `surveys/:id/results` (names and free text only with
+  `?texts=1`), `surveys/sweep` (`sweepPastEventSurveys`, `?dryRun=1`). The survey
+  routes call the helpers in `server/utils/surveys.ts` and have no SQL of their own.
+- **CLI**: `cli/ctr.mjs`, zero deps, `--json` everywhere. Env `CTR_API_TOKEN` and
+  `CTR_API_URL`. Docs: `cli/README.md`. The daily tick on the cto-roundtable box is
+  `ctr events import-luma && ctr surveys sweep` (import first: surveys go only to
+  attendees).
+- **Tokens**: `scripts/mint-api-token.mjs mint|list|revoke` with `DATABASE_URL`. The
+  token is printed once and revoked, never deleted. Minting is a human step.
+
 ### Styreprotokoll (board minutes as signed PDF)
 
 Styremøte 2 (20.8.2026), vedtak 4: minutes are issued as a PDF and signed by two,
