@@ -9,16 +9,10 @@ export default defineEventHandler(async (event) => {
   if (!survey) throw createError({ statusCode: 404, message: 'Survey not found' })
 
   const isBoard = await isBoardMember(session.personId)
-  const sql = useDatabase()
   if (!isBoard) {
     const eligible = await isEligibleForSurvey(session.personId, survey)
     if (!eligible || survey.status === 'draft') throw createError({ statusCode: 404, message: 'Survey not found' })
-    const own = await sql`
-      SELECT 1 FROM event_survey_responses
-      WHERE survey_id = ${id} AND person_id = ${session.personId}
-      LIMIT 1
-    `
-    if (own.length === 0) {
+    if (!(await loadOwnResponse(id, session.personId))) {
       throw createError({
         statusCode: 403,
         message:
@@ -29,15 +23,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const rows = await sql`
-    SELECT p.name, r.answers, r.updated_at
-    FROM event_survey_responses r
-    JOIN persons p ON p.id = r.person_id
-    WHERE r.survey_id = ${id}
-    ORDER BY r.submitted_at
-  `
-  const responses = rows.map((r: any) => ({ name: r.name, answers: r.answers }))
-
+  const { responseCount, questions } = await loadSurveyResults(survey, isBoard)
   return {
     id: survey.id,
     title: survey.title,
@@ -47,7 +33,7 @@ export default defineEventHandler(async (event) => {
     lang: survey.lang,
     event: { id: survey.eventId, date: survey.eventDate, theme: survey.eventTheme, location: survey.eventLocation },
     full: isBoard,
-    responseCount: responses.length,
-    questions: aggregateResponses(survey.questions, responses, isBoard),
+    responseCount,
+    questions,
   }
 })
