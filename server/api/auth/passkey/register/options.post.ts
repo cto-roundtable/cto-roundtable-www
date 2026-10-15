@@ -8,6 +8,16 @@ export default defineEventHandler(async (event) => {
   const session = await requirePortalSession(event)
   const { rpID } = relyingParty(event)
 
+  // Only from a fresh sign-in (see REAUTH_WINDOW_MS), and at most MAX_PASSKEYS.
+  if (!isRecentSession(session)) {
+    setResponseStatus(event, 403)
+    return { code: 'reauth' }
+  }
+  if ((await countPasskeys(session.personId)) >= MAX_PASSKEYS) {
+    setResponseStatus(event, 409)
+    return { code: 'limit', max: MAX_PASSKEYS }
+  }
+
   const sql = useDatabase()
   const emails = await sql`
     SELECT value FROM contact_infos
@@ -28,7 +38,9 @@ export default defineEventHandler(async (event) => {
     excludeCredentials: await listCredentialDescriptors(session.personId),
     authenticatorSelection: {
       residentKey: 'required',
-      userVerification: 'preferred',
+      // Required, and enforced again in register/verify: a passkey stands in for
+      // the email as a sign-in factor here.
+      userVerification: 'required',
     },
   })
 

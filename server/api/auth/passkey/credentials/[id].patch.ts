@@ -7,5 +7,6 @@ export default defineEventHandler(async (event) => {
   if (!(await renamePasskey(session.personId, id, cleanPasskeyName(body?.name)))) {
     throw createError({ statusCode: 404, message: 'Not found' })
   }
+  auditPasskey('renamed', { personId: session.personId, credentialRowId: id })
   return { ok: true }
 })

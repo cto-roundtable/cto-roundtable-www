@@ -53,32 +53,64 @@ Database credentials and sensitive tokens live in **private** `runtimeConfig` (n
 
 Two ways in, one session. Both end in `issueSession(event, personId, name)`
 (`server/utils/session.ts`): a stateless 30-day `ctr_session` cookie plus its HMAC
-(`ctr_session_sig`, keyed by `SESSION_SECRET`).
+(`ctr_session_sig`, keyed by `SESSION_SECRET`). The payload carries `iat` (issued
+at), so a sensitive step can ask for a recent sign-in. Cookies issued before `iat`
+existed count as old.
 
 - **Magic link** (the anchor, always there): `POST /api/auth/request` mails a
-  15-minute one-shot token (`auth_tokens`), `GET /api/auth/verify` consumes it.
-  The link host comes from `config.siteUrl`, never the Host header.
-- **Passkeys** (an option): a signed-in member adds one on `/member/security`
-  (nav "Innlogging"); after that "Sign in with passkey" on the login card, or the
-  email field's autofill, signs in without the mail. SimpleWebAuthn v13, table
-  `webauthn_credentials` (`ctoroundtable-hq/infrastructure/db/migrations/022_passkeys.sql`),
-  helpers in `server/utils/passkeys.ts`, routes under `server/api/auth/passkey/`.
-  Challenges are not stored: a 5-minute `ctr_webauthn` cookie (httpOnly, strict,
-  HMAC with `SESSION_SECRET`, bound to purpose and, for registration, the person).
-  rpID is `config.siteUrl`'s host without `www.` (`ctoroundtable.no`, so a passkey
-  works on both hosts); accepted origins are siteUrl and its www/apex twin. User
-  verification is required on the server, the counter must move forward (synced
-  passkeys report 0, allowed), every login failure is the same 401, and a member
-  can only list, rename and delete their own passkeys. Losing a device costs a
-  mail: the magic link still works, then delete the passkey.
+  15-minute one-shot token (`auth_tokens`). `GET /api/auth/verify` consumes it and
+  redirects to `/member?via=link`. The request answers before it does any member
+  work (rate limit, token, mail run un-awaited), so members and non-members get the
+  same answer in the same time. The link host comes from `config.siteUrl`, never
+  the Host header.
+- **Passkeys** (an option): SimpleWebAuthn v13. Helpers are in
+  `server/utils/passkeys.ts`, routes under `server/api/auth/passkey/`. Tables:
+  `webauthn_credentials` (hq migration 022) and `webauthn_spent_challenges` (027).
+  - *Adding one*: on `/member/security` (nav "Innlogging"), and as a one-time
+    onboarding step right after a mail sign-in (`?onboarding=1`; "Ikke nå" stops it
+    and the nudge on that browser). Adding needs a session issued in the last 10
+    minutes (`REAUTH_WINDOW_MS`, else 403 `{code:'reauth'}`). The cap is 10 per
+    member (409 `{code:'limit'}`). Every new passkey mails the member (Resend,
+    fire-and-forget), so one added from a stolen session gets noticed. The page
+    names the account ("for <name> (<email>)") before anything is bound to it.
+  - *Signing in*: "Sign in with passkey" on the login card, or the email field's
+    autofill (conditional UI; restarted on an expired challenge and on returning
+    to a stale tab).
+  - *Challenges*: a 5-minute `ctr_webauthn` cookie (httpOnly, strict, HMAC over
+    `'webauthn-challenge:' + body` with `SESSION_SECRET`), bound to purpose and,
+    for registration, the person. Every verify records sha256(challenge) in
+    `webauthn_spent_challenges` and refuses a second use, so each challenge is
+    one-shot. Expired rows are purged opportunistically.
+  - *Checks*: rpID is `config.siteUrl`'s host without `www.` (`ctoroundtable.no`,
+    so a passkey works on both hosts). Accepted origins are siteUrl and its
+    www/apex twin. In production an empty siteUrl makes the passkey routes 500
+    instead of trusting the Host header. User verification is `required`. The
+    counter must move forward (synced passkeys report 0, which is allowed). The
+    userHandle must name the owner. Credential ids over 1366 characters are
+    refused. Every login failure gets the same 401. Members list, rename and
+    delete only their own passkeys.
+  - *Audit*: one JSON line per event on stdout (`{"audit":"passkey","action":...}`:
+    registered, renamed, deleted, login_ok, login_failed with a reason). These
+    hold person and credential row ids only, and Cloud Logging keeps them.
+  - Losing a device costs a mail: sign in by link, then delete the passkey.
 
 **The login gate is `server/utils/membership.ts`**: `isPortalMember(personId)` and
 `findPortalMemberByEmail(email)`, today "active person in group `cto-roundtable`"
-(`PORTAL_GROUP`). Every way in uses it (magic-link request, passkey login) and so
-does the `/api/member/` middleware on every request, so a session lives exactly as
-long as its holder could get a new one. Widening who may sign in is a change to
-that file only. Routes under `/api/auth/` are outside the middleware and must call
-the gate themselves (`requirePortalSession` in `server/utils/passkeys.ts`).
+(`PORTAL_GROUP`). Every way in uses it: the magic-link request, passkey login, the
+`/api/member/` middleware on every request, and `/api/auth/session` (a session
+that fails the gate is reported as signed out). So a session lives exactly as long
+as its holder could get a new one. Widening who may sign in is a change to that
+file only. Routes under `/api/auth/` are outside the middleware and must call the
+gate themselves (`requirePortalSession` in `server/utils/passkeys.ts`).
+
+**Known gaps (follow-ups, from the passkeys security review, 2026-10-15):**
+- Deleting a passkey does not end sessions already issued with it. Sessions are
+  stateless; the fix is a per-person `sessions_valid_after` or a sessions table
+  ("sign out everywhere"). Never write copy that promises otherwise.
+- There is no `frame-ancestors 'self'` yet. It belongs site-wide in
+  `nuxt.config.ts` routeRules (anti-framing, and it stops a cross-site page from
+  clobbering the challenge cookie).
+- `attestationType: 'none'` and no aaguid stored: accepted on purpose.
 
 ### Undersøkelser etter arrangement (`/member/surveys`)
 

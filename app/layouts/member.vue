@@ -256,15 +256,35 @@ async function signInWithPasskey() {
   }
 }
 
-/** Conditional UI: the browser offers saved passkeys in the email field's autofill. */
-async function startPasskeyAutofill() {
+/**
+ * Conditional UI: the browser offers saved passkeys in the email field's autofill.
+ * Its challenge lives 5 minutes, but the request can wait much longer for the
+ * member to pick a passkey, so: a 401 (most likely an expired challenge) restarts
+ * it once with a fresh challenge before showing an error, and coming back to a
+ * tab whose request is older than 4 minutes refreshes it.
+ */
+let autofillRun = 0
+let autofillStartedAt = 0
+
+async function startPasskeyAutofill(retried = false) {
   if (session.value.authenticated || !(await browserSupportsWebAuthnAutofill())) return
   await nextTick() // the email field (autocomplete="... webauthn") must be in the DOM
+  const run = ++autofillRun
+  autofillStartedAt = Date.now()
   try {
     await loginWithPasskey(true)
-  } catch {
-    error.value = 'passkey'
+  } catch (err: any) {
+    if (run !== autofillRun) return // superseded by a newer request
+    if (err?.statusCode === 401 && !retried) startPasskeyAutofill(true)
+    else error.value = 'passkey'
+  } finally {
+    if (run === autofillRun) autofillStartedAt = 0
   }
+}
+
+function refreshStalePasskeyAutofill() {
+  const stale = autofillStartedAt && Date.now() - autofillStartedAt > 4 * 60 * 1000
+  if (document.visibilityState === 'visible' && stale) startPasskeyAutofill()
 }
 
 // Members without a passkey are offered one: right after a magic-link sign-in
@@ -311,7 +331,10 @@ watch(
   },
 )
 
+onBeforeUnmount(() => document.removeEventListener('visibilitychange', refreshStalePasskeyAutofill))
+
 onMounted(async () => {
+  document.addEventListener('visibilitychange', refreshStalePasskeyAutofill)
   passkeySupported.value = browserSupportsWebAuthn()
   await checkSession()
   if (session.value.authenticated) checkPasskeyNudge()

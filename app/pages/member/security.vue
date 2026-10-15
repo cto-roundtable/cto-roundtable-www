@@ -1,7 +1,12 @@
 <template>
   <div class="member-security text-left">
     <header class="mb-6">
-      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">Innlogging</h1>
+      <h1 class="font-weight-bold mb-1" style="font-size: 1.6rem;">Innlogging</h1>
+      <!-- Names the account, so a member who was signed in to someone else's
+           account (e.g. by a planted link) sees it before binding a passkey. -->
+      <p v-if="session.authenticated" class="mb-3" style="color: #fff; font-size: 14px;">
+        for <strong>{{ session.name }}</strong><span v-if="session.email"> ({{ session.email }})</span>
+      </p>
       <p style="color: #aaa; font-size: 14px; line-height: 1.6; max-width: 640px;">
         Du logger inn med en lenke på e-post. Med en passkey kan du i stedet logge inn med Face ID,
         fingeravtrykk eller en sikkerhetsnøkkel, uten å vente på e-posten. E-postlenken fungerer
@@ -10,7 +15,7 @@
     </header>
 
     <section class="mb-10">
-      <h2 class="section-title">{{ onboarding ? 'Ett steg til: sett opp en passkey' : 'Legg til en passkey' }}</h2>
+      <h2 class="section-title">{{ onboarding ? `Ett steg til: sett opp en passkey for ${session.name}` : 'Legg til en passkey' }}</h2>
 
       <v-alert v-if="supported === false" type="info" variant="outlined" class="text-left">
         Denne nettleseren støtter ikke passkeys. Du kan fortsatt logge inn med e-postlenken.
@@ -55,6 +60,9 @@
         </form>
         <v-alert v-if="addError" type="warning" variant="outlined" class="mt-3 text-left">
           {{ addError }}
+          <div v-if="needsReauth" class="mt-2">
+            <v-btn size="small" variant="outlined" color="white" @click="logout">Logg ut og logg inn på nytt</v-btn>
+          </div>
         </v-alert>
         <v-alert v-if="added" type="success" variant="outlined" class="mt-3 text-left">
           Passkeyen er lagt til. Neste gang kan du velge «Sign in with passkey» på innloggingssiden.
@@ -161,7 +169,7 @@ interface Passkey {
 }
 
 const route = useRoute()
-const { session, checked } = useAuthSession()
+const { session, checked, logout } = useAuthSession()
 // Arrived here straight after a magic-link sign-in (see the member layout).
 const onboarding = computed(() => route.query.onboarding === '1')
 // Shared with the layout: adding a passkey hides the "add a passkey" nudge.
@@ -175,6 +183,7 @@ const listError = ref('')
 const newName = ref('')
 const adding = ref(false)
 const addError = ref('')
+const needsReauth = ref(false)
 const added = ref(false)
 
 const editingId = ref('')
@@ -207,6 +216,7 @@ function guessDeviceName(): string {
 async function addPasskey() {
   adding.value = true
   addError.value = ''
+  needsReauth.value = false
   added.value = false
   try {
     const optionsJSON = await $fetch<any>('/api/auth/passkey/register/options', { method: 'POST' })
@@ -230,10 +240,21 @@ async function addPasskey() {
     newName.value = guessDeviceName()
     await loadPasskeys()
   } catch (err: any) {
-    addError.value =
-      err?.statusCode === 409
-        ? 'Denne passkeyen er allerede lagt til.'
-        : 'Kunne ikke lagre passkeyen. Prøv igjen, og sjekk at enheten ber om Face ID, fingeravtrykk eller PIN.'
+    const code = err?.data?.code
+    if (code === 'reauth') {
+      // The server only adds a passkey within 10 minutes of a sign-in.
+      needsReauth.value = true
+      addError.value =
+        'Av sikkerhetshensyn kan du bare legge til en passkey rett etter at du har logget inn. ' +
+        'Logg ut, logg inn igjen med e-postlenken (eller en passkey du allerede har), og prøv på nytt.'
+    } else if (code === 'limit') {
+      addError.value = `Du har allerede ${err.data.max} passkeys. Fjern en du ikke bruker, så kan du legge til en ny.`
+    } else if (err?.statusCode === 409) {
+      addError.value = 'Denne passkeyen er allerede lagt til.'
+    } else {
+      addError.value =
+        'Kunne ikke lagre passkeyen. Prøv igjen, og sjekk at enheten ber om Face ID, fingeravtrykk eller PIN.'
+    }
   } finally {
     adding.value = false
   }

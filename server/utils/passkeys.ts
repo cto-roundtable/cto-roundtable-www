@@ -1,15 +1,47 @@
-import { timingSafeEqual } from 'node:crypto'
+import { createHash, timingSafeEqual } from 'node:crypto'
 import type { AuthenticatorTransportFuture } from '@simplewebauthn/server'
 import type { H3Event } from 'h3'
+import { Resend } from 'resend'
 import type { SessionData } from './session'
 
 // Passkeys (WebAuthn) as an option next to the email magic link. The email is
 // still the identity anchor: a passkey can only be registered from inside a
 // session, and every passkey sign-in passes the same login gate as the magic
-// link (server/utils/membership.ts). Library: SimpleWebAuthn. Table:
-// webauthn_credentials (ctoroundtable-hq migration 022).
+// link (server/utils/membership.ts). Library: SimpleWebAuthn. Tables:
+// webauthn_credentials (ctoroundtable-hq migration 022) and
+// webauthn_spent_challenges (027).
 
 export const RP_NAME = 'CTO Roundtable'
+
+/** Most passkeys one member may hold. Plenty for every device; bounds the table. */
+export const MAX_PASSKEYS = 10
+
+/** Longest credential id we accept: base64url of the spec's 1023-byte maximum. */
+export const MAX_CREDENTIAL_ID_LENGTH = 1366
+
+/**
+ * Adding a passkey needs a session issued in the last 10 minutes. Otherwise a
+ * stolen 30-day session cookie could be turned into a passkey, i.e. permanent
+ * access that survives the cookie. A session without `iat` (issued before this
+ * rule) counts as old.
+ */
+export const REAUTH_WINDOW_MS = 10 * 60 * 1000
+
+export function isRecentSession(session: SessionData): boolean {
+  return typeof session.iat === 'number' && Date.now() - session.iat <= REAUTH_WINDOW_MS
+}
+
+/**
+ * Audit trail: one structured JSON line per passkey event on stdout, which Cloud
+ * Run keeps in Cloud Logging. Ids and reasons only, never keys, challenges or
+ * cookies. (A real audit table is the admin-cli item's, not this one.)
+ */
+export function auditPasskey(
+  action: 'registered' | 'renamed' | 'deleted' | 'login_ok' | 'login_failed',
+  fields: { personId?: string; credentialRowId?: string; reason?: string },
+): void {
+  console.info(JSON.stringify({ audit: 'passkey', action, ...fields, at: new Date().toISOString() }))
+}
 
 /**
  * Relying party for this request. Taken from config.siteUrl in production, never
@@ -23,6 +55,12 @@ export const RP_NAME = 'CTO Roundtable'
  */
 export function relyingParty(event: H3Event): { rpID: string; origins: string[] } {
   const config = useRuntimeConfig()
+  // In production a missing siteUrl must not fall back to the Host header: the
+  // passkey routes fail closed (500) instead. The magic link keeps its own
+  // warn-only fallback (server/plugins/validate-config.ts).
+  if (!config.siteUrl && process.env.NODE_ENV === 'production') {
+    throw createError({ statusCode: 500, message: 'Passkeys need NUXT_SITE_URL' })
+  }
   const url = new URL(config.siteUrl || getRequestURL(event).origin)
   const rpID = url.hostname.replace(/^www\./, '')
   const origins = [url.origin]
@@ -38,7 +76,10 @@ export function relyingParty(event: H3Event): { rpID: string; origins: string[] 
 // {challenge, purpose, exp, personId?} and an HMAC over it with sessionSecret.
 // `purpose` stops a registration challenge from being spent on a sign-in and
 // vice versa; `personId` binds a registration to the session that asked for it.
-// The cookie is deleted as soon as it is read, so each challenge is one-shot.
+// The HMAC input is prefixed, so a challenge signature can never be mistaken for
+// a session signature (same SESSION_SECRET). The cookie is deleted when read,
+// and the challenge is recorded as spent (webauthn_spent_challenges), so a
+// copied cookie cannot be presented twice: each challenge is one-shot.
 
 const CHALLENGE_COOKIE = 'ctr_webauthn'
 const CHALLENGE_TTL = 5 * 60 // seconds
@@ -62,7 +103,7 @@ export function setPasskeyChallenge(
   const config = useRuntimeConfig()
   const payload: ChallengePayload = { challenge, purpose, exp: Date.now() + CHALLENGE_TTL * 1000, personId }
   const body = Buffer.from(JSON.stringify(payload)).toString('base64url')
-  setCookie(event, CHALLENGE_COOKIE, `${body}.${createSessionHmac(body, config.sessionSecret)}`, {
+  setCookie(event, CHALLENGE_COOKIE, `${body}.${challengeHmac(body, config.sessionSecret)}`, {
     httpOnly: true,
     secure: true,
     sameSite: 'strict',
@@ -71,8 +112,24 @@ export function setPasskeyChallenge(
   })
 }
 
-/** Read and delete the challenge cookie. Null unless signed, unexpired and for this purpose. */
-export function takePasskeyChallenge(event: H3Event, purpose: ChallengePurpose): ChallengePayload | null {
+function challengeHmac(body: string, secret: string): string {
+  return createSessionHmac(`webauthn-challenge:${body}`, secret)
+}
+
+/**
+ * Read and delete the challenge cookie, and spend the challenge. Null unless
+ * signed, unexpired, for this purpose and not spent before.
+ */
+export async function takePasskeyChallenge(
+  event: H3Event,
+  purpose: ChallengePurpose,
+): Promise<ChallengePayload | null> {
+  const data = readChallengeCookie(event, purpose)
+  if (!data || !(await spendChallenge(data.challenge, data.exp))) return null
+  return data
+}
+
+function readChallengeCookie(event: H3Event, purpose: ChallengePurpose): ChallengePayload | null {
   const config = useRuntimeConfig()
   const raw = getCookie(event, CHALLENGE_COOKIE)
   deleteCookie(event, CHALLENGE_COOKIE, { path: CHALLENGE_PATH })
@@ -80,7 +137,7 @@ export function takePasskeyChallenge(event: H3Event, purpose: ChallengePurpose):
 
   const [body, sig] = raw.split('.')
   if (!body || !sig) return null
-  const expected = createSessionHmac(body, config.sessionSecret)
+  const expected = challengeHmac(body, config.sessionSecret)
   if (sig.length !== expected.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null
 
   try {
@@ -90,6 +147,21 @@ export function takePasskeyChallenge(event: H3Event, purpose: ChallengePurpose):
   } catch {
     return null
   }
+}
+
+/** Record the challenge as used. False when it was used before. */
+async function spendChallenge(challenge: string, exp: number): Promise<boolean> {
+  const sql = useDatabase()
+  const hash = createHash('sha256').update(challenge).digest('hex')
+  const rows = await sql`
+    INSERT INTO webauthn_spent_challenges (challenge_hash, expires_at)
+    VALUES (${hash}, ${new Date(exp).toISOString()})
+    ON CONFLICT (challenge_hash) DO NOTHING
+    RETURNING challenge_hash
+  `
+  // Opportunistic cleanup, like auth_tokens: an expired challenge cannot be presented anyway.
+  sql`DELETE FROM webauthn_spent_challenges WHERE expires_at < now()`.catch(() => {})
+  return rows.length > 0
 }
 
 // --- Guards -------------------------------------------------------------------
@@ -120,6 +192,53 @@ export function cleanPasskeyName(name: unknown): string | null {
   if (typeof name !== 'string') return null
   const trimmed = name.replace(/\s+/g, ' ').trim().slice(0, 60)
   return trimmed || null
+}
+
+// --- Mail -----------------------------------------------------------------------
+
+const escapeHtml = (text: string) =>
+  text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
+
+/**
+ * Tell the member a passkey was added, so one added from a stolen session does
+ * not go unnoticed. Fire-and-forget like the magic link: the caller does not
+ * await it.
+ */
+export async function sendNewPasskeyMail(event: H3Event, personId: string, passkeyName: string | null): Promise<void> {
+  const config = useRuntimeConfig()
+  const sql = useDatabase()
+  const rows = await sql`
+    SELECT p.name, ci.value AS email
+    FROM persons p
+    JOIN contact_infos ci ON ci.person_id = p.id AND ci.type = 'email'
+    WHERE p.id = ${personId}
+    ORDER BY ci.is_primary DESC
+    LIMIT 1
+  `
+  const person = rows[0]
+  if (!person?.email) return
+
+  const baseUrl = config.siteUrl || getRequestURL(event).origin
+  const when = new Date().toLocaleString('en-GB', { timeZone: 'Europe/Oslo', dateStyle: 'long', timeStyle: 'short' })
+  const label = escapeHtml(passkeyName || 'Unnamed passkey')
+  const firstName = escapeHtml(String(person.name).split(' ')[0] ?? '')
+  const resend = new Resend(config.resendApiKey)
+  await resend.emails.send({
+    from: 'CTO Roundtable <noreply@ctoroundtable.no>',
+    to: person.email,
+    subject: 'A passkey was added to your CTO Roundtable sign-in',
+    html: `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
+        <h2 style="color: #111; margin-bottom: 8px;">CTO Roundtable</h2>
+        <p style="color: #555; font-size: 16px;">Hi ${firstName},</p>
+        <p style="color: #555; font-size: 16px;">A passkey was just added to your member portal sign-in:</p>
+        <p style="color: #111; font-size: 16px;"><strong>${label}</strong><br>${when} (Oslo time)</p>
+        <p style="color: #555; font-size: 16px;">If this was you, there is nothing to do.</p>
+        <p style="color: #555; font-size: 16px;">If it wasn't, sign in with an email link and delete it under
+          <a href="${baseUrl}/member/security" style="color: #111;">Innlogging</a>.</p>
+      </div>
+    `,
+  })
 }
 
 // --- Storage --------------------------------------------------------------------
@@ -159,6 +278,12 @@ export async function listPasskeys(personId: string): Promise<PasskeySummary[]> 
     deviceType: r.device_type,
     backedUp: r.backed_up,
   }))
+}
+
+export async function countPasskeys(personId: string): Promise<number> {
+  const sql = useDatabase()
+  const rows = await sql`SELECT count(*)::int AS n FROM webauthn_credentials WHERE person_id = ${personId}`
+  return Number(rows[0]?.n ?? 0)
 }
 
 /** Credential ids (base64url) + transports the member already has, for excludeCredentials. */

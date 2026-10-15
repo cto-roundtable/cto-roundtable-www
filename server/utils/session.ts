@@ -8,6 +8,8 @@ export interface SessionData {
   personId: string
   name: string
   exp: number
+  /** When the session was issued (ms). Missing on cookies issued before passkeys; treat as old. */
+  iat?: number
 }
 
 export function verifySession(event: any): SessionData | null {
@@ -43,10 +45,12 @@ const SESSION_MAX_AGE = 30 * 24 * 60 * 60 // 30 days, in seconds
  */
 export function issueSession(event: any, personId: string, name: string): void {
   const config = useRuntimeConfig()
+  const now = Date.now()
   const session = JSON.stringify({
     personId,
     name,
-    exp: Date.now() + SESSION_MAX_AGE * 1000,
+    iat: now, // lets sensitive steps (adding a passkey) ask for a recent sign-in
+    exp: now + SESSION_MAX_AGE * 1000,
   })
   const cookie = { httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge: SESSION_MAX_AGE } as const
   setCookie(event, 'ctr_session', session, cookie)

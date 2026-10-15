@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const options = await generateAuthenticationOptions({
     rpID,
     allowCredentials: [],
-    userVerification: 'preferred',
+    userVerification: 'required', // enforced again in login/verify
   })
   setPasskeyChallenge(event, options.challenge, 'login')
   return options

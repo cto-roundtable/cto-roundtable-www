@@ -4,24 +4,39 @@ import { type RegistrationResponseJSON, verifyRegistrationResponse } from '@simp
 // challenge we signed in step 1, for the same person, and store the public key.
 export default defineEventHandler(async (event) => {
   const session = await requirePortalSession(event)
-  const body = await readBody<{ response?: RegistrationResponseJSON; name?: unknown }>(event)
-  const challenge = takePasskeyChallenge(event, 'register')
+  if (!isRecentSession(session)) {
+    setResponseStatus(event, 403)
+    return { code: 'reauth' }
+  }
 
-  if (!challenge || challenge.personId !== session.personId || !body?.response) {
+  const body = await readBody<{ response?: RegistrationResponseJSON; name?: unknown }>(event)
+  const challenge = await takePasskeyChallenge(event, 'register')
+  const response = body?.response
+
+  if (
+    !challenge ||
+    challenge.personId !== session.personId ||
+    !response ||
+    typeof response.id !== 'string' ||
+    response.id.length > MAX_CREDENTIAL_ID_LENGTH
+  ) {
     throw createError({ statusCode: 400, message: 'Registration failed' })
+  }
+  if ((await countPasskeys(session.personId)) >= MAX_PASSKEYS) {
+    setResponseStatus(event, 409)
+    return { code: 'limit', max: MAX_PASSKEYS }
   }
 
   const { rpID, origins } = relyingParty(event)
   let verification: Awaited<ReturnType<typeof verifyRegistrationResponse>>
   try {
     verification = await verifyRegistrationResponse({
-      response: body.response,
+      response,
       expectedChallenge: challenge.challenge,
       expectedOrigin: origins,
       expectedRPID: rpID,
-      // The options ask for 'preferred', but a passkey here replaces the email
-      // as a sign-in factor, so we only keep one the authenticator verified
-      // (Face ID, fingerprint, PIN). Platform passkeys always do.
+      // A passkey here replaces the email as a sign-in factor, so we only keep
+      // one the authenticator verified (Face ID, fingerprint, PIN).
       requireUserVerification: true,
     })
   } catch {
@@ -45,6 +60,11 @@ export default defineEventHandler(async (event) => {
   if (!id) {
     throw createError({ statusCode: 409, message: 'This passkey is already registered' })
   }
+
+  auditPasskey('registered', { personId: session.personId, credentialRowId: id })
+  sendNewPasskeyMail(event, session.personId, cleanPasskeyName(body.name)).catch((err) =>
+    console.error('[passkey] failed to send new-passkey mail', err),
+  )
 
   return { ok: true, id }
 })
