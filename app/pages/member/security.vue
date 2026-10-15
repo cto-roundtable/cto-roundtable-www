@@ -10,7 +10,7 @@
     </header>
 
     <section class="mb-10">
-      <h2 class="section-title">Legg til en passkey</h2>
+      <h2 class="section-title">{{ onboarding ? 'Ett steg til: sett opp en passkey' : 'Legg til en passkey' }}</h2>
 
       <v-alert v-if="supported === false" type="info" variant="outlined" class="text-left">
         Denne nettleseren støtter ikke passkeys. Du kan fortsatt logge inn med e-postlenken.
@@ -40,7 +40,17 @@
             prepend-icon="mdi-fingerprint"
             style="background-color: white; color: #111;"
           >
-            Legg til passkey
+            {{ onboarding ? 'Sett opp passkey' : 'Legg til passkey' }}
+          </v-btn>
+          <v-btn
+            v-if="onboarding && !added"
+            variant="text"
+            block
+            class="mt-2"
+            style="color: #999;"
+            @click="skipOnboarding"
+          >
+            Ikke nå
           </v-btn>
         </form>
         <v-alert v-if="addError" type="warning" variant="outlined" class="mt-3 text-left">
@@ -49,6 +59,9 @@
         <v-alert v-if="added" type="success" variant="outlined" class="mt-3 text-left">
           Passkeyen er lagt til. Neste gang kan du velge «Sign in with passkey» på innloggingssiden.
         </v-alert>
+        <v-btn v-if="onboarding && added" to="/member" variant="outlined" color="white" block class="mt-3">
+          Gå til oversikten
+        </v-btn>
       </v-card>
     </section>
 
@@ -147,7 +160,10 @@ interface Passkey {
   backedUp: boolean | null
 }
 
+const route = useRoute()
 const { session, checked } = useAuthSession()
+// Arrived here straight after a magic-link sign-in (see the member layout).
+const onboarding = computed(() => route.query.onboarding === '1')
 // Shared with the layout: adding a passkey hides the "add a passkey" nudge.
 const passkeyNudge = useState<boolean>('ctr-passkey-nudge', () => false)
 
@@ -221,6 +237,13 @@ async function addPasskey() {
   } finally {
     adding.value = false
   }
+}
+
+/** "Ikke nå": no onboarding step and no nudge on this browser again. */
+async function skipOnboarding() {
+  localStorage.setItem('ctr-passkey-nudge-dismissed', '1')
+  passkeyNudge.value = false
+  await navigateTo('/member')
 }
 
 function startRename(passkey: Passkey) {

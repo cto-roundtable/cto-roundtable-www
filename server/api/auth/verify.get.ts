@@ -29,5 +29,7 @@ export default defineEventHandler(async (event) => {
   const record = tokens[0]!
   issueSession(event, record.person_id, record.name)
 
-  return sendRedirect(event, '/member')
+  // via=link tells the portal this was a mail sign-in, so a member without a
+  // passkey can be offered one (onboarding step on /member/security).
+  return sendRedirect(event, '/member?via=link')
 })

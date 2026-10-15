@@ -267,8 +267,11 @@ async function startPasskeyAutofill() {
   }
 }
 
-// A dismissible nudge for members without a passkey. Shared state, so
-// /member/security can hide it the moment one is added.
+// Members without a passkey are offered one: right after a magic-link sign-in
+// (?via=link) as an onboarding step on /member/security, otherwise as a
+// dismissible nudge above the page. "Ikke nå" / closing the nudge stops both on
+// this browser. Shared state, so /member/security can hide the nudge the moment
+// a passkey is added.
 const NUDGE_DISMISSED_KEY = 'ctr-passkey-nudge-dismissed'
 const passkeyNudge = useState<boolean>('ctr-passkey-nudge', () => false)
 const showPasskeyNudge = computed(() => passkeyNudge.value && route.path !== '/member/security')
@@ -280,7 +283,12 @@ async function checkPasskeyNudge() {
   nudgeChecked = true
   try {
     const passkeys = await $fetch<unknown[]>('/api/auth/passkey/credentials')
-    passkeyNudge.value = passkeys.length === 0
+    if (passkeys.length > 0) return
+    if (route.query.via === 'link') {
+      await navigateTo('/member/security?onboarding=1', { replace: true })
+    } else {
+      passkeyNudge.value = true
+    }
   } catch {
     passkeyNudge.value = false
   }
