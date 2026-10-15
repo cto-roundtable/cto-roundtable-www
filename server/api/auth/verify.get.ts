@@ -7,7 +7,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const sql = useDatabase()
-  const config = useRuntimeConfig()
 
   // Atomically validate and consume token (prevents race condition on reuse)
   const tokens = await sql`
@@ -28,32 +27,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const record = tokens[0]!
-
-  // Create session payload
-  const session = JSON.stringify({
-    personId: record.person_id,
-    name: record.name,
-    exp: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
-  })
-
-  // Set signed session cookie
-  setCookie(event, 'ctr_session', session, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 30 * 24 * 60 * 60, // 30 days in seconds
-  })
-
-  // Set HMAC signature cookie
-  const hmac = createSessionHmac(session, config.sessionSecret)
-  setCookie(event, 'ctr_session_sig', hmac, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 30 * 24 * 60 * 60,
-  })
+  issueSession(event, record.person_id, record.name)
 
   return sendRedirect(event, '/member')
 })

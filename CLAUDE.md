@@ -49,6 +49,37 @@ Database credentials and sensitive tokens live in **private** `runtimeConfig` (n
 - `app/pages/members.vue` — Legacy hardcoded member list
 - `app/components/WhoAreWe.vue` — Member list with two-line layout, calls `/api/members`
 
+### Auth (member portal sign-in)
+
+Two ways in, one session. Both end in `issueSession(event, personId, name)`
+(`server/utils/session.ts`): a stateless 30-day `ctr_session` cookie plus its HMAC
+(`ctr_session_sig`, keyed by `SESSION_SECRET`).
+
+- **Magic link** (the anchor, always there): `POST /api/auth/request` mails a
+  15-minute one-shot token (`auth_tokens`), `GET /api/auth/verify` consumes it.
+  The link host comes from `config.siteUrl`, never the Host header.
+- **Passkeys** (an option): a signed-in member adds one on `/member/security`
+  (nav "Innlogging"); after that "Sign in with passkey" on the login card, or the
+  email field's autofill, signs in without the mail. SimpleWebAuthn v13, table
+  `webauthn_credentials` (`ctoroundtable-hq/infrastructure/db/migrations/022_passkeys.sql`),
+  helpers in `server/utils/passkeys.ts`, routes under `server/api/auth/passkey/`.
+  Challenges are not stored: a 5-minute `ctr_webauthn` cookie (httpOnly, strict,
+  HMAC with `SESSION_SECRET`, bound to purpose and, for registration, the person).
+  rpID is `config.siteUrl`'s host without `www.` (`ctoroundtable.no`, so a passkey
+  works on both hosts); accepted origins are siteUrl and its www/apex twin. User
+  verification is required on the server, the counter must move forward (synced
+  passkeys report 0, allowed), every login failure is the same 401, and a member
+  can only list, rename and delete their own passkeys. Losing a device costs a
+  mail: the magic link still works, then delete the passkey.
+
+**The login gate is `server/utils/membership.ts`**: `isPortalMember(personId)` and
+`findPortalMemberByEmail(email)`, today "active person in group `cto-roundtable`"
+(`PORTAL_GROUP`). Every way in uses it (magic-link request, passkey login) and so
+does the `/api/member/` middleware on every request, so a session lives exactly as
+long as its holder could get a new one. Widening who may sign in is a change to
+that file only. Routes under `/api/auth/` are outside the middleware and must call
+the gate themselves (`requirePortalSession` in `server/utils/passkeys.ts`).
+
 ### Styreprotokoll (board minutes as signed PDF)
 
 Styremøte 2 (20.8.2026), vedtak 4: minutes are issued as a PDF and signed by two,

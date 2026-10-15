@@ -18,6 +18,8 @@
   "dependencies": {
     "@google-cloud/storage": "^7.14.0",
     "@neondatabase/serverless": "^1.0.2",
+    "@simplewebauthn/browser": "^13.3.0",
+    "@simplewebauthn/server": "^13.3.3",
     "nuxt": "^4.4.2",
     "pdfkit": "^0.15.2",
     "posthog-js": "^1.364.1",

@@ -32,3 +32,23 @@ export function verifySession(event: any): SessionData | null {
     return null
   }
 }
+
+const SESSION_MAX_AGE = 30 * 24 * 60 * 60 // 30 days, in seconds
+
+/**
+ * Sign the member in: set the session cookie and its HMAC cookie. Every way in
+ * (magic link, passkey) ends here, so a session looks the same however it was
+ * obtained. The caller must already have applied the login gate
+ * (isPortalMember / findPortalMemberByEmail).
+ */
+export function issueSession(event: any, personId: string, name: string): void {
+  const config = useRuntimeConfig()
+  const session = JSON.stringify({
+    personId,
+    name,
+    exp: Date.now() + SESSION_MAX_AGE * 1000,
+  })
+  const cookie = { httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge: SESSION_MAX_AGE } as const
+  setCookie(event, 'ctr_session', session, cookie)
+  setCookie(event, 'ctr_session_sig', createSessionHmac(session, config.sessionSecret), cookie)
+}

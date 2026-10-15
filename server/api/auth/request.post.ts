@@ -12,26 +12,13 @@ export default defineEventHandler(async (event) => {
   const sql = useDatabase()
   const config = useRuntimeConfig()
 
-  // Check if email belongs to an active member of cto-roundtable
-  const members = await sql`
-    SELECT p.id, p.name
-    FROM contact_infos ci
-    JOIN persons p ON ci.person_id = p.id
-    JOIN memberships m ON p.id = m.person_id
-    JOIN network_groups ng ON m.group_id = ng.id
-    WHERE ci.type = 'email'
-      AND LOWER(ci.value) = ${email}
-      AND p.status = 'active'
-      AND ng.slug = 'cto-roundtable'
-    LIMIT 1
-  `
+  // The login gate (server/utils/membership.ts): active person in cto-roundtable.
+  const member = await findPortalMemberByEmail(email)
 
   // Always return same response to prevent user enumeration
-  if (members.length === 0) {
+  if (!member) {
     return { ok: true }
   }
-
-  const member = members[0]!
 
   // Rate limit: max 3 tokens per email per hour
   const recentTokens = await sql`
