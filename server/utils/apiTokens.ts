@@ -24,7 +24,7 @@ import type { AuditEntry } from './audit'
  * api_audit_log row with the final status, refusals included.
  */
 
-export const API_SCOPES = ['events:read', 'surveys:read', 'surveys:write'] as const
+export const API_SCOPES = ['events:read', 'events:write', 'surveys:read', 'surveys:write'] as const
 export type ApiScope = (typeof API_SCOPES)[number]
 
 const TOKEN_RE = /^ctr_[A-Za-z0-9_-]{43}$/

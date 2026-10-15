@@ -4,7 +4,7 @@
  *
  *   DATABASE_URL=... node scripts/mint-api-token.mjs mint \
  *     --name cto-roundtable-box --owner <email|person uuid> \
- *     --scopes events:read,surveys:read,surveys:write [--expires-days 365] [--dry-run]
+ *     --scopes events:read,events:write,surveys:read,surveys:write [--expires-days 365] [--dry-run]
  *   DATABASE_URL=... node scripts/mint-api-token.mjs list
  *   DATABASE_URL=... node scripts/mint-api-token.mjs revoke <token id>
  *
@@ -24,7 +24,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { parseArgs } from 'node:util'
 import { neon } from '@neondatabase/serverless'
 
-const SCOPES = ['events:read', 'surveys:read', 'surveys:write']
+const SCOPES = ['events:read', 'events:write', 'surveys:read', 'surveys:write']
 const BOARD_GROUP = 'styret'
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 

@@ -122,7 +122,7 @@ Machine access to portal data for agents on the boxes, so nothing automatic need
 browser session or the shared `INGEST_API_KEY`. Each agent has its own bearer token
 (`ctr_` + 43 base64url chars), owned by a board member who answers for it. Only the
 token's sha256 is stored (`api_tokens`, hq migration 026), so a request is a hash
-lookup. Scopes: `events:read`, `surveys:read`, `surveys:write`.
+lookup. Scopes: `events:read`, `events:write`, `surveys:read`, `surveys:write`.
 
 - **The gate** is `requireApiToken` in `server/utils/apiTokens.ts`, checked on every
   request: not revoked, not expired, the owner an active `styret` member right now
@@ -136,12 +136,16 @@ lookup. Scopes: `events:read`, `surveys:read`, `surveys:write`.
   path, scope, target, status and a small `summary` (refusal reason, counts, dryRun).
   It never holds the token, a response body, or a member's free text. A trigger refuses
   UPDATE, DELETE and TRUNCATE.
-- **Routes**: `whoami`, `events`, `surveys` (list, create), `surveys/:id` (show; PATCH
+- **Routes**: `whoami`, `events`, `events/import` (one finished Luma event: upserts
+  `events` on `luma_event_id` and writes `event_hosted`/`event_attended` with the
+  track-event-attendance dedup keys; only the two network calendars), `surveys` (list, create), `surveys/:id` (show; PATCH
   close/reopen only), `surveys/:id/results` (names and free text only with
   `?texts=1`), `surveys/sweep` (`sweepPastEventSurveys`, `?dryRun=1`). The survey
   routes call the helpers in `server/utils/surveys.ts` and have no SQL of their own.
 - **CLI**: `cli/ctr.mjs`, zero deps, `--json` everywhere. Env `CTR_API_TOKEN` and
-  `CTR_API_URL`. Docs: `cli/README.md`.
+  `CTR_API_URL`. Docs: `cli/README.md`. The daily tick on the cto-roundtable box is
+  `ctr events import-luma && ctr surveys sweep` (import first: surveys go only to
+  attendees).
 - **Tokens**: `scripts/mint-api-token.mjs mint|list|revoke` with `DATABASE_URL`. The
   token is printed once and revoked, never deleted. Minting is a human step.
 

@@ -9,6 +9,7 @@
  * token's scopes and its owner's board membership, and written to the audit log
  * on the server, refusals included.
  */
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { parseArgs } from 'node:util'
 
@@ -20,6 +21,9 @@ usage: ctr <command> [options]
 
   whoami                               the token, its owner and scopes
   events ls [--from D] [--to D] [--group slug] [--limit N]
+  events import-luma [--since 14d] [--dry-run]
+                                       import finished Luma events + attendance
+                                       (runs the luma CLI on this machine)
   surveys ls [--status open|closed|draft]
   surveys show <id>
   surveys results <id> [--texts]       --texts adds free-text answers with names
@@ -52,6 +56,7 @@ const OPTIONS = {
   'questions-file': { type: 'string' },
   'dry-run': { type: 'boolean', default: false },
   'window-days': { type: 'string' },
+  since: { type: 'string' },
 }
 
 function usage(msg) {
@@ -94,8 +99,7 @@ async function api(method, path, { query, body } = {}) {
       signal: AbortSignal.timeout(60_000),
     })
   } catch (err) {
-    console.error(`ctr: ${method} ${url.pathname} failed: ${err.message}`)
-    process.exit(1)
+    throw new ApiError(`${method} ${url.pathname} failed: ${err.message}`, null)
   }
   const text = await res.text()
   let data
@@ -105,12 +109,18 @@ async function api(method, path, { query, body } = {}) {
     data = { message: text.slice(0, 300) }
   }
   if (!res.ok) {
-    if (opt.json) console.log(JSON.stringify(data, null, 2))
     const errors = data?.data?.errors ? ` ${JSON.stringify(data.data.errors)}` : ''
-    console.error(`ctr: ${res.status} ${data?.message || data?.statusMessage || res.statusText}${errors}`)
-    process.exit(1)
+    throw new ApiError(`${res.status} ${data?.message || data?.statusMessage || res.statusText}${errors}`, data)
   }
   return data
+}
+
+/** A refused or failed API call. main() prints it and exits 1. */
+class ApiError extends Error {
+  constructor(message, body) {
+    super(message)
+    this.body = body
+  }
 }
 
 /** Print as JSON with --json, otherwise through the human formatter. */
@@ -143,6 +153,50 @@ function eventLabel(e) {
   return [e?.date, e?.theme].filter(Boolean).join(' ') || e?.id
 }
 
+// The network's Luma calendars. The server maps each to its group and refuses
+// any other, so this list only says what to fetch.
+const LUMA_CALENDARS = ['cal-dmo5G7th5RBVJBa', 'cal-hVE8T9IUvyA2Dk1']
+
+function parseSince(s) {
+  const m = /^(\d+)d?$/.exec(String(s))
+  const days = m ? Number(m[1]) : Number.NaN
+  if (!Number.isInteger(days) || days < 1 || days > 365) usage('--since must be days, like 14d (1 to 365)')
+  return days
+}
+
+/** Run the luma CLI; its stdout may carry a "Fetching..." line before the output. */
+function luma(args) {
+  try {
+    return execFileSync('luma', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60_000, maxBuffer: 32 << 20 })
+  } catch (err) {
+    if (err.code === 'ENOENT') throw new Error('the luma CLI is not on PATH')
+    throw new Error(`luma ${args.slice(0, 2).join(' ')} failed: ${(err.stderr || err.message).trim().slice(0, 300)}`)
+  }
+}
+
+function lumaJson(args) {
+  const out = luma(args)
+  const starts = [out.indexOf('['), out.indexOf('{')].filter((i) => i >= 0)
+  if (starts.length === 0) throw new Error(`luma ${args.slice(0, 2).join(' ')} printed no JSON`)
+  return JSON.parse(out.slice(Math.min(...starts)))
+}
+
+/** Hosts come only from the text of `luma event get`: "Hosts:" then "  - Name (email)". */
+function lumaHosts(eventId) {
+  const hosts = []
+  let inHosts = false
+  for (const line of luma(['event', 'get', eventId]).split('\n')) {
+    const s = line.trim()
+    if (s.startsWith('Hosts:')) inHosts = true
+    else if (s.startsWith('Guests:')) break
+    else if (inHosts) {
+      const m = /^-\s*(.+?)\s*\(([^)\s]+@[^)\s]+)\)\s*$/.exec(s)
+      if (m) hosts.push({ name: m[1], email: m[2] })
+    }
+  }
+  return hosts
+}
+
 const commands = {
   async whoami() {
     const d = await api('GET', '/whoami')
@@ -166,12 +220,65 @@ const commands = {
     )
   },
 
+  async 'events import-luma'() {
+    const days = parseSince(opt.since ?? '14d')
+    if (!token) usage('CTR_API_TOKEN is not set')
+    const now = Date.now()
+    const from = now - days * 86400_000
+    const results = []
+    let failed = 0
+    for (const calendarId of LUMA_CALENDARS) {
+      const listed = lumaJson(['calendar', 'events', calendarId, '--past', '--limit', '100', '--json'])
+      const finished = (Array.isArray(listed) ? listed : []).filter((e) => {
+        const end = Date.parse(e.end_at ?? e.start_at)
+        return end <= now && Date.parse(e.start_at) >= from
+      })
+      for (const e of finished) {
+        const label = `${String(e.start_at).slice(0, 10)} ${e.name}`
+        try {
+          const guests = lumaJson(['event', 'guests', e.api_id, '--json'])
+          const body = {
+            lumaEventId: e.api_id,
+            name: e.name,
+            startAt: e.start_at,
+            endAt: e.end_at ?? undefined,
+            location: e.geo_address_info?.address ?? undefined,
+            url: e.url ?? undefined,
+            calendarId,
+            hosts: lumaHosts(e.api_id),
+            attendees: (Array.isArray(guests) ? guests : [])
+              .filter((g) => g.approval_status === 'approved' && g.email)
+              .map((g) => ({ email: g.email, name: g.name ?? null })),
+          }
+          const d = await api('POST', '/events/import', { query: { dryRun: opt['dry-run'] ? '1' : undefined }, body })
+          results.push(d)
+          if (!opt.json) {
+            const verb = d.dryRun ? 'would record' : 'recorded'
+            const ev = d.event.created ? (d.dryRun ? 'new event' : 'event created') : 'event known'
+            console.log(
+              `${label}: ${ev}, ${d.hosts} hosts, ${d.attendees} attendees, ${verb} ${d.recorded}, unresolved ${d.unresolved.length}`,
+            )
+            for (const u of d.unresolved) console.log(`  ? ${u.role} ${u.name ?? ''} <${u.email}> has no member email`)
+          }
+        } catch (err) {
+          failed++
+          results.push({ lumaEventId: e.api_id, error: err.message })
+          console.error(`ctr: ${label}: ${err.message}`)
+        }
+      }
+    }
+    if (opt.json) console.log(JSON.stringify({ dryRun: opt['dry-run'], sinceDays: days, events: results }, null, 2))
+    else if (results.length === 0) console.log(`no Luma event ended in the last ${days} days`)
+    if (failed) process.exit(1)
+  },
+
   async 'surveys ls'() {
     const d = await api('GET', '/surveys', { query: { status: opt.status } })
     out(d, () =>
       table(d.surveys, [
         { head: 'STATUS', get: (s) => (s.status === 'open' && !s.isOpen ? 'open (past deadline)' : s.status) },
         { head: 'ANSWERS', get: (s) => s.responseCount },
+        { head: 'ATTENDED', get: (s) => s.attendeeCount },
         { head: 'EVENT', get: (s) => s.event?.date },
         { head: 'ID', get: (s) => s.id },
         { head: 'TITLE', get: (s) => s.title },
@@ -188,6 +295,7 @@ const commands = {
       console.log(`group    ${s.groupSlug ?? '-'}  lang ${s.lang}`)
       console.log(`closes   ${s.closesAt ?? 'no deadline'}`)
       console.log(`answers  ${d.responseCount}`)
+      if (s.attendeeCount !== undefined) console.log(`attended ${s.attendeeCount}`)
       if (s.intro) console.log(`\n${s.intro}`)
       console.log('')
       for (const q of s.questions) {
@@ -267,4 +375,11 @@ const args = positionals.slice(words)
 const run = commands[name]
 if (!run) usage(`unknown command: ${positionals.join(' ')}`)
 if (args.length > (TAKES_ID.has(name) ? 1 : 0)) usage(`too many arguments for ${name}`)
-await run(args[0])
+try {
+  await run(args[0])
+} catch (err) {
+  if (!(err instanceof ApiError)) throw err
+  if (opt.json && err.body) console.log(JSON.stringify(err.body, null, 2))
+  console.error(`ctr: ${err.message}`)
+  process.exit(1)
+}
