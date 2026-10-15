@@ -80,6 +80,10 @@ long as its holder could get a new one. Widening who may sign in is a change to
 that file only. Routes under `/api/auth/` are outside the middleware and must call
 the gate themselves (`requirePortalSession` in `server/utils/passkeys.ts`).
 
+### Undersøkelser etter arrangement (`/member/surveys`)
+
+A short survey tied to an `events` row, answered in the portal. The board (`styret`, `requireBoard`) creates one per event from the default template, or as a draft to edit first. It can open, close and reopen the survey and set a deadline (`closes_at`). Members of the event's group (`events.group_id`) answer it and can edit their answer while it is open. A `roundtable-sweden` event gives an English survey. Results: the board sees everything, with text answers and names (a small circle that shares in trust, and the page says so). A respondent sees aggregates only, after answering. Answers are validated against the question schema in `server/utils/surveys.ts` on every write, and questions lock once the first answer is in. Tables: `event_surveys` and `event_survey_responses` (`ctoroundtable-hq/infrastructure/db/migrations/023_event_surveys.sql`). A banner on `/member` points at open surveys the member has not answered.
+
 ### Styreprotokoll (board minutes as signed PDF)
 
 Styremøte 2 (20.8.2026), vedtak 4: minutes are issued as a PDF and signed by two,
