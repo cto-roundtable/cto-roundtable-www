@@ -7,9 +7,9 @@ interface Session {
   email?: string
   isBoard?: boolean
   isInvestor?: boolean
-  // Chapter codes (`no`, `se`) the member belongs to. Not sent by the server yet; the Sweden
-  // build adds it. Used only to pick a default language (useMemberLocale).
-  chapters?: string[]
+  // Chapter codes (`no`, `se`) the member belongs to (server/utils/chapter.ts). They pick
+  // the nav (the Swedish area for a Swedish-only member) and the default language.
+  chapters?: ('no' | 'se')[]
 }
 
 export function useAuthSession() {

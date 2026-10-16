@@ -21,6 +21,9 @@
           <p class="font-weight-bold mb-0">{{ t('member.host.onList') }}</p>
         </div>
         <div style="font-size: 14px; color: #ccc; line-height: 1.7;">
+          <p v-if="chapterChoice" class="mb-1">
+            <strong>{{ t('member.sweden.hostChapterSummary') }}:</strong> {{ t(`member.sweden.chapter.${volunteer.chapter}`) }}
+          </p>
           <p v-if="volunteer.location" class="mb-1">
             <strong>{{ t('member.host.summary.location') }}:</strong> {{ volunteer.location }}
           </p>
@@ -57,6 +60,16 @@
           {{ t('member.host.formIntro') }}
         </p>
         <form @submit.prevent="submitVolunteer">
+          <v-select
+            v-if="chapterChoice"
+            v-model="form.chapter"
+            :items="memberChapters.map((c) => ({ value: c, title: t(`member.sweden.chapter.${c}`) }))"
+            :label="t('member.sweden.hostChapter')"
+            variant="outlined"
+            density="comfortable"
+            hide-details="auto"
+            class="mb-3"
+          />
           <v-text-field
             v-model="form.location"
             :label="t('member.host.form.location')"
@@ -206,6 +219,7 @@ interface VolunteerOffer {
   preferredTimeframe: string | null
   notes: string | null
   createdAt: string
+  chapter: 'no' | 'se'
 }
 
 const { session, checked } = useAuthSession()
@@ -216,7 +230,13 @@ const volunteer = ref<VolunteerOffer | null>(null)
 const loadingHistory = ref(true)
 const loadingVolunteer = ref(true)
 
+// A member in both chapters picks which one the offer is for; everyone else
+// offers for their one chapter (the server fills it in).
+const memberChapters = computed(() => session.value.chapters ?? [])
+const chapterChoice = computed(() => memberChapters.value.length > 1)
+
 const form = ref({
+  chapter: null as 'no' | 'se' | null,
   location: '',
   participantLimit: null as number | null,
   sponsorFood: false,
@@ -260,6 +280,7 @@ async function submitVolunteer() {
     })
     volunteer.value = await $fetch<VolunteerOffer | null>('/api/member/host/volunteer')
     form.value = {
+      chapter: form.value.chapter,
       location: '',
       participantLimit: null,
       sponsorFood: false,

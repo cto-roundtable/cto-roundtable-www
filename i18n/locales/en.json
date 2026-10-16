@@ -17,7 +17,8 @@
     "faq": "FAQ",
     "investorUpdates": "Investor updates",
     "boardMeetings": "Board meetings",
-    "boardActivity": "Activity (board)"
+    "boardActivity": "Activity (board)",
+    "sweden": "Sweden"
   },
   "layout": {
     "signedInAs": "Signed in as",
@@ -454,6 +455,45 @@
         "textHidden": "Free text, visible to the board.",
         "loadFailed": "Could not load the results."
       }
+    },
+    "sweden": {
+      "title": "CTO Roundtable Sweden",
+      "intro": "This is the Stockholm chapter's own space. The evenings and surveys here are for the Swedish chapter only.",
+      "nextHeading": "Next evening",
+      "noUpcoming": "No evening is set up yet. It will show here and on Luma.",
+      "untitled": "Evening",
+      "onLuma": "See it on Luma",
+      "pastHeading": "Earlier evenings",
+      "channelHeading": "Your channel",
+      "channelBody": "#roundtable-sweden on Slack.",
+      "sharedHeading": "Shared across the whole network",
+      "sharedBody": "Offers from partner companies, and investor updates if you are part of an investment cohort.",
+      "faq": {
+        "title": "FAQ",
+        "intro": "How the Swedish chapter works.",
+        "how": {
+          "q": "How does it work?",
+          "a": "An evening every one to two months. One company presents its setup, the host offers pizza and something to drink, and the rest is three hours of honest questions. 10 to 15 CTOs, invite-only."
+        },
+        "who": {
+          "q": "Who can join?",
+          "a": "CTOs (or the person doing that job), invited by an existing member."
+        },
+        "norway": {
+          "q": "How is this related to the Norwegian network?",
+          "a": "Same model, separate group. Separate evenings, a separate channel, no shared invitations. Offers and the investment side are shared."
+        },
+        "question": {
+          "q": "I have a question.",
+          "a": "Ask in #roundtable-sweden, or reply to your invitation email."
+        }
+      },
+      "chapter": {
+        "no": "Norway",
+        "se": "Sweden"
+      },
+      "hostChapter": "Which chapter is the offer for?",
+      "hostChapterSummary": "Chapter"
     }
   }
 }

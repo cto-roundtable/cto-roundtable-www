@@ -19,6 +19,22 @@
     </div>
 
     <template v-else>
+      <!-- Chapter: Norway and the Swedish chapter run separately (vedtak 6), so
+           they are counted apart. Norway is the default. -->
+      <div class="d-flex align-center mb-2" style="gap: 8px; flex-wrap: wrap;">
+        <span style="color: #888; font-size: 13px;">Avdeling:</span>
+        <v-chip
+          v-for="opt in chapterOptions"
+          :key="opt.value"
+          :variant="chapter === opt.value ? 'flat' : 'outlined'"
+          :color="chapter === opt.value ? 'white' : undefined"
+          size="small"
+          @click="setChapter(opt.value)"
+        >
+          {{ opt.title }}
+        </v-chip>
+      </div>
+
       <!-- Window selector -->
       <div class="d-flex align-center mb-4" style="gap: 8px; flex-wrap: wrap;">
         <span style="color: #888; font-size: 13px;">Vindu:</span>
@@ -124,6 +140,11 @@ const { mdAndUp } = useDisplay()
 
 const windowOptions = [30, 90, 180, 365]
 const days = ref(365)
+const chapterOptions = [
+  { value: 'no', title: 'Norge' },
+  { value: 'se', title: 'Sverige' },
+] as const
+const chapter = ref<'no' | 'se'>('no')
 const onlyFlagged = ref(false)
 const loading = ref(true)
 const forbidden = ref(false)
@@ -139,7 +160,7 @@ function openDetail(m: any) {
 async function load() {
   loading.value = true
   try {
-    data.value = await $fetch(`/api/member/board/activity?days=${days.value}`)
+    data.value = await $fetch(`/api/member/board/activity?days=${days.value}&chapter=${chapter.value}`)
     forbidden.value = false
   } catch (err: any) {
     if (err?.statusCode === 403 || err?.response?.status === 403) forbidden.value = true
@@ -147,6 +168,12 @@ async function load() {
   } finally {
     loading.value = false
   }
+}
+
+function setChapter(c: 'no' | 'se') {
+  if (c === chapter.value) return
+  chapter.value = c
+  load()
 }
 
 function setDays(d: number) {

@@ -96,8 +96,8 @@ existed count as old.
   - Losing a device costs a mail: sign in by link, then delete the passkey.
 
 **The login gate is `server/utils/membership.ts`**: `isPortalMember(personId)` and
-`findPortalMemberByEmail(email)`, today "active person in group `cto-roundtable`"
-(`PORTAL_GROUP`). Every way in uses it: the magic-link request, passkey login, the
+`findPortalMemberByEmail(email)`: "active person in a chapter group" (`PORTAL_GROUPS`,
+see Chapters below). Every way in uses it: the magic-link request, passkey login, the
 `/api/member/` middleware on every request, and `/api/auth/session` (a session
 that fails the gate is reported as signed out). So a session lives exactly as long
 as its holder could get a new one. Widening who may sign in is a change to that
@@ -122,7 +122,7 @@ The member portal (`/member/**`) speaks Norwegian (`nb`, default), English (`en`
 - **Dates** go through `useLocaleDate()` (`formatDate(value, 'long' | 'short')`, `format(value, options)`): nb-NO, en-GB or sv-SE, always `Europe/Oslo`. Do not hard-code `'nb-NO'`.
 - **Which language** (`app/composables/useMemberLocale.ts`, applied in `app/layouts/member.vue`):
   1. The member's own choice from the switcher (`MemberLocaleSwitcher.vue`, cookie `ctr_locale`, one year).
-  2. Otherwise, after sign-in, their chapter: Swedish chapter only means `sv`, everyone else gets `nb`. This needs `chapters` on `/api/auth/session`, which the Sweden build adds.
+  2. Otherwise, after sign-in, their chapter (`chapters` on `/api/auth/session`): Swedish chapter only means `sv`, everyone else gets `nb`.
   3. Otherwise, on the login card, the browser language, or English if it names none of ours.
 
   The module's own browser detection is off because it would write the cookie on the first visit and hide the chapter default.
@@ -130,6 +130,17 @@ The member portal (`/member/**`) speaks Norwegian (`nb`, default), English (`en`
   - the board-only pages (`/member/board/**`, `/member/activity`, `BoardProtocolPanel`, `BoardMeetingDoc`), which hold the Norwegian association's board documents;
   - messages that come from the server (API errors, the onboarding prompt);
   - survey content stored in the database. The page around a survey follows the visitor's language, and the questions stay in the language the survey was written in.
+
+### Chapters: Norway and Sweden
+
+The network has two chapters, and a chapter is a group, not a column (`server/utils/chapter.ts`): `no` = `cto-roundtable`, `se` = `roundtable-sweden`. They run separately (board vedtak 6, 2026-08-20); offers and the investment side are shared. Decision: `decisions/sweden-portal-scope.md` in the members-portal project; research: `ctoroundtable-hq/expansion/sweden/portal-segregation.md`.
+
+- **Who gets in**: an active person in either chapter group (`isPortalMember` is "has a chapter"). Swedes become `active` when Snorre says so; while they are `prospect` nothing changes.
+- **Never add a Swede to `cto-roundtable`.** The public directory (`/api/members`), the `alle@` alias, the `#roundtable` Slack sync and the `/sweden` "sitting CTOs" count key on that group and must stay Norwegian.
+- **The session** carries `chapters`. The `/api/member/` middleware puts them on `event.context.chapters` and refuses `NORWAY_ONLY_API_PREFIXES` (AI onboarding) to a session without `no`.
+- **A Swedish-only member** gets the Swedish nav and `/member/sweden` (overview: the chapter's evenings by `events.group_id`, its surveys, its channel) and `/member/sweden/faq`; `/member`, `/member/faq` and `/member/onboarding` redirect there. A member in both chapters gets the Norwegian portal plus a "Sverige" entry.
+- **Shared pages, per chapter**: a hosting offer carries its chapter (`event_locations.group_id`, hq migration 025; a two-chapter member picks); the open-to-work list spans both chapters and marks Swedes; the board activity report has a chapter switch (Norway default).
+- **Data that is Snorre's, not code's**: who is `active`, Oliver's Swedish membership, `roundtable-sweden.slack_channel`, a Sweden email alias, the Stockholm `events` rows.
 
 ### Undersøkelser etter arrangement (`/member/surveys`)
 

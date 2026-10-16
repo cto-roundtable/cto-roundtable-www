@@ -222,8 +222,33 @@ const baseNavItems = [
 
 // Role-scoped links, shown only when the session says so. The pages and their
 // APIs are independently RBAC-gated, so hiding a link is just UX.
+// The Swedish chapter's own nav (decision sweden-portal-scope): its own overview
+// and FAQ, everything shared with Norway except AI onboarding, which stays
+// Norwegian (and is refused server-side, server/utils/chapter.ts).
+const swedenNavItems = [
+  { to: '/member/sweden', key: 'nav.overview', icon: 'mdi-view-dashboard-outline', exact: true },
+  { to: '/member/surveys', key: 'nav.surveys', icon: 'mdi-clipboard-text-outline', exact: false },
+  { to: '/member/discounts', key: 'nav.discounts', icon: 'mdi-tag-multiple-outline', exact: false },
+  { to: '/member/host', key: 'nav.hosting', icon: 'mdi-silverware-fork-knife', exact: false },
+  { to: '/member/jobb', key: 'nav.openToWork', icon: 'mdi-briefcase-search-outline', exact: false },
+  { to: '/member/min-aktivitet', key: 'nav.myActivity', icon: 'mdi-chart-line', exact: false },
+  { to: '/member/security', key: 'nav.signIn', icon: 'mdi-fingerprint', exact: false },
+  { to: '/member/sweden/faq', key: 'nav.faq', icon: 'mdi-help-circle-outline', exact: false },
+]
+
+// Only in the Swedish chapter (not also in the Norwegian one): the Swedish area.
+const swedenOnly = computed(() => {
+  const chapters = session.value.chapters ?? []
+  return chapters.includes('se') && !chapters.includes('no')
+})
+
 const navItems = computed(() => {
-  const items = [...baseNavItems]
+  const chapters = session.value.chapters ?? []
+  const items = swedenOnly.value ? [...swedenNavItems] : [...baseNavItems]
+  // In both chapters (the Stockholm host): the Norwegian portal plus the Swedish area.
+  if (!swedenOnly.value && chapters.includes('se')) {
+    items.splice(1, 0, { to: '/member/sweden', key: 'nav.sweden', icon: 'mdi-map-marker-outline', exact: false })
+  }
   // Investor-updates: any member of an investment cohort (invest-*).
   if (session.value.isInvestor) {
     items.push({ to: '/member/updates', key: 'nav.investorUpdates', icon: 'mdi-finance', exact: false })
@@ -329,6 +354,22 @@ function dismissPasskeyNudge() {
   passkeyNudge.value = false
   localStorage.setItem(NUDGE_DISMISSED_KEY, '1')
 }
+
+// A Swedish-only member who lands on a Norwegian page (a bookmark, the magic
+// link's /member) goes to the Swedish counterpart instead.
+const SWEDEN_REDIRECTS: Record<string, string> = {
+  '/member': '/member/sweden',
+  '/member/faq': '/member/sweden/faq',
+  '/member/onboarding': '/member/sweden',
+}
+watch(
+  [swedenOnly, () => route.path],
+  ([only, path]) => {
+    const target = only ? SWEDEN_REDIRECTS[path.replace(/\/$/, '') || '/member'] : undefined
+    if (target) navigateTo({ path: target, query: route.query }, { replace: true })
+  },
+  { immediate: true },
+)
 
 watch(
   () => session.value.authenticated,

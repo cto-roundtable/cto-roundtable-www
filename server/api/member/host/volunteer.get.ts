@@ -3,12 +3,13 @@ export default defineEventHandler(async (event) => {
   const sql = useDatabase()
 
   const rows = await sql`
-    SELECT id, location, participant_limit, sponsor_food, sponsor_drinks,
-           preferred_timeframe, notes, created_at
-    FROM event_locations
-    WHERE registered_by = ${session.personId}
-      AND status = 'open'
-    ORDER BY created_at DESC
+    SELECT el.id, el.location, el.participant_limit, el.sponsor_food, el.sponsor_drinks,
+           el.preferred_timeframe, el.notes, el.created_at, ng.slug
+    FROM event_locations el
+    LEFT JOIN network_groups ng ON ng.id = el.group_id
+    WHERE el.registered_by = ${session.personId}
+      AND el.status = 'open'
+    ORDER BY el.created_at DESC
     LIMIT 1
   `
 
@@ -24,5 +25,7 @@ export default defineEventHandler(async (event) => {
     preferredTimeframe: offer.preferred_timeframe,
     notes: offer.notes,
     createdAt: offer.created_at,
+    // NULL group = an offer from before chapters (migration 025): Norwegian.
+    chapter: chapterOfSlug(offer.slug) ?? 'no',
   }
 })

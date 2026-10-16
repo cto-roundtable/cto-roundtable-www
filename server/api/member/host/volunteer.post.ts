@@ -5,6 +5,9 @@ interface VolunteerBody {
   sponsorDrinks?: boolean
   preferredTimeframe?: string | null
   notes?: string | null
+  // Which chapter the offer is for. Needed only from a member in both chapters;
+  // otherwise it is their one chapter.
+  chapter?: string | null
 }
 
 function clean(s?: string | null): string | null {
@@ -26,12 +29,18 @@ export default defineEventHandler(async (event) => {
   const sponsorFood = Boolean(body.sponsorFood)
   const sponsorDrinks = Boolean(body.sponsorDrinks)
 
+  // The offer belongs to one of the member's own chapters (migration 025).
+  const chapters: Chapter[] = event.context.chapters ?? []
+  const chapter: Chapter | undefined =
+    isChapter(body.chapter) && chapters.includes(body.chapter) ? body.chapter : chapters[0]
+  if (!chapter) throw createError({ statusCode: 403, message: 'No chapter' })
+
   try {
     const rows = await sql`
       INSERT INTO event_locations (
         registered_by, location, participant_limit,
         sponsor_food, sponsor_drinks,
-        preferred_timeframe, notes, status
+        preferred_timeframe, notes, status, group_id
       ) VALUES (
         ${session.personId},
         ${location},
@@ -40,7 +49,8 @@ export default defineEventHandler(async (event) => {
         ${sponsorDrinks},
         ${preferredTimeframe},
         ${notes},
-        'open'
+        'open',
+        (SELECT id FROM network_groups WHERE slug = ${CHAPTER_GROUPS[chapter]})
       )
       RETURNING id
     `
