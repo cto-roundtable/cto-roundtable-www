@@ -305,6 +305,41 @@
       "account": "för {name}",
       "accountWithEmail": "för {name} ({email})"
     },
+    "device": {
+      "title": "Anslut en agent",
+      "intro": "En agent (till exempel ctr-verktyget på en server) ber om åtkomst till portalens admin-API. Kontrollera att det är du som startade den och att koden är samma som i terminalen. Godkänn först då.",
+      "boardOnly": "Bara styrelsen kan ansluta agenter.",
+      "codeLabel": "Koden från terminalen",
+      "find": "Slå upp",
+      "request": {
+        "code": "Kod",
+        "client": "Agent",
+        "ip": "Begärd från",
+        "ipUnknown": "okänd",
+        "expires": "Koden gäller till",
+        "scopes": "Åtkomst"
+      },
+      "scopes": {
+        "eventsRead": "läsa evenemang",
+        "eventsWrite": "skapa evenemang och registrera närvaro från Luma",
+        "surveysRead": "läsa enkäter och svar",
+        "surveysWrite": "skapa, stänga och skicka ut enkäter"
+      },
+      "tokenNote": "Om du godkänner får agenten en nyckel i ditt namn i {days} dagar, med exakt den här åtkomsten. Den slutar fungera om du lämnar styrelsen, och allt den gör loggas.",
+      "reauth": "Av säkerhetsskäl kan du bara godkänna direkt efter att du har loggat in. Logga ut och in igen: med en passkey kommer du direkt tillbaka hit. Med e-postlänken måste du öppna länken från terminalen igen efteråt.",
+      "signOutAndIn": "Logga ut och in igen",
+      "approve": "Godkänn",
+      "deny": "Neka",
+      "approved": "Godkänt. Agenten hämtar sin nyckel inom några sekunder, och du kan stänga sidan.",
+      "denied": "Nekat. Agenten får ingen åtkomst.",
+      "errors": {
+        "invalid": "Det är inte en giltig kod. Den ser ut som ABCD-EFGH.",
+        "notFound": "Ingen begäran har den koden. Kontrollera koden i terminalen.",
+        "expired": "Koden har gått ut. Kör ctr login igen.",
+        "decided": "Den här begäran är redan hanterad.",
+        "generic": "Något gick fel. Försök igen."
+      }
+    },
     "surveys": {
       "title": "Enkäter",
       "intro": "Korta enkäter efter våra evenemang. Det tar ett par minuter, och det är så vi får veta vad som fungerade och vad vi borde göra annorlunda nästa gång. Styrelsen ser svaren.",

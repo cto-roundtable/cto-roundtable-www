@@ -305,6 +305,41 @@
       "account": "for {name}",
       "accountWithEmail": "for {name} ({email})"
     },
+    "device": {
+      "title": "Koble til en agent",
+      "intro": "En agent (for eksempel ctr-verktøyet på en boks) ber om tilgang til portalens admin-API. Sjekk at det er du som startet den, og at koden er den samme som i terminalen. Godkjenn først da.",
+      "boardOnly": "Bare styret kan koble til agenter.",
+      "codeLabel": "Koden fra terminalen",
+      "find": "Slå opp",
+      "request": {
+        "code": "Kode",
+        "client": "Agent",
+        "ip": "Spurt fra",
+        "ipUnknown": "ukjent",
+        "expires": "Koden gjelder til",
+        "scopes": "Tilgang"
+      },
+      "scopes": {
+        "eventsRead": "lese arrangementer",
+        "eventsWrite": "opprette arrangementer og registrere oppmøte fra Luma",
+        "surveysRead": "lese undersøkelser og svar",
+        "surveysWrite": "opprette, lukke og sende ut undersøkelser"
+      },
+      "tokenNote": "Godkjenner du, får agenten en nøkkel i ditt navn i {days} dager, med akkurat denne tilgangen. Den slutter å virke hvis du går ut av styret, og alt den gjør blir logget.",
+      "reauth": "Av sikkerhetshensyn kan du bare godkjenne rett etter at du har logget inn. Logg ut og inn igjen: med passkey kommer du rett tilbake hit. Med e-postlenken må du åpne lenken fra terminalen på nytt etterpå.",
+      "signOutAndIn": "Logg ut og inn igjen",
+      "approve": "Godkjenn",
+      "deny": "Avslå",
+      "approved": "Godkjent. Agenten henter nøkkelen sin i løpet av noen sekunder, og du kan lukke siden.",
+      "denied": "Avslått. Agenten får ingen tilgang.",
+      "errors": {
+        "invalid": "Det er ikke en gyldig kode. Den ser ut som ABCD-EFGH.",
+        "notFound": "Ingen forespørsel har den koden. Sjekk koden i terminalen.",
+        "expired": "Koden har gått ut. Kjør ctr login på nytt.",
+        "decided": "Denne forespørselen er allerede behandlet.",
+        "generic": "Noe gikk galt. Prøv igjen."
+      }
+    },
     "surveys": {
       "title": "Undersøkelser",
       "intro": "Korte undersøkelser etter arrangementene våre. Det tar et par minutter, og det er sånn vi finner ut hva som funket og hva vi bør gjøre annerledes neste gang. Styret ser svarene.",

@@ -305,6 +305,41 @@
       "account": "for {name}",
       "accountWithEmail": "for {name} ({email})"
     },
+    "device": {
+      "title": "Connect an agent",
+      "intro": "An agent (for example the ctr CLI on a box) is asking for access to the portal's admin API. Check that you started it yourself and that the code matches the one in the terminal. Only then approve.",
+      "boardOnly": "Only the board (styret) can connect agents.",
+      "codeLabel": "Code from the terminal",
+      "find": "Look up",
+      "request": {
+        "code": "Code",
+        "client": "Agent",
+        "ip": "Asked from",
+        "ipUnknown": "unknown",
+        "expires": "Code valid until",
+        "scopes": "Access"
+      },
+      "scopes": {
+        "eventsRead": "read events",
+        "eventsWrite": "create events and record attendance from Luma",
+        "surveysRead": "read surveys and results",
+        "surveysWrite": "create, close and send out surveys"
+      },
+      "tokenNote": "Approving gives this agent a token in your name for {days} days, with exactly this access. It stops working if you leave the board, and everything it does is logged.",
+      "reauth": "For security reasons you can only approve right after signing in. Sign out and sign in again: a passkey brings you straight back here. With the email link, open the link from the terminal again afterwards.",
+      "signOutAndIn": "Sign out and sign in again",
+      "approve": "Approve",
+      "deny": "Deny",
+      "approved": "Approved. The agent picks up its token within a few seconds, and you can close this page.",
+      "denied": "Denied. The agent gets no access.",
+      "errors": {
+        "invalid": "That is not a valid code. It looks like ABCD-EFGH.",
+        "notFound": "No request has that code. Check the code in the terminal.",
+        "expired": "The code has expired. Run ctr login again.",
+        "decided": "This request has already been handled.",
+        "generic": "Something went wrong. Try again."
+      }
+    },
     "surveys": {
       "title": "Surveys",
       "intro": "Short surveys after our events. They take a couple of minutes, and they are how we find out what worked and what we should do differently next time. The board sees the answers.",
