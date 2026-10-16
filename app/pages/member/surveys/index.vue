@@ -42,6 +42,9 @@
             hide-details="auto"
             class="mb-3"
           />
+          <p v-if="selectedEvent && !selectedEvent.attendeeCount" class="mb-3" style="color: #ffb74d; font-size: 13px;">
+            {{ selectedEvent.hasLuma ? t('member.surveys.create.noAttendees') : t('member.surveys.create.noLuma') }}
+          </p>
           <p v-if="selectedEvent?.lang === 'en'" class="mb-3" style="color: #aaa; font-size: 13px;">
             {{ t('member.surveys.create.englishNote', { group: selectedEvent.group }) }}
           </p>
@@ -214,6 +217,8 @@ interface PickerEvent {
   lang: 'nb' | 'en'
   defaultTitle: string
   surveyId: string | null
+  attendeeCount: number
+  hasLuma: boolean
 }
 
 const { t } = useI18n()
@@ -243,10 +248,11 @@ const template = computed(() => (selectedEvent.value ? templates.value[selectedE
 const eventItems = computed(() =>
   events.value.map((e) => ({
     id: e.id,
-    label: t(e.surveyId ? 'member.surveys.create.eventOptionTaken' : 'member.surveys.create.eventOption', {
+    // Only Luma attendees can answer, so the board sees how many that is before it picks.
+    label: `${t(e.surveyId ? 'member.surveys.create.eventOptionTaken' : 'member.surveys.create.eventOption', {
       date: formatDate(e.date),
       theme: e.theme || t('member.surveys.create.noTheme'),
-    }),
+    })} ${t('member.surveys.create.attendees', e.attendeeCount)}`,
     props: { disabled: Boolean(e.surveyId) },
   })),
 )

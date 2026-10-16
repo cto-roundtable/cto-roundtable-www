@@ -30,6 +30,7 @@
           <div class="d-flex align-center flex-wrap mb-4" style="gap: 12px;">
             <span class="tag" :class="`tag-${statusKey}`">{{ statusText }}</span>
             <span style="color: #aaa; font-size: 14px;">{{ t('member.surveys.responses', survey.responseCount ?? 0) }}</span>
+            <span style="color: #aaa; font-size: 14px;">{{ t('member.surveys.admin.attendees', survey.attendeeCount ?? 0) }}</span>
             <NuxtLink :to="`/member/surveys/${survey.id}/results`" class="inline-link">{{ t('member.surveys.admin.seeResults') }}</NuxtLink>
           </div>
           <div class="d-flex flex-wrap mb-4" style="gap: 12px;">
@@ -45,6 +46,9 @@
               {{ t('member.surveys.admin.close') }}
             </v-btn>
           </div>
+          <p v-if="!survey.attendeeCount" class="mb-4" style="color: #ffb74d; font-size: 13px;">
+            {{ survey.hasLuma ? t('member.surveys.create.noAttendees') : t('member.surveys.create.noLuma') }}
+          </p>
           <p v-if="survey.status === 'open' && !survey.isOpen" class="mb-4" style="color: #ffb74d; font-size: 13px;">
             {{ t('member.surveys.admin.expired') }}
           </p>
@@ -170,7 +174,7 @@
         <h2 v-if="survey.isBoard" class="section-title">{{ t('member.surveys.answer.yourAnswer') }}</h2>
 
         <v-alert v-if="!survey.eligible" type="info" variant="outlined" class="text-left mb-4">
-          {{ t('member.surveys.answer.notEligible') }}
+          {{ ineligibleText }}
         </v-alert>
         <v-alert v-else-if="!survey.isOpen" type="info" variant="outlined" class="text-left mb-4">
           {{ survey.status === 'draft' ? t('member.surveys.answer.draft') : t('member.surveys.answer.closed') }}
@@ -297,9 +301,12 @@ interface Survey {
   event: { id: string; date: string | null; theme: string | null; location: string | null }
   questions: Question[]
   eligible: boolean
+  ineligibleReason: 'not_in_group' | 'no_luma' | 'not_attended' | null
   canAnswer: boolean
   isBoard: boolean
   responseCount: number | null
+  attendeeCount: number | null
+  hasLuma: boolean
   myAnswers: Record<string, number | string | string[]> | null
   mySubmittedAt: string | null
   myUpdatedAt: string | null
@@ -350,6 +357,18 @@ const eventLine = computed(() => {
   if (!e) return ''
   const date = e.date ? formatDate(e.date) : null
   return [e.theme, date, e.location].filter(Boolean).join(', ')
+})
+
+// Only the board reaches this page without being eligible; anyone else gets a 404.
+const ineligibleText = computed(() => {
+  switch (survey.value?.ineligibleReason) {
+    case 'not_attended':
+      return t('member.surveys.answer.notAttended')
+    case 'no_luma':
+      return t('member.surveys.answer.noLuma')
+    default:
+      return t('member.surveys.answer.notEligible')
+  }
 })
 
 const statusKey = computed(() => {
