@@ -276,7 +276,9 @@
         "skip": "Inte nu",
         "added": "Passkeyn är tillagd. Nästa gång kan du välja ”{button}” på inloggningssidan.",
         "goToOverview": "Gå till översikten",
-        "signOutAndIn": "Logga ut och logga in igen"
+        "signOutAndIn": "Logga ut och logga in igen",
+        "confirmWithPasskey": "Bekräfta med passkey",
+        "reauthDone": "Bekräftat. Tryck på ”{button}” igen för att lägga till den nya passkeyn."
       },
       "list": {
         "heading": "Dina passkeys",
@@ -300,8 +302,9 @@
         "saveFailed": "Kunde inte spara passkeyn. Försök igen och kontrollera att enheten ber om Face ID, fingeravtryck eller pinkod.",
         "rename": "Kunde inte byta namn. Försök igen.",
         "remove": "Kunde inte ta bort passkeyn. Försök igen.",
-        "reauth": "Av säkerhetsskäl kan du bara lägga till en passkey direkt efter att du har loggat in. Logga ut, logga in igen med e-postlänken (eller en passkey du redan har) och försök igen.",
-        "limit": "Du har redan {max} passkeys. Ta bort en som du inte använder, så kan du lägga till en ny."
+        "reauth": "Av säkerhetsskäl kan du bara lägga till en passkey direkt efter att du har loggat in. Bekräfta med en passkey du redan har, eller logga ut och in igen med e-postlänken, och försök igen.",
+        "limit": "Du har redan {max} passkeys. Ta bort en som du inte använder, så kan du lägga till en ny.",
+        "reauthFailed": "Bekräftelsen med passkey gick inte. Försök igen, eller logga ut och in igen."
       },
       "account": "för {name}",
       "accountWithEmail": "för {name} ({email})"
@@ -327,7 +330,8 @@
         "surveysWrite": "skapa, stänga och skicka ut enkäter"
       },
       "tokenNote": "Om du godkänner får agenten en nyckel i ditt namn i {days} dagar, med exakt den här åtkomsten. Den slutar fungera om du lämnar styrelsen, och allt den gör loggas.",
-      "reauth": "Av säkerhetsskäl kan du bara godkänna direkt efter att du har loggat in. Logga ut och in igen: med en passkey kommer du direkt tillbaka hit. Med e-postlänken måste du öppna länken från terminalen igen efteråt.",
+      "reauth": "Av säkerhetsskäl kan du bara godkänna direkt efter att du har loggat in. Bekräfta att det är du med en passkey, så kan du godkänna direkt. Har du ingen passkey, logga ut och in igen med e-postlänken och öppna länken från terminalen igen efteråt.",
+      "confirmWithPasskey": "Bekräfta med passkey",
       "signOutAndIn": "Logga ut och in igen",
       "approve": "Godkänn",
       "deny": "Neka",
@@ -338,7 +342,8 @@
         "notFound": "Ingen begäran har den koden. Kontrollera koden i terminalen.",
         "expired": "Koden har gått ut. Kör ctr login igen.",
         "decided": "Den här begäran är redan hanterad.",
-        "generic": "Något gick fel. Försök igen."
+        "generic": "Något gick fel. Försök igen.",
+        "passkey": "Bekräftelsen med passkey gick inte. Försök igen, eller logga ut och in igen."
       }
     },
     "surveys": {

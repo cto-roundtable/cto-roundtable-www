@@ -64,9 +64,24 @@
         </form>
         <v-alert v-if="addError" type="warning" variant="outlined" class="mt-3 text-left">
           {{ addError }}
-          <div v-if="needsReauth" class="mt-2">
-            <v-btn size="small" variant="outlined" color="white" @click="logout">{{ t('member.security.add.signOutAndIn') }}</v-btn>
+          <div v-if="needsReauth" class="d-flex ga-2 flex-wrap mt-3">
+            <!-- Only with a passkey on the account to confirm with; otherwise the email link is the way. -->
+            <v-btn
+              v-if="passkeys.length"
+              :loading="steppingUp"
+              prepend-icon="mdi-fingerprint"
+              style="background-color: white; color: #111;"
+              @click="confirmWithPasskey"
+            >
+              {{ t('member.security.add.confirmWithPasskey') }}
+            </v-btn>
+            <v-btn size="small" variant="outlined" color="white" class="align-self-center" @click="logout">
+              {{ t('member.security.add.signOutAndIn') }}
+            </v-btn>
           </div>
+        </v-alert>
+        <v-alert v-if="reauthDone" type="info" variant="outlined" class="mt-3 text-left">
+          {{ t('member.security.add.reauthDone', { button: onboarding ? t('member.security.add.submitOnboarding') : t('member.security.add.submit') }) }}
         </v-alert>
         <v-alert v-if="added" type="success" variant="outlined" class="mt-3 text-left">
           {{ t('member.security.add.added', { button: t('auth.login.passkeyButton') }) }}
@@ -179,7 +194,7 @@ interface Passkey {
 const route = useRoute()
 const { t } = useI18n()
 const { formatDate } = useLocaleDate()
-const { session, checked, logout } = useAuthSession()
+const { session, checked, logout, loginWithPasskey } = useAuthSession()
 // Arrived here straight after a magic-link sign-in (see the member layout).
 const onboarding = computed(() => route.query.onboarding === '1')
 // Shared with the layout: adding a passkey hides the "add a passkey" nudge.
@@ -194,6 +209,8 @@ const newName = ref('')
 const adding = ref(false)
 const addError = ref('')
 const needsReauth = ref(false)
+const steppingUp = ref(false)
+const reauthDone = ref(false)
 const added = ref(false)
 
 const editingId = ref('')
@@ -227,6 +244,7 @@ async function addPasskey() {
   adding.value = true
   addError.value = ''
   needsReauth.value = false
+  reauthDone.value = false
   added.value = false
   try {
     const optionsJSON = await $fetch<any>('/api/auth/passkey/register/options', { method: 'POST' })
@@ -264,6 +282,25 @@ async function addPasskey() {
     }
   } finally {
     adding.value = false
+  }
+}
+
+/**
+ * The reauth answer, without signing out: a full passkey sign-in in place gives
+ * a fresh session. Adding the new passkey is left to the member's next press,
+ * since browsers want a fresh tap for each passkey dialog.
+ */
+async function confirmWithPasskey() {
+  steppingUp.value = true
+  try {
+    if (!(await loginWithPasskey())) return
+    needsReauth.value = false
+    addError.value = ''
+    reauthDone.value = true
+  } catch {
+    addError.value = t('member.security.errors.reauthFailed')
+  } finally {
+    steppingUp.value = false
   }
 }
 

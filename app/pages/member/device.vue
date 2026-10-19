@@ -64,8 +64,17 @@
             </p>
             <v-alert v-if="!request.recentSignIn" type="warning" variant="outlined" class="text-left mb-4">
               {{ t('member.device.reauth') }}
-              <div class="mt-2">
-                <v-btn size="small" variant="outlined" color="white" @click="signOutHere">
+              <div class="d-flex ga-2 flex-wrap mt-3">
+                <v-btn
+                  v-if="passkeySupported"
+                  :loading="busy === 'stepup'"
+                  prepend-icon="mdi-fingerprint"
+                  style="background-color: white; color: #111;"
+                  @click="confirmWithPasskey"
+                >
+                  {{ t('member.device.confirmWithPasskey') }}
+                </v-btn>
+                <v-btn size="small" variant="outlined" color="white" class="align-self-center" @click="signOutHere">
                   {{ t('member.device.signOutAndIn') }}
                 </v-btn>
               </div>
@@ -105,12 +114,16 @@
 </template>
 
 <script setup lang="ts">
+import { browserSupportsWebAuthn } from '@simplewebauthn/browser'
+
 // The approve page of the device flow (decision device-flow-rust.md):
 // `ctr login` prints a code and a link here (?code= prefills). A styret
 // member checks what is asking and approves or denies. Approve needs a sign-in
 // from the last 10 minutes; the server enforces it, the page only explains it.
 // The member layout shows the sign-in card until there is a session, and a
-// passkey sign-in stays on this URL, so ?code= survives it.
+// passkey sign-in stays on this URL, so ?code= survives it. An older sign-in
+// gets "Bekreft med passkey": a full passkey sign-in in place (the same
+// login/options + verify ceremony, so a fresh session), then the lookup again.
 
 definePageMeta({ layout: 'member' })
 
@@ -131,13 +144,15 @@ const TOKEN_DAYS = 90
 const route = useRoute()
 const { t } = useI18n()
 const { format } = useLocaleDate()
-const { session, checked } = useAuthSession()
+const { session, checked, loginWithPasskey } = useAuthSession()
 
 const code = ref(typeof route.query.code === 'string' ? route.query.code : '')
 const request = ref<DeviceRequest | null>(null)
-const busy = ref<'' | 'lookup' | 'approve' | 'deny'>('')
+const busy = ref<'' | 'lookup' | 'approve' | 'deny' | 'stepup'>('')
 const error = ref('')
 const done = ref<'' | 'approved' | 'denied'>('')
+// Decided on the client only: WebAuthn support is a browser fact, and SSR has none.
+const passkeySupported = ref(false)
 
 const SCOPE_KEYS: Record<string, string> = {
   'events:read': 'eventsRead',
@@ -191,11 +206,34 @@ async function decide(action: 'approve' | 'deny') {
   }
 }
 
+/**
+ * Step up an older sign-in without leaving the page: sign in again with a
+ * passkey (a new session, so a new iat), then look the code up again so
+ * Approve unlocks. Cancelling the dialog changes nothing.
+ */
+async function confirmWithPasskey() {
+  busy.value = 'stepup'
+  error.value = ''
+  try {
+    if (!(await loginWithPasskey())) return
+  } catch {
+    error.value = t('member.device.errors.passkey')
+    return
+  } finally {
+    busy.value = ''
+  }
+  await lookup()
+}
+
 /** Sign out but stay on this URL, so the layout's sign-in card comes back here with ?code=. */
 async function signOutHere() {
   await $fetch('/api/auth/logout', { method: 'POST' })
   session.value = { authenticated: false }
 }
+
+onMounted(() => {
+  passkeySupported.value = browserSupportsWebAuthn()
+})
 
 watchEffect(() => {
   if (
