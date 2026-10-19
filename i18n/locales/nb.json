@@ -276,7 +276,9 @@
         "skip": "Ikke nå",
         "added": "Passkeyen er lagt til. Neste gang kan du velge «{button}» på innloggingssiden.",
         "goToOverview": "Gå til oversikten",
-        "signOutAndIn": "Logg ut og logg inn på nytt"
+        "signOutAndIn": "Logg ut og logg inn på nytt",
+        "confirmWithPasskey": "Bekreft med passkey",
+        "reauthDone": "Bekreftet. Trykk «{button}» igjen for å legge til den nye passkeyen."
       },
       "list": {
         "heading": "Dine passkeys",
@@ -300,8 +302,9 @@
         "saveFailed": "Kunne ikke lagre passkeyen. Prøv igjen, og sjekk at enheten ber om Face ID, fingeravtrykk eller PIN.",
         "rename": "Kunne ikke endre navnet. Prøv igjen.",
         "remove": "Kunne ikke fjerne passkeyen. Prøv igjen.",
-        "reauth": "Av sikkerhetshensyn kan du bare legge til en passkey rett etter at du har logget inn. Logg ut, logg inn igjen med e-postlenken (eller en passkey du allerede har), og prøv på nytt.",
-        "limit": "Du har allerede {max} passkeys. Fjern en du ikke bruker, så kan du legge til en ny."
+        "reauth": "Av sikkerhetshensyn kan du bare legge til en passkey rett etter at du har logget inn. Bekreft med en passkey du allerede har, eller logg ut og inn igjen med e-postlenken, og prøv på nytt.",
+        "limit": "Du har allerede {max} passkeys. Fjern en du ikke bruker, så kan du legge til en ny.",
+        "reauthFailed": "Bekreftelsen med passkey gikk ikke. Prøv igjen, eller logg ut og inn igjen."
       },
       "account": "for {name}",
       "accountWithEmail": "for {name} ({email})"
@@ -327,7 +330,8 @@
         "surveysWrite": "opprette, lukke og sende ut undersøkelser"
       },
       "tokenNote": "Godkjenner du, får agenten en nøkkel i ditt navn i {days} dager, med akkurat denne tilgangen. Den slutter å virke hvis du går ut av styret, og alt den gjør blir logget.",
-      "reauth": "Av sikkerhetshensyn kan du bare godkjenne rett etter at du har logget inn. Logg ut og inn igjen: med passkey kommer du rett tilbake hit. Med e-postlenken må du åpne lenken fra terminalen på nytt etterpå.",
+      "reauth": "Av sikkerhetshensyn kan du bare godkjenne rett etter at du har logget inn. Bekreft at det er deg med en passkey, så kan du godkjenne med en gang. Har du ingen passkey, logg ut og inn igjen med e-postlenken, og åpne lenken fra terminalen på nytt etterpå.",
+      "confirmWithPasskey": "Bekreft med passkey",
       "signOutAndIn": "Logg ut og inn igjen",
       "approve": "Godkjenn",
       "deny": "Avslå",
@@ -338,7 +342,8 @@
         "notFound": "Ingen forespørsel har den koden. Sjekk koden i terminalen.",
         "expired": "Koden har gått ut. Kjør ctr login på nytt.",
         "decided": "Denne forespørselen er allerede behandlet.",
-        "generic": "Noe gikk galt. Prøv igjen."
+        "generic": "Noe gikk galt. Prøv igjen.",
+        "passkey": "Bekreftelsen med passkey gikk ikke. Prøv igjen, eller logg ut og inn igjen."
       }
     },
     "surveys": {

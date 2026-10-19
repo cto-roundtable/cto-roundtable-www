@@ -276,7 +276,9 @@
         "skip": "Not now",
         "added": "Passkey added. Next time you can choose \"{button}\" on the sign-in page.",
         "goToOverview": "Go to the overview",
-        "signOutAndIn": "Sign out and sign in again"
+        "signOutAndIn": "Sign out and sign in again",
+        "confirmWithPasskey": "Confirm with passkey",
+        "reauthDone": "Confirmed. Press \"{button}\" again to add the new passkey."
       },
       "list": {
         "heading": "Your passkeys",
@@ -300,8 +302,9 @@
         "saveFailed": "Could not save the passkey. Try again, and check that your device asks for Face ID, your fingerprint or a PIN.",
         "rename": "Could not rename it. Please try again.",
         "remove": "Could not remove the passkey. Please try again.",
-        "reauth": "For security reasons you can only add a passkey right after you have signed in. Sign out, sign in again with the email link (or a passkey you already have), and try again.",
-        "limit": "You already have {max} passkeys. Remove one you do not use, then you can add a new one."
+        "reauth": "For security reasons you can only add a passkey right after you have signed in. Confirm with a passkey you already have, or sign out and sign in again with the email link, and try again.",
+        "limit": "You already have {max} passkeys. Remove one you do not use, then you can add a new one.",
+        "reauthFailed": "Confirming with a passkey did not work. Try again, or sign out and sign in again."
       },
       "account": "for {name}",
       "accountWithEmail": "for {name} ({email})"
@@ -327,7 +330,8 @@
         "surveysWrite": "create, close and send out surveys"
       },
       "tokenNote": "Approving gives this agent a token in your name for {days} days, with exactly this access. It stops working if you leave the board, and everything it does is logged.",
-      "reauth": "For security reasons you can only approve right after signing in. Sign out and sign in again: a passkey brings you straight back here. With the email link, open the link from the terminal again afterwards.",
+      "reauth": "For security reasons you can only approve right after signing in. Confirm it is you with a passkey and you can approve straight away. No passkey? Sign out and sign in again with the email link, then open the link from the terminal again.",
+      "confirmWithPasskey": "Confirm with passkey",
       "signOutAndIn": "Sign out and sign in again",
       "approve": "Approve",
       "deny": "Deny",
@@ -338,7 +342,8 @@
         "notFound": "No request has that code. Check the code in the terminal.",
         "expired": "The code has expired. Run ctr login again.",
         "decided": "This request has already been handled.",
-        "generic": "Something went wrong. Try again."
+        "generic": "Something went wrong. Try again.",
+        "passkey": "Confirming with a passkey did not work. Try again, or sign out and sign in again."
       }
     },
     "surveys": {
