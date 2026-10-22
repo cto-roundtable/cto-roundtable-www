@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto'
+
 /**
  * Cases ("caser"): a deal as the SPV members see it before and during a vote.
  * Tables: pipeline_deals (investor_visible, investor_blurb), deal_documents,
@@ -410,4 +412,83 @@ export async function setDealInvestorFields(
     INSERT INTO deal_events (deal_id, occurred_at, kind, body, source_kind, created_by)
     VALUES (${dealId}, NOW(), 'note', ${`Portal: ${what}`}, 'manual', ${`portal-admin-api:${byPersonId}`})
   `
+}
+
+const DOCUMENT_TYPES: Record<string, string> = {
+  'application/pdf': 'pdf',
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'text/markdown': 'md',
+}
+export const MAX_DOCUMENT_BYTES = 25 * 1024 * 1024
+const DOCUMENT_KEY_RE = /^[a-z0-9-]{1,40}$/
+
+/**
+ * Upload one document for a deal. A new upload of a key is a new version; the
+ * same bytes as the current version change nothing. Earlier versions stay,
+ * because a ballot attests to their hash.
+ */
+export async function uploadDealDocument(
+  deal: { id: string; slug: string },
+  input: { key: string; title: string | null; contentType: string; data: Buffer; byPersonId: string },
+) {
+  if (!DOCUMENT_KEY_RE.test(input.key)) {
+    throw createError({ statusCode: 400, message: 'key must be 1 to 40 of a-z, 0-9 and -' })
+  }
+  const contentType = input.contentType.split(';')[0]!.trim().toLowerCase()
+  const ext = DOCUMENT_TYPES[contentType]
+  if (!ext) {
+    throw createError({
+      statusCode: 415,
+      message: `Content-Type must be one of ${Object.keys(DOCUMENT_TYPES).join(', ')}`,
+    })
+  }
+  if (input.data.length === 0) throw createError({ statusCode: 400, message: 'Empty file' })
+  if (input.data.length > MAX_DOCUMENT_BYTES) throw createError({ statusCode: 413, message: 'At most 25 MB' })
+  const title = (input.title ?? '').trim()
+  if (!title || title.length > 200) {
+    throw createError({ statusCode: 400, message: 'title is required (?title=, at most 200 characters)' })
+  }
+
+  const sha256 = createHash('sha256').update(input.data).digest('hex')
+  const sql = useDatabase()
+  const current = (
+    await sql`
+    SELECT key, title, version, sha256, bytes FROM deal_documents
+    WHERE deal_id = ${deal.id} AND key = ${input.key}
+    ORDER BY version DESC LIMIT 1
+  `
+  )[0] as any
+  if (current && current.sha256 === sha256) {
+    return {
+      document: {
+        key: current.key,
+        title: current.title,
+        version: current.version,
+        sha256,
+        bytes: Number(current.bytes),
+        current: true,
+      },
+      unchanged: true,
+    }
+  }
+
+  const version = (current?.version ?? 0) + 1
+  const objectKey = `deals/${deal.slug}/${input.key}/v${version}-${sha256.slice(0, 8)}.${ext}`
+  await writeDealDocumentObject(objectKey, input.data, contentType)
+  try {
+    await sql`
+      INSERT INTO deal_documents (deal_id, key, title, version, sha256, content_type, bytes, object_key, uploaded_by)
+      VALUES (${deal.id}, ${input.key}, ${title}, ${version}, ${sha256}, ${contentType}, ${input.data.length},
+              ${objectKey}, ${input.byPersonId})
+    `
+  } catch (err: any) {
+    // Two uploads of the same key at once: the second loses on the unique version.
+    if (err?.code === '23505') throw createError({ statusCode: 409, message: 'Another upload of this key won; retry' })
+    throw err
+  }
+  return {
+    document: { key: input.key, title, version, sha256, bytes: input.data.length, current: true },
+    unchanged: false,
+  }
 }
