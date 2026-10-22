@@ -170,7 +170,7 @@ deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digest
   UPDATE, DELETE and TRUNCATE.
 - **Routes**: `whoami`, `events`, `events/import` (one finished Luma event: upserts
   `events` on `luma_event_id` and writes `event_hosted`/`event_attended` with the
-  track-event-attendance dedup keys; only the two network calendars), `deals` and `deals/:slug` (see Caser below), `surveys` (list, create), `surveys/:id` (show; PATCH
+  track-event-attendance dedup keys; only the two network calendars), `deals`, `deals/:slug`, `questions`, `questions/:id`, `questions/:id/answers`, `answers` (see Caser below), `surveys` (list, create), `surveys/:id` (show; PATCH
   close/reopen only), `surveys/:id/results` (names and free text only with
   `?texts=1`), `surveys/sweep` (`sweepPastEventSurveys`, `?dryRun=1`). The survey
   routes call the helpers in `server/utils/surveys.ts` and have no SQL of their own.
@@ -252,8 +252,22 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   private `GCS_DEAL_DOCUMENTS_BUCKET`, proxied after the case check
   (`/api/member/deals/:slug/documents/:id`). Locally, `DEAL_DOCUMENTS_DIR` points the
   same keys at a folder (ignored on Cloud Run and whenever a bucket is set).
+- **Q&A** (`server/utils/dealQuestions.ts`, `deal_questions` / `deal_answers`): a
+  member asks on the case page; the `deal-qa` job on the box claims the question
+  (`PATCH /api/admin/questions/:id` `agent_working`, a compare-and-set), answers from
+  the deal's investor pack with sources, or routes it to the deal owner
+  (`driver_person_id`), who answers on the case page. The ANSWER is shown to everyone
+  who can see the case; WHO ASKED only to the committee and board, never in the admin
+  API. An agent answer is labelled as unchecked until the owner or a committee member
+  confirms it; a correction supersedes it. The asker gets a mail when it is answered
+  and the owner when a question is routed to them (`server/utils/mail.ts`).
+- **Mail**: every portal mail goes through `server/utils/mail.ts` (Resend). Without
+  `RESEND_API_KEY` a local run logs instead of sending.
 - **Admin API**: `/api/admin/deals` and `/api/admin/deals/:slug` (GET; PATCH sets
-  `investorVisible` / `investorBlurb`). Scopes `deals:read deals:write rounds:write
+  `investorVisible` / `investorBlurb`); `/api/admin/questions` (queue),
+  `/api/admin/questions/:id` (GET; PATCH claim, release, route, close),
+  `/api/admin/questions/:id/answers` (POST, the agent's answer), `/api/admin/answers`
+  (answers since a time, for the nightly `qa-investors.md` sync). Scopes `deals:read deals:write rounds:write
   comments:read digests:write qa:read qa:write`. The route list with request and
   response JSON is memory `votes/admin-api.md` in ctori-4; `ctr` calls only what
   it lists.

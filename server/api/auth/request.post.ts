@@ -1,6 +1,5 @@
 import { randomBytes } from 'node:crypto'
 import type { H3Event } from 'h3'
-import { Resend } from 'resend'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -59,22 +58,18 @@ async function sendMagicLink(event: H3Event, member: { id: string; name: string 
   const baseUrl = config.siteUrl || getRequestURL(event).origin
   const magicLink = `${baseUrl}/api/auth/verify?token=${token}`
 
-  const resend = new Resend(config.resendApiKey)
-  await resend.emails.send({
-    from: 'CTO Roundtable <noreply@ctoroundtable.no>',
+  await sendMail({
     to: email,
     subject: 'Sign in to CTO Roundtable',
-    html: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-        <h2 style="color: #111; margin-bottom: 8px;">CTO Roundtable</h2>
-        <p style="color: #555; font-size: 16px;">Hi ${member.name.split(' ')[0]},</p>
-        <p style="color: #555; font-size: 16px;">Click the button below to sign in to the member portal.</p>
-        <a href="${magicLink}" style="display: inline-block; background: #111; color: #fff; padding: 12px 32px; text-decoration: none; border-radius: 6px; font-size: 16px; margin: 16px 0;">
-          Sign in
-        </a>
-        <p style="color: #999; font-size: 13px; margin-top: 24px;">This link expires in 15 minutes and can only be used once.</p>
-        <p style="color: #999; font-size: 13px;">If you didn't request this, you can safely ignore this email.</p>
-      </div>
-    `,
+    html: mailLayout([
+      mailParagraph(`Hi ${firstNameHtml(member.name)},`),
+      mailParagraph('Click the button below to sign in to the member portal.'),
+      mailButton(magicLink, 'Sign in'),
+      mailParagraph(
+        'This link expires in 15 minutes and can only be used once.',
+        'color: #999; font-size: 13px; margin-top: 24px;',
+      ),
+      mailParagraph("If you didn't request this, you can safely ignore this email.", 'color: #999; font-size: 13px;'),
+    ]),
   })
 }

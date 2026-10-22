@@ -555,6 +555,44 @@
       "memoLabel": "Komiteens memo",
       "docMeta": "Versjon {version} · {date} · {size}",
       "staffNote": "Du ser denne casen som komité eller styre."
+    },
+    "qa": {
+      "title": "Spørsmål og svar",
+      "intro": "Spør om det du lurer på. En agent svarer fra materialet over, vanligvis innen noen minutter, og sier fra hvis svaret ikke står der. Da går spørsmålet til den som eier casen. Svaret vises for alle i SPV-en. Hvem som spurte ser bare komiteen.",
+      "askLabel": "Spørsmålet ditt",
+      "askSubmit": "Send spørsmålet",
+      "asked": "Takk! Du får e-post når det er besvart.",
+      "empty": "Ingen spørsmål ennå.",
+      "sources": "Kilder",
+      "error": "Noe gikk galt. Prøv igjen.",
+      "askedBy": "Spurt av {name}, {date}",
+      "askedByYou": "Ditt spørsmål, {date}",
+      "askedOn": "Spurt {date}",
+      "routedTo": "Sendt til {name}, som eier casen.",
+      "routedToNote": "Sendt til {name}, som eier casen. Agenten: «{note}»",
+      "waiting": "1 spørsmål fra andre venter på svar. | {count} spørsmål fra andre venter på svar.",
+      "confirm": "Bekreft svaret",
+      "answer": "Svar",
+      "correct": "Rett svaret",
+      "close": "Lukk",
+      "answerLabel": "Svaret (vises for alle i SPV-en)",
+      "fromFounder": "Svaret kommer fra gründeren",
+      "answerSubmit": "Publiser svaret",
+      "status": {
+        "new": "Venter på svar. Du får e-post når det kommer.",
+        "newOther": "Venter på svar fra agenten.",
+        "routed": "Agenten fant ikke svaret i materialet. Det er sendt til den som eier casen.",
+        "founder_asked": "Spurt gründeren. Svaret kommer hit.",
+        "closed": "Lukket uten svar."
+      },
+      "label": {
+        "agent": "Svar fra agent, ikke sjekket av komiteen ennå",
+        "agentConfirmed": "Svar fra agent, bekreftet av komiteen",
+        "agentConfirmedBy": "Svar fra agent, bekreftet av {name}",
+        "owner": "Svar fra komiteen",
+        "ownerNamed": "Svar fra {name}",
+        "founder": "Svar fra gründeren, via komiteen"
+      }
     }
   }
 }
