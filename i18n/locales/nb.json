@@ -593,6 +593,33 @@
         "ownerNamed": "Svar fra {name}",
         "founder": "Svar fra gründeren, via komiteen"
       }
+    },
+    "comments": {
+      "title": "Innspill til komiteen",
+      "titleStaff": "Innspill fra medlemmene",
+      "intro": "Har du innvendinger, forslag eller spørsmål til gründeren, eller kjenner du dem? Skriv det her. Komiteen ser det med navnet ditt. De andre medlemmene ser det ikke, så ingen blir påvirket av hva andre skriver. Det teller ikke som en stemme.",
+      "introStaff": "Det medlemmene har skrevet, med navn. Hvert medlem ser bare sine egne. Du kan også skrive selv.",
+      "kind": {
+        "comment": "Kommentar",
+        "objection": "Innvending",
+        "suggestion": "Forslag",
+        "founder_question": "Spørsmål til gründeren",
+        "signal": "Jeg kjenner dem"
+      },
+      "placeholder": {
+        "comment": "Kommentaren din",
+        "objection": "Hva er du bekymret for?",
+        "suggestion": "Hva bør komiteen gjøre eller sjekke?",
+        "founder_question": "Hva bør komiteen spørre gründeren om?",
+        "signal": "Hvordan kjenner du dem, og hva vet du?"
+      },
+      "submit": "Send til komiteen",
+      "sent": "Sendt. Bare komiteen ser det.",
+      "allLabel": "1 innspill | {count} innspill",
+      "mineLabel": "Dine innspill",
+      "by": "{name}, {date}",
+      "withdraw": "Trekk tilbake",
+      "withdrawnOn": "Trukket tilbake {date}"
     }
   }
 }

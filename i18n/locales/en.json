@@ -593,6 +593,33 @@
         "ownerNamed": "Answer from {name}",
         "founder": "Answer from the founder, via the committee"
       }
+    },
+    "comments": {
+      "title": "Input for the committee",
+      "titleStaff": "Input from the members",
+      "intro": "Do you have objections, suggestions or questions for the founder, or do you know them? Write it here. The committee sees it with your name. The other members do not see it, so nobody is swayed by what others write. It does not count as a vote.",
+      "introStaff": "What the members have written, with names. Each member sees only their own. You can write here too.",
+      "kind": {
+        "comment": "Comment",
+        "objection": "Objection",
+        "suggestion": "Suggestion",
+        "founder_question": "Question for the founder",
+        "signal": "I know them"
+      },
+      "placeholder": {
+        "comment": "Your comment",
+        "objection": "What worries you?",
+        "suggestion": "What should the committee do or check?",
+        "founder_question": "What should the committee ask the founder?",
+        "signal": "How do you know them, and what do you know?"
+      },
+      "submit": "Send to the committee",
+      "sent": "Sent. Only the committee sees it.",
+      "allLabel": "1 input | {count} inputs",
+      "mineLabel": "Your input",
+      "by": "{name}, {date}",
+      "withdraw": "Withdraw",
+      "withdrawnOn": "Withdrawn {date}"
     }
   }
 }

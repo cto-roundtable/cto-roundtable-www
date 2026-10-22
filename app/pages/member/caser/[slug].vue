@@ -69,6 +69,14 @@
         @changed="reload"
       />
 
+      <DealsComments
+        class="mb-4"
+        :slug="slug"
+        :comments="data.comments"
+        :is-staff="data.viewer.isStaff"
+        @changed="reload"
+      />
+
       <p v-if="data.viewer.isStaff" class="staff-note">
         <v-icon size="14" class="mr-1">mdi-account-tie-outline</v-icon>{{ t('deals.case.staffNote') }}
       </p>
@@ -116,6 +124,7 @@ interface CaseResponse {
   questions: any[]
   questionsWaiting: number
   canAnswer: boolean
+  comments: any[]
 }
 
 const route = useRoute()
