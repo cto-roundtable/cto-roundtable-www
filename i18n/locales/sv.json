@@ -546,9 +546,6 @@
       "allCases": "Alla case",
       "owner": "Ansvarig: {name}",
       "rounds": "Omröstning",
-      "roundOpen": "{group}: öppnad {opened}, stänger {closes}.",
-      "roundClosed": "{group}: {result}, avslutad {closed}.",
-      "roundOther": "{group}: {status}.",
       "material": "Materialet",
       "materialIntro": "Råmaterialet först, memot sist. Läs det du behöver.",
       "noDocuments": "Inga dokument publicerade än.",
@@ -620,6 +617,54 @@
       "by": "{name}, {date}",
       "withdraw": "Dra tillbaka",
       "withdrawnOn": "Tillbakadragen {date}"
+    },
+    "ballot": {
+      "proposal": "Förslag: {amount}, {instrument}{cap}",
+      "cap": ", cap {cap}",
+      "backfill": "Omröstning via e-post, avslutad {date}. Bara antalet registrerades.",
+      "draftNote": "Utkast. Medlemmarna ser inte omröstningen förrän den öppnas.",
+      "open": "Öppna omröstningen",
+      "openYes": "Öppna nu",
+      "openConfirm": "När du öppnar låses listan över röstberättigade i {group}, och sista dag blir om 48 timmar. Jobbet skickar aviseringarna via e-post och Slack.",
+      "deadline": "Stänger {when}",
+      "timeLeft": "{h} h {m} min kvar",
+      "closing": "stänger nu",
+      "youVoted": "Du röstade {choice} ({when}).",
+      "standingBlank": "Du står som blank tills du röstar själv.",
+      "notVotedYet": "Du har inte röstat än.",
+      "conflict": "Du är markerad som jävig i detta bolag och kan bara rösta blankt.",
+      "changeUntil": "Du kan ändra din röst fram till sista dag. Den sista räknas.",
+      "notOnRoster": "Du är inte röstberättigad i {group}.",
+      "choice": {
+        "yes": "Ja",
+        "no": "Nej",
+        "blank": "Blankt"
+      },
+      "counts": "Ja {yes} · Nej {no} · Blankt {blank} · Inte röstat {none}",
+      "countsDefault": "(+1 står som blank) | (+{count} står som blank)",
+      "turnout": "Deltagande {pct} av {n} röstberättigade.",
+      "secret": "Du ser antalet röster, inte vem som röstade vad. Kommittén ser namnen. Förslaget antas med minst 2/3 ja av ja- och nej-rösterna.",
+      "protocol": "Protokollet (PDF)",
+      "namedLabel": "Namngivna röster (bara kommittén och styrelsen)",
+      "counted": {
+        "yes": "Ja",
+        "no": "Nej",
+        "blank": "Blankt",
+        "default_blank": "Står som blank",
+        "none": "Inte röstat"
+      },
+      "method": {
+        "portal": "i portalen",
+        "email": "via e-post",
+        "on_behalf": "registrerad för deras räkning",
+        "null": ""
+      },
+      "late": "kom efter sista dag"
+    },
+    "banner": {
+      "title": "Öppen omröstning: {name}",
+      "body": "{group} röstar. Sista dag {when}.",
+      "cta": "Rösta"
     }
   }
 }

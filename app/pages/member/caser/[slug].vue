@@ -22,9 +22,9 @@
         </p>
       </header>
 
-      <section v-if="data.rounds.length" class="panel mb-4">
+      <section v-if="data.rounds.length" id="vote" class="panel mb-4">
         <h2 class="panel-title mb-3">{{ t('deals.case.rounds') }}</h2>
-        <p v-for="r in data.rounds" :key="r.id" class="round-row">{{ roundLine(r) }}</p>
+        <DealsBallot v-for="r in data.rounds" :key="r.id" :slug="slug" :round="r" @changed="reload" />
       </section>
 
       <section class="panel mb-4">
@@ -88,7 +88,7 @@
 definePageMeta({ layout: 'member' })
 
 const { t, n } = useI18n()
-const { formatDate, format } = useLocaleDate()
+const { formatDate } = useLocaleDate()
 
 interface CaseDocument {
   id: string
@@ -104,10 +104,9 @@ interface CaseRound {
   id: string
   group: { slug: string; name: string }
   status: string
-  openedAt: string | null
   closesAt: string | null
-  closedAt: string | null
   result: string | null
+  [key: string]: any
 }
 interface CaseResponse {
   viewer: { isCommittee: boolean; isStaff: boolean }
@@ -151,10 +150,21 @@ watchEffect(async () => {
   }
 })
 
-/** Re-read the case after a question or an answer, without the loading state. */
+/** Re-read the case after a question, an answer or a ballot, without the loading state. */
 async function reload() {
   data.value = await $fetch<CaseResponse>(`/api/member/deals/${slug}`)
 }
+
+// The counts are live: re-read every 30 seconds while a vote is open on the case.
+let poll: ReturnType<typeof setInterval> | undefined
+onMounted(() => {
+  poll = setInterval(() => {
+    if (data.value?.rounds.some((r) => r.status === 'open') && document.visibilityState === 'visible') {
+      reload().catch(() => {})
+    }
+  }, 30_000)
+})
+onBeforeUnmount(() => clearInterval(poll))
 
 // The open round if there is one, else the newest.
 const latestRound = computed(() => {
@@ -187,20 +197,6 @@ function docMeta(d: CaseDocument) {
     date: formatDate(d.uploadedAt, 'short'),
     size: formatSize(d.bytes),
   })
-}
-
-const stamp = (v: string) =>
-  format(v, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-
-function roundLine(r: CaseRound) {
-  if (r.status === 'open' && r.openedAt && r.closesAt) {
-    return t('deals.case.roundOpen', { group: r.group.name, opened: stamp(r.openedAt), closes: stamp(r.closesAt) })
-  }
-  if (r.status === 'closed' && r.closedAt) {
-    const result = r.result ? t(`deals.round.result.${r.result}`) : t('deals.round.status.closed')
-    return t('deals.case.roundClosed', { group: r.group.name, result, closed: stamp(r.closedAt) })
-  }
-  return t('deals.case.roundOther', { group: r.group.name, status: t(`deals.round.status.${r.status}`) })
 }
 
 function trackOpen(d: CaseDocument) {
@@ -237,17 +233,6 @@ function trackOpen(d: CaseDocument) {
   font-size: 1.05rem;
   font-weight: 600;
   color: #fff;
-}
-.round-row {
-  color: #ccc;
-  font-size: 14px;
-  line-height: 1.5;
-  margin: 0;
-}
-.round-row + .round-row {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  margin-top: 10px;
-  padding-top: 10px;
 }
 .doc-row {
   display: flex;

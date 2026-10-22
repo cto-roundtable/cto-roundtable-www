@@ -546,9 +546,6 @@
       "allCases": "Alle caser",
       "owner": "Ansvarlig: {name}",
       "rounds": "Avstemning",
-      "roundOpen": "{group}: åpnet {opened}, stenger {closes}.",
-      "roundClosed": "{group}: {result}, avsluttet {closed}.",
-      "roundOther": "{group}: {status}.",
       "material": "Materialet",
       "materialIntro": "Råmaterialet først, memoet til slutt. Les det du trenger.",
       "noDocuments": "Ingen dokumenter lagt ut ennå.",
@@ -620,6 +617,54 @@
       "by": "{name}, {date}",
       "withdraw": "Trekk tilbake",
       "withdrawnOn": "Trukket tilbake {date}"
+    },
+    "ballot": {
+      "proposal": "Forslag: {amount}, {instrument}{cap}",
+      "cap": ", cap {cap}",
+      "backfill": "Avstemning på e-post, avsluttet {date}. Bare antall er registrert.",
+      "draftNote": "Utkast. Medlemmene ser ikke avstemningen før den åpnes.",
+      "open": "Åpne avstemningen",
+      "openYes": "Åpne nå",
+      "openConfirm": "Når du åpner, låses listen over stemmeberettigede i {group}, og fristen blir om 48 timer. Varslene på e-post og Slack sendes av jobben.",
+      "deadline": "Frist {when}",
+      "timeLeft": "{h} t {m} min igjen",
+      "closing": "stenger nå",
+      "youVoted": "Du stemte {choice} ({when}).",
+      "standingBlank": "Du står som blank til du stemmer selv.",
+      "notVotedYet": "Du har ikke stemt ennå.",
+      "conflict": "Du er markert som inhabil i dette selskapet og kan bare stemme blankt.",
+      "changeUntil": "Du kan endre stemmen din helt til fristen. Den siste teller.",
+      "notOnRoster": "Du er ikke stemmeberettiget i {group}.",
+      "choice": {
+        "yes": "Ja",
+        "no": "Nei",
+        "blank": "Blankt"
+      },
+      "counts": "Ja {yes} · Nei {no} · Blankt {blank} · Ikke stemt {none}",
+      "countsDefault": "(+1 står som blank) | (+{count} står som blank)",
+      "turnout": "Oppslutning {pct} av {n} stemmeberettigede.",
+      "secret": "Du ser antall stemmer, ikke hvem som stemte hva. Komiteen ser navnene. Forslaget vedtas med minst 2/3 ja av ja- og nei-stemmene.",
+      "protocol": "Protokollen (PDF)",
+      "namedLabel": "Navngitte stemmer (bare komiteen og styret)",
+      "counted": {
+        "yes": "Ja",
+        "no": "Nei",
+        "blank": "Blankt",
+        "default_blank": "Står som blank",
+        "none": "Ikke stemt"
+      },
+      "method": {
+        "portal": "i portalen",
+        "email": "på e-post",
+        "on_behalf": "registrert på vegne",
+        "null": ""
+      },
+      "late": "kom etter fristen"
+    },
+    "banner": {
+      "title": "Åpen avstemning: {name}",
+      "body": "{group} stemmer. Frist {when}.",
+      "cta": "Stem"
     }
   }
 }
