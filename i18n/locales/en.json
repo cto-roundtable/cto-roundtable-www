@@ -427,7 +427,10 @@
           "status": "Could not change the status.",
           "save": "Could not save.",
           "questions": "Could not save the questions."
-        }
+        },
+        "manageLink": "Edit and results (board)",
+        "backToAnswer": "To the survey",
+        "boardOnly": "Only the board can edit surveys."
       },
       "answer": {
         "back": "All surveys",
