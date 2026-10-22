@@ -249,6 +249,10 @@ const navItems = computed(() => {
   if (!swedenOnly.value && chapters.includes('se')) {
     items.splice(1, 0, { to: '/member/sweden', key: 'nav.sweden', icon: 'mdi-map-marker-outline', exact: false })
   }
+  // Cases (deal votes): an SPV member who can see a case, or the committee.
+  if (session.value.canSeeCases) {
+    items.push({ to: '/member/caser', key: 'nav.deals', icon: 'mdi-briefcase-check-outline', exact: false })
+  }
   // Investor-updates: any member of an investment cohort (invest-*).
   if (session.value.isInvestor) {
     items.push({ to: '/member/updates', key: 'nav.investorUpdates', icon: 'mdi-finance', exact: false })

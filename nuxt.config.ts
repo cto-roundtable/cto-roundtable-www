@@ -93,6 +93,10 @@ export default defineNuxtConfig({
     // association, and the investor-updates ingest identity has objectAdmin on
     // its own bucket. Read AND written via ADC by the Cloud Run service account.
     gcsBoardProtocolsBucket: process.env.GCS_BOARD_PROTOCOLS_BUCKET || '',
+    // GCS bucket holding deal documents shown on the case pages (memo, deck,
+    // call notes) and the vote protocols. Private; read and written via ADC by
+    // the Cloud Run service account, streamed to members after the case check.
+    gcsDealDocumentsBucket: process.env.GCS_DEAL_DOCUMENTS_BUCKET || '',
     // Canonical public origin for magic-link URLs. Set on the server via
     // NUXT_SITE_URL (Cloud Run); left empty locally so dev falls back to the
     // request origin. Never derive auth link hosts from the request Host header.

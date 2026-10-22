@@ -18,7 +18,8 @@
     "investorUpdates": "Investeraruppdateringar",
     "boardMeetings": "Styrelsemöten",
     "boardActivity": "Aktivitet (styrelsen)",
-    "sweden": "Sverige"
+    "sweden": "Sverige",
+    "deals": "Case"
   },
   "layout": {
     "signedInAs": "Inloggad som",
@@ -502,6 +503,58 @@
       },
       "hostChapter": "Vilken avdelning gäller erbjudandet?",
       "hostChapterSummary": "Avdelning"
+    }
+  },
+  "deals": {
+    "list": {
+      "title": "Case",
+      "intro": "Bolagen som kommittén utvärderar för ditt SPV, och omröstningarna om dem. Här finns råmaterialet (deck, anteckningar från samtalen med grundarna, siffror) med memot bredvid.",
+      "staffNote": "Du ser detta som kommitté eller styrelse: även utkast och alla SPV.",
+      "empty": "Inga case att visa just nu.",
+      "lastActivity": "Senast ändrad {date}"
+    },
+    "status": {
+      "incoming": "Ny",
+      "reviewing": "Under utvärdering",
+      "to_be_voted": "Till omröstning",
+      "pending_transfer": "Beslutad, väntar på överföring",
+      "invested": "Investerad",
+      "rejected": "Avslagen",
+      "passed": "Tackat nej",
+      "waiting": "Väntar på bolaget",
+      "monitoring": "Bevakas",
+      "missed": "Missad",
+      "dead": "Avslutad",
+      "archived": "Arkiverad"
+    },
+    "round": {
+      "openUntil": "Öppen omröstning, sista dag {when}",
+      "status": {
+        "draft": "Utkast",
+        "open": "Öppen omröstning",
+        "closed": "Avslutad",
+        "cancelled": "Inställd"
+      },
+      "result": {
+        "passed": "Beslutad",
+        "failed": "Ej beslutad",
+        "no_quorum": "Inga giltiga röster",
+        "withdrawn": "Återkallad"
+      }
+    },
+    "case": {
+      "allCases": "Alla case",
+      "owner": "Ansvarig: {name}",
+      "rounds": "Omröstning",
+      "roundOpen": "{group}: öppnad {opened}, stänger {closes}.",
+      "roundClosed": "{group}: {result}, avslutad {closed}.",
+      "roundOther": "{group}: {status}.",
+      "material": "Materialet",
+      "materialIntro": "Råmaterialet först, memot sist. Läs det du behöver.",
+      "noDocuments": "Inga dokument publicerade än.",
+      "memoLabel": "Kommitténs memo",
+      "docMeta": "Version {version} · {date} · {size}",
+      "staffNote": "Du ser detta case som kommitté eller styrelse."
     }
   }
 }

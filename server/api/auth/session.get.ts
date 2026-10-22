@@ -25,6 +25,8 @@ export default defineEventHandler(async (event) => {
     email,
     isBoard: await isBoardMember(session.personId),
     isInvestor: await isInvestorMember(session.personId),
+    // Whether any case (/member/caser) is visible to them: an SPV member or the committee.
+    canSeeCases: await canSeeCases(session.personId),
     // Chapters (`no`, `se`) pick the nav and the default language.
     chapters,
   }

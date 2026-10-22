@@ -18,7 +18,8 @@
     "investorUpdates": "Investoroppdateringer",
     "boardMeetings": "Styremøter",
     "boardActivity": "Aktivitet (styret)",
-    "sweden": "Sverige"
+    "sweden": "Sverige",
+    "deals": "Caser"
   },
   "layout": {
     "signedInAs": "Innlogget som",
@@ -502,6 +503,58 @@
       },
       "hostChapter": "Hvilken avdeling er tilbudet for?",
       "hostChapterSummary": "Avdeling"
+    }
+  },
+  "deals": {
+    "list": {
+      "title": "Caser",
+      "intro": "Selskapene komiteen vurderer for SPV-en din, og avstemningene om dem. Her ligger råmaterialet (deck, notater fra samtalene med gründerne, tall) med memoet ved siden av.",
+      "staffNote": "Du ser dette som komité eller styre: også utkast og alle SPV-er.",
+      "empty": "Ingen caser å vise akkurat nå.",
+      "lastActivity": "Sist endret {date}"
+    },
+    "status": {
+      "incoming": "Ny",
+      "reviewing": "Under vurdering",
+      "to_be_voted": "Til avstemning",
+      "pending_transfer": "Vedtatt, venter på overføring",
+      "invested": "Investert",
+      "rejected": "Avslått",
+      "passed": "Takket nei",
+      "waiting": "Venter på selskapet",
+      "monitoring": "Følger med",
+      "missed": "Gikk glipp av",
+      "dead": "Avsluttet",
+      "archived": "Arkivert"
+    },
+    "round": {
+      "openUntil": "Åpen avstemning, frist {when}",
+      "status": {
+        "draft": "Utkast",
+        "open": "Åpen avstemning",
+        "closed": "Avsluttet",
+        "cancelled": "Avlyst"
+      },
+      "result": {
+        "passed": "Vedtatt",
+        "failed": "Ikke vedtatt",
+        "no_quorum": "Ingen gyldige stemmer",
+        "withdrawn": "Trukket"
+      }
+    },
+    "case": {
+      "allCases": "Alle caser",
+      "owner": "Ansvarlig: {name}",
+      "rounds": "Avstemning",
+      "roundOpen": "{group}: åpnet {opened}, stenger {closes}.",
+      "roundClosed": "{group}: {result}, avsluttet {closed}.",
+      "roundOther": "{group}: {status}.",
+      "material": "Materialet",
+      "materialIntro": "Råmaterialet først, memoet til slutt. Les det du trenger.",
+      "noDocuments": "Ingen dokumenter lagt ut ennå.",
+      "memoLabel": "Komiteens memo",
+      "docMeta": "Versjon {version} · {date} · {size}",
+      "staffNote": "Du ser denne casen som komité eller styre."
     }
   }
 }
