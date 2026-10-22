@@ -69,6 +69,16 @@
         @changed="reload"
       />
 
+      <!-- The agent's digest of the comments: the committee's for staff, "what we heard" for the SPV. -->
+      <section v-if="data.digests.committee" class="panel staff-panel mb-4">
+        <h2 class="panel-title mb-2">{{ t('deals.digest.titleCommittee') }}</h2>
+        <DealsDigest :digest="data.digests.committee" />
+      </section>
+      <section v-if="data.digests.spv" class="panel mb-4">
+        <h2 class="panel-title mb-2">{{ t('deals.digest.titleSpv') }}</h2>
+        <DealsDigest :digest="data.digests.spv" />
+      </section>
+
       <DealsComments
         class="mb-4"
         :slug="slug"
@@ -124,6 +134,7 @@ interface CaseResponse {
   questionsWaiting: number
   canAnswer: boolean
   comments: any[]
+  digests: { committee: any | null; spv: any | null }
 }
 
 const route = useRoute()
@@ -274,6 +285,9 @@ function trackOpen(d: CaseDocument) {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+.staff-panel {
+  border-color: rgba(255, 183, 77, 0.45);
 }
 .staff-note {
   color: #ffb74d;

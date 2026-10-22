@@ -511,7 +511,8 @@
       "intro": "Selskapene komiteen vurderer for SPV-en din, og avstemningene om dem. Her ligger råmaterialet (deck, notater fra samtalene med gründerne, tall) med memoet ved siden av.",
       "staffNote": "Du ser dette som komité eller styre: også utkast og alle SPV-er.",
       "empty": "Ingen caser å vise akkurat nå.",
-      "lastActivity": "Sist endret {date}"
+      "lastActivity": "Sist endret {date}",
+      "committeeLink": "Komiteens oversikt"
     },
     "status": {
       "incoming": "Ny",
@@ -665,6 +666,27 @@
       "title": "Åpen avstemning: {name}",
       "body": "{group} stemmer. Frist {when}.",
       "cta": "Stem"
+    },
+    "digest": {
+      "titleCommittee": "Oppsummering av innspillene (komiteen)",
+      "titleSpv": "Dette har vi hørt",
+      "madeBy": "Laget av {who} {date}, fra {n} innspill.",
+      "agent": "agenten",
+      "theme": "{theme}: {count}",
+      "themeOf": "{theme}: {count} av {of}",
+      "newInformation": "Ny informasjon",
+      "founderQuestions": "Spørsmål til gründeren"
+    },
+    "committee": {
+      "title": "Komiteens oversikt",
+      "intro": "Alle caser med det som venter på komiteen: spørsmål sendt til den som eier casen, agentsvar som ikke er bekreftet, og nye innspill siden siste oppsummering.",
+      "forbidden": "Bare for komiteen og styret.",
+      "routed": "1 spørsmål venter på eieren | {count} spørsmål venter på eieren",
+      "unconfirmed": "1 agentsvar å bekrefte | {count} agentsvar å bekrefte",
+      "withAgent": "1 spørsmål hos agenten | {count} spørsmål hos agenten",
+      "comments": "{all} innspill, {fresh} nye",
+      "digest": "Oppsummering {date}",
+      "noDigest": "Ingen oppsummering ennå."
     }
   }
 }

@@ -511,7 +511,8 @@
       "intro": "The companies the committee is reviewing for your SPV, and the votes on them. The raw material is here (deck, notes from the founder calls, numbers), with the memo next to it.",
       "staffNote": "You see this as committee or board: drafts and every SPV included.",
       "empty": "No cases to show right now.",
-      "lastActivity": "Last changed {date}"
+      "lastActivity": "Last changed {date}",
+      "committeeLink": "The committee's overview"
     },
     "status": {
       "incoming": "New",
@@ -665,6 +666,27 @@
       "title": "Open vote: {name}",
       "body": "{group} is voting. Closes {when}.",
       "cta": "Vote"
+    },
+    "digest": {
+      "titleCommittee": "Summary of the input (committee)",
+      "titleSpv": "What we heard",
+      "madeBy": "Made by {who} {date}, from {n} inputs.",
+      "agent": "the agent",
+      "theme": "{theme}: {count}",
+      "themeOf": "{theme}: {count} of {of}",
+      "newInformation": "New information",
+      "founderQuestions": "Questions for the founder"
+    },
+    "committee": {
+      "title": "The committee's overview",
+      "intro": "Every case with what waits for the committee: questions sent to the owner of the case, agent answers not yet confirmed, and new input since the last summary.",
+      "forbidden": "For the committee and the board only.",
+      "routed": "1 question waits for the owner | {count} questions wait for the owner",
+      "unconfirmed": "1 agent answer to confirm | {count} agent answers to confirm",
+      "withAgent": "1 question with the agent | {count} questions with the agent",
+      "comments": "{all} inputs, {fresh} new",
+      "digest": "Summary {date}",
+      "noDigest": "No summary yet."
     }
   }
 }

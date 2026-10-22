@@ -170,7 +170,7 @@ deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digest
   UPDATE, DELETE and TRUNCATE.
 - **Routes**: `whoami`, `events`, `events/import` (one finished Luma event: upserts
   `events` on `luma_event_id` and writes `event_hosted`/`event_attended` with the
-  track-event-attendance dedup keys; only the two network calendars), `deals`, `deals/:slug`, `deals/:slug/documents/:key`, `deals/:slug/rounds`, `rounds`, `rounds/:id` and its actions, `questions`, `questions/:id`, `questions/:id/answers`, `answers` (see Caser below), `surveys` (list, create), `surveys/:id` (show; PATCH
+  track-event-attendance dedup keys; only the two network calendars), `deals`, `deals/:slug`, `deals/:slug/documents/:key`, `deals/:slug/rounds`, `rounds`, `rounds/:id` and its actions, `comments`, `deals/:slug/digests`, `questions`, `questions/:id`, `questions/:id/answers`, `answers` (see Caser below), `surveys` (list, create), `surveys/:id` (show; PATCH
   close/reopen only), `surveys/:id/results` (names and free text only with
   `?texts=1`), `surveys/sweep` (`sweepPastEventSurveys`, `?dryRun=1`). The survey
   routes call the helpers in `server/utils/surveys.ts` and have no SQL of their own.
@@ -273,6 +273,14 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   member sees only their own and can withdraw it (the row is kept). Nothing is sealed
   in the database (decision 2026-10-22 §5, which replaced the plan's anonymous
   comments). The digest agent reads them with names.
+- **Digests** (`server/utils/dealDigests.ts`, `deal_digests`): the `deal-digest` job
+  reads comments with names (`GET /api/admin/comments`) and posts a summary with
+  themes, new information and questions for the founder
+  (`POST /api/admin/deals/:slug/digests`). The committee's digest shows on the case
+  page for staff; an `spv` digest ("what we heard") shows to everyone who can see the
+  case. `/member/komite` (committee and board) lists every case with what waits for
+  the committee: routed questions, agent answers to confirm, new comments since the
+  last digest, the vote, and the newest digest.
 - **The vote** (`server/utils/dealRounds.ts`, `deal_rounds` / `deal_ballots` /
   `deal_round_notices`, protocol `server/utils/votePdf.ts`). A committee member opens a
   draft on the case page (or the job does, `PATCH /api/admin/rounds/:id`): the roster
@@ -300,7 +308,8 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   (answers since a time, for the nightly `qa-investors.md` sync); `/api/admin/rounds`
   (GET), `rounds/:id` (GET with roster, named ballots and notices; PATCH open),
   `rounds/:id/close`, `cancel`, `ballots`, `notify`, `notices` (POST),
-  `rounds/:id/protocol` (GET, the PDF). Scopes `deals:read deals:write rounds:write
+  `rounds/:id/protocol` (GET, the PDF); `/api/admin/comments` (GET, with names),
+  `deals/:slug/digests` (GET, POST). Scopes `deals:read deals:write rounds:write
   comments:read digests:write qa:read qa:write`. The route list with request and
   response JSON is memory `votes/admin-api.md` in ctori-4; `ctr` calls only what
   it lists.
