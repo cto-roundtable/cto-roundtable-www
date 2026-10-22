@@ -427,7 +427,10 @@
           "status": "Kunde inte ändra status.",
           "save": "Kunde inte spara.",
           "questions": "Kunde inte spara frågorna."
-        }
+        },
+        "manageLink": "Redigera och resultat (styrelsen)",
+        "backToAnswer": "Till enkäten",
+        "boardOnly": "Bara styrelsen kan redigera enkäter."
       },
       "answer": {
         "back": "Alla enkäter",

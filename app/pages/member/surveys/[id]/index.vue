@@ -18,156 +18,10 @@
         </p>
       </header>
 
-      <!-- Board: status, settings, questions. The API checks requireBoard on its own. -->
-      <section v-if="survey.isBoard" class="mb-10">
-        <div class="d-flex align-center mb-3" style="gap: 12px; flex-wrap: wrap;">
-          <h2 class="section-title mb-0">{{ t('member.surveys.admin.heading') }}</h2>
-          <v-chip color="#7e57c2" variant="flat" size="small" class="text-uppercase font-weight-bold" style="letter-spacing: 0.05em;">
-            {{ t('common.board') }}
-          </v-chip>
-        </div>
-        <v-card variant="outlined" class="pa-4">
-          <div class="d-flex align-center flex-wrap mb-4" style="gap: 12px;">
-            <span class="tag" :class="`tag-${statusKey}`">{{ statusText }}</span>
-            <span style="color: #aaa; font-size: 14px;">{{ t('member.surveys.responses', survey.responseCount ?? 0) }}</span>
-            <span style="color: #aaa; font-size: 14px;">{{ t('member.surveys.admin.attendees', survey.attendeeCount ?? 0) }}</span>
-            <NuxtLink :to="`/member/surveys/${survey.id}/results`" class="inline-link">{{ t('member.surveys.admin.seeResults') }}</NuxtLink>
-          </div>
-          <div class="d-flex flex-wrap mb-4" style="gap: 12px;">
-            <v-btn
-              v-if="survey.status !== 'open'"
-              :loading="statusSaving"
-              style="background-color: white; color: #111;"
-              @click="setStatus('open')"
-            >
-              {{ survey.status === 'draft' ? t('member.surveys.admin.open') : t('member.surveys.admin.reopen') }}
-            </v-btn>
-            <v-btn v-if="survey.status === 'open'" variant="outlined" :loading="statusSaving" @click="setStatus('closed')">
-              {{ t('member.surveys.admin.close') }}
-            </v-btn>
-          </div>
-          <p v-if="!survey.attendeeCount" class="mb-4" style="color: #ffb74d; font-size: 13px;">
-            {{ survey.hasLuma ? t('member.surveys.create.noAttendees') : t('member.surveys.create.noLuma') }}
-          </p>
-          <p v-if="survey.status === 'open' && !survey.isOpen" class="mb-4" style="color: #ffb74d; font-size: 13px;">
-            {{ t('member.surveys.admin.expired') }}
-          </p>
-
-          <v-text-field
-            v-model="settings.title"
-            :label="t('member.surveys.fields.title')"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            class="mb-3"
-          />
-          <v-textarea
-            v-model="settings.intro"
-            :label="t('member.surveys.fields.intro')"
-            rows="2"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            class="mb-3"
-          />
-          <v-text-field
-            v-model="settings.closesAt"
-            :label="t('member.surveys.fields.deadline')"
-            type="date"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            class="mb-3"
-          />
-          <v-btn variant="outlined" :loading="settingsSaving" @click="saveSettings">{{ t('common.save') }}</v-btn>
-          <v-alert v-if="adminError" type="warning" variant="outlined" class="mt-3 text-left">{{ adminError }}</v-alert>
-
-          <h3 class="sub-title mt-8 mb-2">{{ t('member.surveys.admin.questionsHeading') }}</h3>
-          <p v-if="survey.responseCount" class="mb-0" style="color: #aaa; font-size: 14px;">
-            {{ t('member.surveys.admin.locked') }}
-          </p>
-          <template v-else>
-            <div v-for="(q, i) in editQuestions" :key="q.key" class="question-editor mb-3">
-              <div class="d-flex align-center mb-2" style="gap: 8px;">
-                <span style="color: #888; font-size: 13px;">{{ i + 1 }}.</span>
-                <v-select
-                  v-model="q.type"
-                  :items="typeItems"
-                  item-title="title"
-                  item-value="value"
-                  variant="outlined"
-                  density="compact"
-                  hide-details
-                  style="max-width: 200px;"
-                />
-                <v-spacer />
-                <v-btn
-                  icon="mdi-arrow-up"
-                  size="x-small"
-                  variant="text"
-                  :aria-label="t('member.surveys.admin.moveUp')"
-                  :disabled="i === 0"
-                  @click="move(i, -1)"
-                />
-                <v-btn
-                  icon="mdi-arrow-down"
-                  size="x-small"
-                  variant="text"
-                  :aria-label="t('member.surveys.admin.moveDown')"
-                  :disabled="i === editQuestions.length - 1"
-                  @click="move(i, 1)"
-                />
-                <v-btn
-                  icon="mdi-delete-outline"
-                  size="x-small"
-                  variant="text"
-                  :aria-label="t('member.surveys.admin.deleteQuestion')"
-                  @click="editQuestions.splice(i, 1)"
-                />
-              </div>
-              <v-text-field
-                v-model="q.label"
-                :label="t('member.surveys.admin.question')"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-                class="mb-2"
-              />
-              <v-textarea
-                v-if="q.type === 'choice' || q.type === 'multi'"
-                v-model="q.optionsText"
-                :label="t('member.surveys.admin.options')"
-                rows="3"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-                class="mb-2"
-              />
-              <v-text-field
-                v-if="q.type === 'rating'"
-                v-model.number="q.scale"
-                :label="t('member.surveys.admin.scaleMax')"
-                type="number"
-                min="2"
-                max="10"
-                variant="outlined"
-                density="compact"
-                hide-details="auto"
-                class="mb-2"
-                style="max-width: 140px;"
-              />
-              <v-checkbox v-model="q.required" :label="t('member.surveys.admin.required')" density="compact" hide-details />
-            </div>
-            <div class="d-flex flex-wrap" style="gap: 12px;">
-              <v-btn variant="text" prepend-icon="mdi-plus" @click="addQuestion">{{ t('member.surveys.admin.addQuestion') }}</v-btn>
-              <v-btn variant="outlined" :loading="questionsSaving" @click="saveQuestions">{{ t('member.surveys.admin.saveQuestions') }}</v-btn>
-            </div>
-            <v-alert v-if="questionsError" type="warning" variant="outlined" class="mt-3 text-left">
-              {{ questionsError }}
-            </v-alert>
-          </template>
-        </v-card>
-      </section>
+      <!-- The board edits and reads results on a page of its own; answering comes first here. -->
+      <p v-if="survey.isBoard" class="mb-6" style="font-size: 14px;">
+        <NuxtLink :to="`/member/surveys/${survey.id}/manage`" class="inline-link muted-link">{{ t('member.surveys.admin.manageLink') }}</NuxtLink>
+      </p>
 
       <!-- The answer form -->
       <section>
@@ -312,16 +166,6 @@ interface Survey {
   myUpdatedAt: string | null
 }
 
-interface EditQuestion {
-  key: number
-  id: string
-  type: QuestionType
-  label: string
-  required: boolean
-  optionsText: string
-  scale: number
-}
-
 const route = useRoute()
 const { t } = useI18n()
 const { formatDate } = useLocaleDate()
@@ -335,22 +179,6 @@ const fieldErrors = ref<Record<string, string>>({})
 const submitting = ref(false)
 const submitError = ref('')
 const justSaved = ref(false)
-
-const settings = ref({ title: '', intro: '', closesAt: '' })
-const settingsSaving = ref(false)
-const statusSaving = ref(false)
-const adminError = ref('')
-const editQuestions = ref<EditQuestion[]>([])
-const questionsSaving = ref(false)
-const questionsError = ref('')
-let nextKey = 1
-
-const typeItems = computed(() =>
-  (['rating', 'text', 'choice', 'multi'] as const).map((value) => ({
-    title: t(`member.surveys.admin.types.${value}`),
-    value,
-  })),
-)
 
 const eventLine = computed(() => {
   const e = survey.value?.event
@@ -371,25 +199,6 @@ const ineligibleText = computed(() => {
   }
 })
 
-const statusKey = computed(() => {
-  if (!survey.value) return 'draft'
-  if (survey.value.status === 'open' && !survey.value.isOpen) return 'closed'
-  return survey.value.status
-})
-const statusText = computed(() => t(`member.surveys.admin.status.${statusKey.value}`))
-
-function toDateInput(iso: string | null): string {
-  if (!iso) return ''
-  const d = new Date(iso)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-}
-
-function fromDateInput(s: string): string | null {
-  // A date picked as the deadline means "through that day", local time.
-  return s ? new Date(`${s}T23:59:59`).toISOString() : null
-}
-
 function fill(s: Survey) {
   survey.value = s
   const a: Record<string, any> = {}
@@ -398,16 +207,6 @@ function fill(s: Survey) {
     a[q.id] = q.type === 'multi' ? (Array.isArray(mine) ? [...mine] : []) : (mine ?? null)
   }
   answers.value = a
-  settings.value = { title: s.title, intro: s.intro ?? '', closesAt: toDateInput(s.closesAt) }
-  editQuestions.value = s.questions.map((q) => ({
-    key: nextKey++,
-    id: q.id,
-    type: q.type,
-    label: q.label,
-    required: q.required,
-    optionsText: (q.options ?? []).join('\n'),
-    scale: q.scale ?? 5,
-  }))
 }
 
 async function load() {
@@ -443,86 +242,6 @@ async function submit() {
   }
 }
 
-async function patch(body: Record<string, unknown>) {
-  await $fetch(`/api/member/surveys/${survey.value!.id}`, { method: 'PATCH', body })
-  fill(await $fetch<Survey>(`/api/member/surveys/${survey.value!.id}`))
-}
-
-async function setStatus(status: 'open' | 'closed') {
-  statusSaving.value = true
-  adminError.value = ''
-  try {
-    await patch({ status })
-  } catch (err: any) {
-    adminError.value = err?.data?.message || t('member.surveys.admin.errors.status')
-  } finally {
-    statusSaving.value = false
-  }
-}
-
-async function saveSettings() {
-  settingsSaving.value = true
-  adminError.value = ''
-  try {
-    await patch({
-      title: settings.value.title,
-      intro: settings.value.intro,
-      closesAt: fromDateInput(settings.value.closesAt),
-    })
-  } catch (err: any) {
-    adminError.value = err?.data?.message || t('member.surveys.admin.errors.save')
-  } finally {
-    settingsSaving.value = false
-  }
-}
-
-function addQuestion() {
-  editQuestions.value.push({
-    key: nextKey++,
-    id: '',
-    type: 'text',
-    label: '',
-    required: false,
-    optionsText: '',
-    scale: 5,
-  })
-}
-
-function move(i: number, dir: -1 | 1) {
-  const list = editQuestions.value
-  const [q] = list.splice(i, 1)
-  list.splice(i + dir, 0, q!)
-}
-
-async function saveQuestions() {
-  questionsSaving.value = true
-  questionsError.value = ''
-  try {
-    // A new question has no id; the server gives it the next free qN.
-    await patch({
-      questions: editQuestions.value.map((q) => ({
-        id: q.id || undefined,
-        type: q.type,
-        label: q.label,
-        required: q.required,
-        ...(q.type === 'rating' ? { scale: Number(q.scale) } : {}),
-        ...(q.type === 'choice' || q.type === 'multi'
-          ? {
-              options: q.optionsText
-                .split('\n')
-                .map((o) => o.trim())
-                .filter(Boolean),
-            }
-          : {}),
-      })),
-    })
-  } catch (err: any) {
-    questionsError.value = err?.data?.message || t('member.surveys.admin.errors.questions')
-  } finally {
-    questionsSaving.value = false
-  }
-}
-
 watchEffect(() => {
   if (checked.value && session.value.authenticated) load()
 })
@@ -545,18 +264,6 @@ watchEffect(() => {
   font-weight: 700;
   color: #fff;
   margin-bottom: 0.75rem;
-}
-
-.sub-title {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #fff;
-}
-
-.question-editor {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
-  padding: 12px;
 }
 
 .answer-fieldset {
@@ -602,25 +309,7 @@ watchEffect(() => {
   margin-top: 4px;
 }
 
-.tag {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding: 2px 8px;
-  border-radius: 3px;
-  color: #fff;
-}
-
-.tag-open {
-  background: #388e3c;
-}
-
-.tag-closed {
-  background: #616161;
-}
-
-.tag-draft {
-  background: #f57c00;
+.muted-link {
+  color: #aaa;
 }
 </style>

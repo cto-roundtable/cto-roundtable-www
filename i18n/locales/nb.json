@@ -427,7 +427,10 @@
           "status": "Kunne ikke endre status.",
           "save": "Kunne ikke lagre.",
           "questions": "Kunne ikke lagre spørsmålene."
-        }
+        },
+        "manageLink": "Rediger og resultater (styret)",
+        "backToAnswer": "Til undersøkelsen",
+        "boardOnly": "Bare styret kan redigere undersøkelser."
       },
       "answer": {
         "back": "Alle undersøkelser",
