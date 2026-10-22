@@ -512,7 +512,8 @@
       "staffNote": "Du ser dette som komité eller styre: også utkast og alle SPV-er.",
       "empty": "Ingen caser å vise akkurat nå.",
       "lastActivity": "Sist endret {date}",
-      "committeeLink": "Komiteens oversikt"
+      "committeeLink": "Komiteens oversikt",
+      "pipelineLink": "Se hele pipelinen"
     },
     "status": {
       "incoming": "Ny",
@@ -687,6 +688,18 @@
       "comments": "{all} innspill, {fresh} nye",
       "digest": "Oppsummering {date}",
       "noDigest": "Ingen oppsummering ennå."
+    },
+    "pipeline": {
+      "title": "Pipelinen",
+      "intro": "Det komiteen jobber med nå, til avstemning og under vurdering først. Spør, si fra om innvendinger, eller si at du kjenner dem, lenge før det blir avstemning. Komiteen ser hvem som skrev, de andre medlemmene gjør ikke det.",
+      "introInvested": "Selskapene SPV-en din har investert i. Pipelinen som jobbes med nå er for SPV-en som investerer nå.",
+      "working": "Under arbeid",
+      "workingEmpty": "Ingen selskaper å vise akkurat nå.",
+      "invested": "Selskaper SPV-en din har investert i",
+      "voteOpen": "Åpen avstemning",
+      "ask": "Jeg har et spørsmål",
+      "object": "Jeg har innvendinger",
+      "knowThem": "Jeg kjenner dem"
     }
   }
 }

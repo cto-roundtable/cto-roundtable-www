@@ -284,6 +284,13 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   case. `/member/komite` (committee and board) lists every case with what waits for
   the committee: routed questions, agent answers to confirm, new comments since the
   last digest, the vote, and the newest digest.
+- **Pipeline feed** (`/member/pipeline`, `listPipeline` in `server/utils/deals.ts`,
+  decision 2026-10-22 §6): the same rows as the case rule (`caseVisibleSql`), split into
+  "working" (not invested by any SPV; open vote first, then `to_be_voted`, `reviewing`,
+  then last activity) and "invested" (companies an SPV of the viewer's invested in, or
+  all for staff). A member of a completed SPV sees only the second. Each working row
+  links to the case page: `#qa` to ask, `?innspill=objection#innspill` /
+  `?innspill=signal#innspill` to write input with that kind preselected.
 - **The vote** (`server/utils/dealRounds.ts`, `deal_rounds` / `deal_ballots` /
   `deal_round_notices`, protocol `server/utils/votePdf.ts`). A committee member opens a
   draft on the case page (or the job does, `PATCH /api/admin/rounds/:id`): the roster

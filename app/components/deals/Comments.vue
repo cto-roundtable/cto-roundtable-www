@@ -78,7 +78,9 @@ const { formatDate } = useLocaleDate()
 const { $posthog } = useNuxtApp()
 
 const kinds = ['comment', 'objection', 'suggestion', 'founder_question', 'signal']
-const kind = ref('comment')
+// A link from the pipeline feed preselects the kind: /member/caser/<slug>?innspill=objection#innspill
+const route = useRoute()
+const kind = ref(kinds.includes(String(route.query.innspill)) ? String(route.query.innspill) : 'comment')
 const draft = ref('')
 const sending = ref(false)
 const sent = ref(false)

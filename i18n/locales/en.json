@@ -512,7 +512,8 @@
       "staffNote": "You see this as committee or board: drafts and every SPV included.",
       "empty": "No cases to show right now.",
       "lastActivity": "Last changed {date}",
-      "committeeLink": "The committee's overview"
+      "committeeLink": "The committee's overview",
+      "pipelineLink": "See the whole pipeline"
     },
     "status": {
       "incoming": "New",
@@ -687,6 +688,18 @@
       "comments": "{all} inputs, {fresh} new",
       "digest": "Summary {date}",
       "noDigest": "No summary yet."
+    },
+    "pipeline": {
+      "title": "The pipeline",
+      "intro": "What the committee is working on now, up for a vote and in review first. Ask, raise an objection, or say you know them, long before a vote. The committee sees who wrote; the other members do not.",
+      "introInvested": "The companies your SPV invested in. The pipeline being worked on now is for the SPV that is investing now.",
+      "working": "In progress",
+      "workingEmpty": "No companies to show right now.",
+      "invested": "Companies your SPV invested in",
+      "voteOpen": "Vote open",
+      "ask": "I have a question",
+      "object": "I have objections",
+      "knowThem": "I know them"
     }
   }
 }
