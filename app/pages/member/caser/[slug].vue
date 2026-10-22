@@ -61,6 +61,7 @@
       </section>
 
       <DealsQuestions
+        id="qa"
         class="mb-4"
         :slug="slug"
         :questions="data.questions"
@@ -80,6 +81,7 @@
       </section>
 
       <DealsComments
+        id="innspill"
         class="mb-4"
         :slug="slug"
         :comments="data.comments"

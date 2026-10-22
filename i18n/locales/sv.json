@@ -512,7 +512,8 @@
       "staffNote": "Du ser detta som kommitté eller styrelse: även utkast och alla SPV.",
       "empty": "Inga case att visa just nu.",
       "lastActivity": "Senast ändrad {date}",
-      "committeeLink": "Kommitténs översikt"
+      "committeeLink": "Kommitténs översikt",
+      "pipelineLink": "Se hela pipelinen"
     },
     "status": {
       "incoming": "Ny",
@@ -687,6 +688,18 @@
       "comments": "{all} synpunkter, {fresh} nya",
       "digest": "Sammanfattning {date}",
       "noDigest": "Ingen sammanfattning än."
+    },
+    "pipeline": {
+      "title": "Pipelinen",
+      "intro": "Det kommittén arbetar med nu, till omröstning och under utvärdering först. Fråga, säg till om invändningar, eller säg att du känner dem, långt innan det blir omröstning. Kommittén ser vem som skrev, de andra medlemmarna gör det inte.",
+      "introInvested": "Bolagen ditt SPV har investerat i. Pipelinen som bearbetas nu är för det SPV som investerar nu.",
+      "working": "Pågående",
+      "workingEmpty": "Inga bolag att visa just nu.",
+      "invested": "Bolag ditt SPV har investerat i",
+      "voteOpen": "Öppen omröstning",
+      "ask": "Jag har en fråga",
+      "object": "Jag har invändningar",
+      "knowThem": "Jag känner dem"
     }
   }
 }

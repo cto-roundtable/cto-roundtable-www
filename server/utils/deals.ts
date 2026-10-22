@@ -460,3 +460,71 @@ export async function uploadDealDocument(
     unchanged: false,
   }
 }
+
+// --- The pipeline feed (/member/pipeline) ---------------------------------------------
+
+/** Stages that count as "in review now", in the order the feed shows them. */
+const IN_REVIEW = ['to_be_voted', 'reviewing']
+
+export interface PipelineRow {
+  slug: string
+  name: string
+  status: string
+  blurb: string | null
+  owner: string | null
+  lastActivityAt: string | null
+  /** an SPV this viewer is in invested in it */
+  ours: boolean
+  openRound: { closesAt: string; group: string } | null
+}
+
+/**
+ * The feed (decision 2026-10-22 §6): the ACTIVE SPV sees the working pipeline,
+ * in review now first, then by last activity; a COMPLETED SPV sees only the
+ * companies it invested in. Which deals count is the case rule
+ * (caseVisibleSql), so the feed, the case page and its actions never disagree.
+ */
+export async function listPipeline(viewer: CaseViewer): Promise<{ working: PipelineRow[]; invested: PipelineRow[] }> {
+  const sql = useDatabase()
+  const rows = (await sql`
+    SELECT pd.slug, o.name, pd.status, pd.investor_blurb, pd.last_activity_at, owner.name AS owner_name,
+           EXISTS (
+             SELECT 1 FROM investments i JOIN memberships m ON m.group_id = i.group_id
+             WHERE i.deal_id = pd.id AND m.person_id = ${viewer.personId}
+           ) AS ours,
+           EXISTS (SELECT 1 FROM investments i WHERE i.deal_id = pd.id) AS invested,
+           (SELECT json_build_object('closesAt', r.closes_at, 'group', ng.name)
+            FROM deal_rounds r JOIN network_groups ng ON ng.id = r.group_id
+            WHERE r.deal_id = pd.id AND r.status = 'open' LIMIT 1) AS open_round
+    FROM pipeline_deals pd
+    JOIN organizations o ON o.id = pd.organization_id
+    LEFT JOIN persons owner ON owner.id = pd.driver_person_id
+    WHERE pd.slug IS NOT NULL AND ${caseVisibleSql(sql, viewer)}
+  `) as any[]
+  const out = (r: any): PipelineRow => ({
+    slug: r.slug,
+    name: r.name,
+    status: r.status,
+    blurb: r.investor_blurb,
+    owner: r.owner_name,
+    lastActivityAt: r.last_activity_at,
+    ours: r.ours,
+    openRound: r.open_round,
+  })
+  const rank = (r: any) =>
+    r.open_round ? -1 : IN_REVIEW.includes(r.status) ? IN_REVIEW.indexOf(r.status) : IN_REVIEW.length
+  const byActivity = (a: any, b: any) =>
+    rank(a) - rank(b) ||
+    new Date(b.last_activity_at ?? 0).getTime() - new Date(a.last_activity_at ?? 0).getTime() ||
+    a.name.localeCompare(b.name)
+  return {
+    working: rows
+      .filter((r) => !r.invested)
+      .sort(byActivity)
+      .map(out),
+    invested: rows
+      .filter((r) => r.invested && (r.ours || viewer.isStaff))
+      .sort(byActivity)
+      .map(out),
+  }
+}
