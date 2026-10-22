@@ -1,7 +1,6 @@
 import { createHash, timingSafeEqual } from 'node:crypto'
 import type { AuthenticatorTransportFuture } from '@simplewebauthn/server'
 import type { H3Event } from 'h3'
-import { Resend } from 'resend'
 import type { SessionData } from './session'
 
 // Passkeys (WebAuthn) as an option next to the email magic link. The email is
@@ -196,9 +195,6 @@ export function cleanPasskeyName(name: unknown): string | null {
 
 // --- Mail -----------------------------------------------------------------------
 
-const escapeHtml = (text: string) =>
-  text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
-
 /**
  * Tell the member a passkey was added, so one added from a stolen session does
  * not go unnoticed. Fire-and-forget like the magic link: the caller does not
@@ -222,22 +218,19 @@ export async function sendNewPasskeyMail(event: H3Event, personId: string, passk
   const when = new Date().toLocaleString('en-GB', { timeZone: 'Europe/Oslo', dateStyle: 'long', timeStyle: 'short' })
   const label = escapeHtml(passkeyName || 'Unnamed passkey')
   const firstName = escapeHtml(String(person.name).split(' ')[0] ?? '')
-  const resend = new Resend(config.resendApiKey)
-  await resend.emails.send({
-    from: 'CTO Roundtable <noreply@ctoroundtable.no>',
+  await sendMail({
     to: person.email,
     subject: 'A passkey was added to your CTO Roundtable sign-in',
-    html: `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
-        <h2 style="color: #111; margin-bottom: 8px;">CTO Roundtable</h2>
-        <p style="color: #555; font-size: 16px;">Hi ${firstName},</p>
-        <p style="color: #555; font-size: 16px;">A passkey was just added to your member portal sign-in:</p>
-        <p style="color: #111; font-size: 16px;"><strong>${label}</strong><br>${when} (Oslo time)</p>
-        <p style="color: #555; font-size: 16px;">If this was you, there is nothing to do.</p>
-        <p style="color: #555; font-size: 16px;">If it wasn't, sign in with an email link and delete it under
-          <a href="${baseUrl}/member/security" style="color: #111;">Innlogging</a>.</p>
-      </div>
-    `,
+    html: mailLayout([
+      mailParagraph(`Hi ${firstName},`),
+      mailParagraph('A passkey was just added to your member portal sign-in:'),
+      mailParagraph(`<strong>${label}</strong><br>${when} (Oslo time)`, 'color: #111; font-size: 16px;'),
+      mailParagraph('If this was you, there is nothing to do.'),
+      mailParagraph(
+        `If it wasn't, sign in with an email link and delete it under
+          <a href="${baseUrl}/member/security" style="color: #111;">Innlogging</a>.`,
+      ),
+    ]),
   })
 }
 

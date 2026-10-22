@@ -555,6 +555,44 @@
       "memoLabel": "The committee's memo",
       "docMeta": "Version {version} · {date} · {size}",
       "staffNote": "You see this case as committee or board."
+    },
+    "qa": {
+      "title": "Questions and answers",
+      "intro": "Ask what you want to know. An agent answers from the material above, usually within a few minutes, and says so when the answer is not there. Then the question goes to the owner of the case. The answer is shown to everyone in the SPV. Only the committee sees who asked.",
+      "askLabel": "Your question",
+      "askSubmit": "Send the question",
+      "asked": "Thanks! You get an email when it is answered.",
+      "empty": "No questions yet.",
+      "sources": "Sources",
+      "error": "Something went wrong. Try again.",
+      "askedBy": "Asked by {name}, {date}",
+      "askedByYou": "Your question, {date}",
+      "askedOn": "Asked {date}",
+      "routedTo": "Sent to {name}, who owns the case.",
+      "routedToNote": "Sent to {name}, who owns the case. The agent: «{note}»",
+      "waiting": "1 question from others is waiting for an answer. | {count} questions from others are waiting for an answer.",
+      "confirm": "Confirm the answer",
+      "answer": "Answer",
+      "correct": "Correct the answer",
+      "close": "Close",
+      "answerLabel": "The answer (shown to everyone in the SPV)",
+      "fromFounder": "The answer comes from the founder",
+      "answerSubmit": "Publish the answer",
+      "status": {
+        "new": "Waiting for an answer. You get an email when it comes.",
+        "newOther": "Waiting for the agent to answer.",
+        "routed": "The agent did not find the answer in the material. It went to the owner of the case.",
+        "founder_asked": "Asked the founder. The answer will come here.",
+        "closed": "Closed without an answer."
+      },
+      "label": {
+        "agent": "Answer from an agent, not yet checked by the committee",
+        "agentConfirmed": "Answer from an agent, confirmed by the committee",
+        "agentConfirmedBy": "Answer from an agent, confirmed by {name}",
+        "owner": "Answer from the committee",
+        "ownerNamed": "Answer from {name}",
+        "founder": "Answer from the founder, via the committee"
+      }
     }
   }
 }

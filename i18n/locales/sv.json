@@ -555,6 +555,44 @@
       "memoLabel": "Kommitténs memo",
       "docMeta": "Version {version} · {date} · {size}",
       "staffNote": "Du ser detta case som kommitté eller styrelse."
+    },
+    "qa": {
+      "title": "Frågor och svar",
+      "intro": "Fråga det du undrar över. En agent svarar utifrån materialet ovan, oftast inom några minuter, och säger till om svaret inte finns där. Då går frågan till den som äger caset. Svaret visas för alla i SPV:t. Bara kommittén ser vem som frågade.",
+      "askLabel": "Din fråga",
+      "askSubmit": "Skicka frågan",
+      "asked": "Tack! Du får e-post när den är besvarad.",
+      "empty": "Inga frågor än.",
+      "sources": "Källor",
+      "error": "Något gick fel. Försök igen.",
+      "askedBy": "Frågad av {name}, {date}",
+      "askedByYou": "Din fråga, {date}",
+      "askedOn": "Frågad {date}",
+      "routedTo": "Skickad till {name}, som äger caset.",
+      "routedToNote": "Skickad till {name}, som äger caset. Agenten: «{note}»",
+      "waiting": "1 fråga från andra väntar på svar. | {count} frågor från andra väntar på svar.",
+      "confirm": "Bekräfta svaret",
+      "answer": "Svara",
+      "correct": "Rätta svaret",
+      "close": "Stäng",
+      "answerLabel": "Svaret (visas för alla i SPV:t)",
+      "fromFounder": "Svaret kommer från grundaren",
+      "answerSubmit": "Publicera svaret",
+      "status": {
+        "new": "Väntar på svar. Du får e-post när det kommer.",
+        "newOther": "Väntar på svar från agenten.",
+        "routed": "Agenten hittade inte svaret i materialet. Frågan har gått till den som äger caset.",
+        "founder_asked": "Frågat grundaren. Svaret kommer här.",
+        "closed": "Stängd utan svar."
+      },
+      "label": {
+        "agent": "Svar från en agent, inte granskat av kommittén än",
+        "agentConfirmed": "Svar från en agent, bekräftat av kommittén",
+        "agentConfirmedBy": "Svar från en agent, bekräftat av {name}",
+        "owner": "Svar från kommittén",
+        "ownerNamed": "Svar från {name}",
+        "founder": "Svar från grundaren, via kommittén"
+      }
     }
   }
 }

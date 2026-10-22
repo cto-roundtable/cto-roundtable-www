@@ -60,6 +60,15 @@
         </template>
       </section>
 
+      <DealsQuestions
+        class="mb-4"
+        :slug="slug"
+        :questions="data.questions"
+        :waiting="data.questionsWaiting"
+        :can-answer="data.canAnswer"
+        @changed="reload"
+      />
+
       <p v-if="data.viewer.isStaff" class="staff-note">
         <v-icon size="14" class="mr-1">mdi-account-tie-outline</v-icon>{{ t('deals.case.staffNote') }}
       </p>
@@ -104,6 +113,9 @@ interface CaseResponse {
   }
   documents: CaseDocument[]
   rounds: CaseRound[]
+  questions: any[]
+  questionsWaiting: number
+  canAnswer: boolean
 }
 
 const route = useRoute()
@@ -118,6 +130,8 @@ watchEffect(async () => {
     try {
       data.value = await $fetch<CaseResponse>(`/api/member/deals/${slug}`)
       $posthog?.capture?.('deal_case_viewed', { slug, documents: data.value.documents.length })
+      // A link from the "answered" mail lands on #q-<id>: scroll to it once rendered.
+      if (route.hash) nextTick(() => document.querySelector(route.hash)?.scrollIntoView())
     } catch {
       // 404 (no such case, or not one this member may see): back to the list.
       await navigateTo('/member/caser')
@@ -127,6 +141,11 @@ watchEffect(async () => {
     }
   }
 })
+
+/** Re-read the case after a question or an answer, without the loading state. */
+async function reload() {
+  data.value = await $fetch<CaseResponse>(`/api/member/deals/${slug}`)
+}
 
 // The open round if there is one, else the newest.
 const latestRound = computed(() => {
