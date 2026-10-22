@@ -167,7 +167,7 @@ export async function createDraftRound(
   const sql = useDatabase()
   const groups = await sql`SELECT id, invest_phase FROM network_groups WHERE slug = ${input.group}`
   const group: any = groups[0]
-  if (!group || !group.invest_phase) {
+  if (!group?.invest_phase) {
     throw createError({ statusCode: 400, message: `${input.group} is not an SPV group` })
   }
   if (group.invest_phase === 'completed') {
