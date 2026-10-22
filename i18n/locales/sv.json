@@ -593,6 +593,33 @@
         "ownerNamed": "Svar från {name}",
         "founder": "Svar från grundaren, via kommittén"
       }
+    },
+    "comments": {
+      "title": "Synpunkter till kommittén",
+      "titleStaff": "Synpunkter från medlemmarna",
+      "intro": "Har du invändningar, förslag eller frågor till grundaren, eller känner du dem? Skriv det här. Kommittén ser det med ditt namn. De andra medlemmarna ser det inte, så ingen påverkas av vad andra skriver. Det räknas inte som en röst.",
+      "introStaff": "Det medlemmarna har skrivit, med namn. Varje medlem ser bara sina egna. Du kan också skriva själv.",
+      "kind": {
+        "comment": "Kommentar",
+        "objection": "Invändning",
+        "suggestion": "Förslag",
+        "founder_question": "Fråga till grundaren",
+        "signal": "Jag känner dem"
+      },
+      "placeholder": {
+        "comment": "Din kommentar",
+        "objection": "Vad oroar dig?",
+        "suggestion": "Vad bör kommittén göra eller kontrollera?",
+        "founder_question": "Vad bör kommittén fråga grundaren?",
+        "signal": "Hur känner du dem, och vad vet du?"
+      },
+      "submit": "Skicka till kommittén",
+      "sent": "Skickat. Bara kommittén ser det.",
+      "allLabel": "1 synpunkt | {count} synpunkter",
+      "mineLabel": "Dina synpunkter",
+      "by": "{name}, {date}",
+      "withdraw": "Dra tillbaka",
+      "withdrawnOn": "Tillbakadragen {date}"
     }
   }
 }
