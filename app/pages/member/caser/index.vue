@@ -5,6 +5,7 @@
       <p style="color: #aaa; font-size: 14px; max-width: 640px;">{{ t('deals.list.intro') }}</p>
       <p v-if="viewer.isStaff" class="staff-note mt-3">
         <v-icon size="14" class="mr-1">mdi-account-tie-outline</v-icon>{{ t('deals.list.staffNote') }}
+        <NuxtLink to="/member/komite" class="staff-link">{{ t('deals.list.committeeLink') }}</NuxtLink>
       </p>
     </header>
 
@@ -113,5 +114,10 @@ watchEffect(async () => {
 .staff-note {
   color: #ffb74d;
   font-size: 13px;
+}
+.staff-link {
+  color: #ffb74d;
+  font-weight: 600;
+  margin-left: 6px;
 }
 </style>
