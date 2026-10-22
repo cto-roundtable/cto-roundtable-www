@@ -224,38 +224,6 @@ export async function loadCaseDocument(
     : null
 }
 
-export interface CaseRound {
-  id: string
-  group: { slug: string; name: string }
-  status: string
-  openedAt: string | null
-  closesAt: string | null
-  closedAt: string | null
-  result: string | null
-}
-
-/** Rounds on the case, newest first. Members see open and closed ones; staff also drafts. */
-export async function listCaseRounds(viewer: CaseViewer, dealId: string): Promise<CaseRound[]> {
-  const sql = useDatabase()
-  const rows = await sql`
-    SELECT r.id, ng.slug, ng.name, r.status, r.opened_at, r.closes_at, r.closed_at, r.result
-    FROM deal_rounds r
-    JOIN network_groups ng ON ng.id = r.group_id
-    WHERE r.deal_id = ${dealId}
-      AND (${viewer.isStaff} OR r.status IN ('open', 'closed'))
-    ORDER BY r.created_at DESC
-  `
-  return (rows as any[]).map((r) => ({
-    id: r.id,
-    group: { slug: r.slug, name: r.name },
-    status: r.status,
-    openedAt: r.opened_at,
-    closesAt: r.closes_at,
-    closedAt: r.closed_at,
-    result: r.result,
-  }))
-}
-
 // --- Admin API (/api/admin/deals/**, memory votes/admin-api.md in ctori-4) -----------
 
 export interface AdminDeal {

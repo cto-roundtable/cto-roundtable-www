@@ -170,7 +170,7 @@ deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digest
   UPDATE, DELETE and TRUNCATE.
 - **Routes**: `whoami`, `events`, `events/import` (one finished Luma event: upserts
   `events` on `luma_event_id` and writes `event_hosted`/`event_attended` with the
-  track-event-attendance dedup keys; only the two network calendars), `deals`, `deals/:slug`, `deals/:slug/documents/:key`, `deals/:slug/rounds`, `questions`, `questions/:id`, `questions/:id/answers`, `answers` (see Caser below), `surveys` (list, create), `surveys/:id` (show; PATCH
+  track-event-attendance dedup keys; only the two network calendars), `deals`, `deals/:slug`, `deals/:slug/documents/:key`, `deals/:slug/rounds`, `rounds`, `rounds/:id` and its actions, `questions`, `questions/:id`, `questions/:id/answers`, `answers` (see Caser below), `surveys` (list, create), `surveys/:id` (show; PATCH
   close/reopen only), `surveys/:id/results` (names and free text only with
   `?texts=1`), `surveys/sweep` (`sweepPastEventSurveys`, `?dryRun=1`). The survey
   routes call the helpers in `server/utils/surveys.ts` and have no SQL of their own.
@@ -267,6 +267,23 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   member sees only their own and can withdraw it (the row is kept). Nothing is sealed
   in the database (decision 2026-10-22 §5, which replaced the plan's anonymous
   comments). The digest agent reads them with names.
+- **The vote** (`server/utils/dealRounds.ts`, `deal_rounds` / `deal_ballots` /
+  `deal_round_notices`, protocol `server/utils/votePdf.ts`). A committee member opens a
+  draft on the case page (or the job does, `PATCH /api/admin/rounds/:id`): the roster
+  of the SPV group is frozen and the 48 hours start. A roster member votes yes, no or
+  blank with one tap and can change until the deadline; every cast is a new row
+  (append-only) attesting to the round's `bundle_sha256`, and the latest on-time one
+  counts. Members see the live counts and turnout, never names; the committee and the
+  board see the named list (decision 2026-10-22 §3, `rules.ballot =
+  'choices_board_only'`). A standing `memberships.default_vote = 'blank'` counts as
+  blank until the member votes. At the deadline `POST /api/admin/rounds/:id/close`
+  computes 2/3 of yes + no, freezes `result_snapshot` (named) and renders the
+  protocol PDF (who took part, NOT what they chose) to the deal-documents bucket.
+  The portal sends every vote mail itself (`POST .../notify`: open, reminder,
+  result with the protocol attached) and records each in `deal_round_notices`; the
+  `deal-rounds` job only triggers it and records its Slack posts (`.../notices`).
+  Mail and on-behalf ballots come in through `.../ballots` while the round is open.
+  A banner on `/member` points at open votes the member has not cast.
 - **Mail**: every portal mail goes through `server/utils/mail.ts` (Resend). Without
   `RESEND_API_KEY` a local run logs instead of sending.
 - **Publishing** (`ctr deals publish`): `PUT /api/admin/deals/:slug/documents/:key`
@@ -280,7 +297,10 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   `deals/:slug/rounds` (POST); `/api/admin/questions` (queue),
   `/api/admin/questions/:id` (GET; PATCH claim, release, route, close),
   `/api/admin/questions/:id/answers` (POST, the agent's answer), `/api/admin/answers`
-  (answers since a time, for the nightly `qa-investors.md` sync). Scopes `deals:read deals:write rounds:write
+  (answers since a time, for the nightly `qa-investors.md` sync); `/api/admin/rounds`
+  (GET), `rounds/:id` (GET with roster, named ballots and notices; PATCH open),
+  `rounds/:id/close`, `cancel`, `ballots`, `notify`, `notices` (POST),
+  `rounds/:id/protocol` (GET, the PDF). Scopes `deals:read deals:write rounds:write
   comments:read digests:write qa:read qa:write`. The route list with request and
   response JSON is memory `votes/admin-api.md` in ctori-4; `ctr` calls only what
   it lists.

@@ -1,6 +1,6 @@
 // GET /api/member/deals/:slug
 // One case: the deal, its current documents (raw inputs first, memo last), its
-// rounds, the Q&A as this member may see it (server/utils/dealQuestions.ts), and
+// rounds with their counts (named ballots for the committee only), the Q&A as this member may see it (server/utils/dealQuestions.ts), and
 // the comments: all with names for the committee, only their own for a member
 // (server/utils/dealComments.ts).
 // 404 for a case the member may not see, the same as for one that does not exist.
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   const deal = await requireCase(viewer, slug)
   const [documents, rounds, qa, comments] = await Promise.all([
     listCaseDocuments(deal.id),
-    listCaseRounds(viewer, deal.id),
+    caseRoundsView(viewer, deal.id),
     listCaseQuestions(viewer, deal.id),
     listCaseComments(viewer, deal.id),
   ])
