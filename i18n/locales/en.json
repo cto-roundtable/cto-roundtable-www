@@ -551,6 +551,7 @@
       "material": "The material",
       "materialIntro": "Raw material first, the memo last. Read what you need.",
       "noDocuments": "No documents published yet.",
+      "materialNotShared": "The committee has not shared material on this company yet. You can still ask and give input.",
       "memoLabel": "The committee's memo",
       "docMeta": "Version {version} · {date} · {size}",
       "staffNote": "You see this case as committee or board."
@@ -699,7 +700,12 @@
       "voteOpen": "Vote open",
       "ask": "I have a question",
       "object": "I have objections",
-      "knowThem": "I know them"
+      "knowThem": "I know them",
+      "audience": "Only the members of {groups} and the committee see this.",
+      "showDeclined": "Show the ones we said no to",
+      "declined": "Said no to",
+      "declinedIntro": "Companies the committee reviewed and said no to.",
+      "declinedEmpty": "None to show."
     }
   }
 }

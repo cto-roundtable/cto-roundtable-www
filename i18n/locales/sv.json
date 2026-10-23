@@ -551,6 +551,7 @@
       "material": "Materialet",
       "materialIntro": "Råmaterialet först, memot sist. Läs det du behöver.",
       "noDocuments": "Inga dokument publicerade än.",
+      "materialNotShared": "Kommittén har inte delat material om det här bolaget ännu. Du kan ändå fråga och ge synpunkter.",
       "memoLabel": "Kommitténs memo",
       "docMeta": "Version {version} · {date} · {size}",
       "staffNote": "Du ser detta case som kommitté eller styrelse."
@@ -699,7 +700,12 @@
       "voteOpen": "Öppen omröstning",
       "ask": "Jag har en fråga",
       "object": "Jag har invändningar",
-      "knowThem": "Jag känner dem"
+      "knowThem": "Jag känner dem",
+      "audience": "Detta ser bara medlemmarna i {groups} och kommittén.",
+      "showDeclined": "Visa de vi har sagt nej till",
+      "declined": "Sagt nej till",
+      "declinedIntro": "Bolag kommittén har utvärderat och sagt nej till.",
+      "declinedEmpty": "Inga att visa."
     }
   }
 }

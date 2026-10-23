@@ -5,6 +5,9 @@
       <p style="color: #aaa; font-size: 14px; max-width: 640px;">
         {{ onlyInvested ? t('deals.pipeline.introInvested') : t('deals.pipeline.intro') }}
       </p>
+      <p v-if="audience.length" class="audience mt-2">
+        <v-icon size="15" class="mr-1">mdi-account-group-outline</v-icon>{{ t('deals.pipeline.audience', { groups: audience.join(', ') }) }}
+      </p>
     </header>
 
     <div v-if="loading" class="d-flex justify-center py-10">
@@ -25,8 +28,11 @@
           <p class="meta mb-3">{{ metaLine(d) }}</p>
           <div class="actions">
             <NuxtLink :to="`/member/caser/${d.slug}#qa`" class="action">{{ t('deals.pipeline.ask') }}</NuxtLink>
-            <NuxtLink :to="`/member/caser/${d.slug}?innspill=objection#innspill`" class="action">{{ t('deals.pipeline.object') }}</NuxtLink>
-            <NuxtLink :to="`/member/caser/${d.slug}?innspill=signal#innspill`" class="action">{{ t('deals.pipeline.knowThem') }}</NuxtLink>
+            <!-- Decided (money on its way): an objection no longer changes anything, a question still helps. -->
+            <template v-if="d.status !== 'pending_transfer'">
+              <NuxtLink :to="`/member/caser/${d.slug}?innspill=objection#innspill`" class="action">{{ t('deals.pipeline.object') }}</NuxtLink>
+              <NuxtLink :to="`/member/caser/${d.slug}?innspill=signal#innspill`" class="action">{{ t('deals.pipeline.knowThem') }}</NuxtLink>
+            </template>
           </div>
         </article>
       </section>
@@ -41,6 +47,26 @@
           <p v-if="d.blurb" class="blurb mb-1">{{ d.blurb }}</p>
           <p class="meta">{{ metaLine(d) }}</p>
         </article>
+      </section>
+
+      <!-- Declined companies, only on request (dc-33 H1): name, stage and date, no actions. -->
+      <section v-if="!onlyInvested" class="mb-8">
+        <button v-if="declined === null" type="button" class="action" :disabled="loadingDeclined" @click="loadDeclined">
+          {{ t('deals.pipeline.showDeclined') }}
+        </button>
+        <template v-else>
+          <h2 class="section-title mb-1">{{ t('deals.pipeline.declined') }}</h2>
+          <p class="meta mb-3">{{ t('deals.pipeline.declinedIntro') }}</p>
+          <p v-if="!declined.length" style="color: #aaa; font-size: 14px;">{{ t('deals.pipeline.declinedEmpty') }}</p>
+          <article v-for="d in declined" :key="d.slug" class="row-card row-declined">
+            <div class="d-flex align-center flex-wrap mb-1" style="gap: 10px;">
+              <NuxtLink v-if="d.canOpen" :to="`/member/caser/${d.slug}`" class="company-name">{{ d.name }}</NuxtLink>
+              <span v-else class="company-name">{{ d.name }}</span>
+              <span class="tag">{{ statusLabel(d.status) }}</span>
+            </div>
+            <p class="meta">{{ metaLine(d) }}</p>
+          </article>
+        </template>
       </section>
     </template>
   </div>
@@ -61,6 +87,13 @@ interface Row {
   lastActivityAt: string | null
   ours: boolean
   openRound: { closesAt: string; group: string } | null
+  canOpen: boolean
+}
+interface PipelineResponse {
+  audience: string[]
+  working: Row[]
+  invested: Row[]
+  declined: Row[] | null
 }
 
 const { t, te } = useI18n()
@@ -70,13 +103,17 @@ const { $posthog } = useNuxtApp()
 const loading = ref(true)
 const working = ref<Row[]>([])
 const invested = ref<Row[]>([])
+const audience = ref<string[]>([])
+const declined = ref<Row[] | null>(null)
+const loadingDeclined = ref(false)
 
 watchEffect(async () => {
   if (checked.value && session.value.authenticated && loading.value) {
     try {
-      const data = await $fetch<{ working: Row[]; invested: Row[] }>('/api/member/pipeline')
+      const data = await $fetch<PipelineResponse>('/api/member/pipeline')
       working.value = data.working
       invested.value = data.invested
+      audience.value = data.audience
       $posthog?.capture?.('deal_pipeline_viewed', { working: data.working.length, invested: data.invested.length })
     } finally {
       loading.value = false
@@ -85,7 +122,18 @@ watchEffect(async () => {
 })
 
 // A member of a completed SPV sees only its own companies: no working list to invite input on.
-const onlyInvested = computed(() => !working.value.length && invested.value.length > 0)
+const onlyInvested = computed(() => !audience.value.length)
+
+async function loadDeclined() {
+  loadingDeclined.value = true
+  try {
+    const data = await $fetch<PipelineResponse>('/api/member/pipeline', { query: { declined: '1' } })
+    declined.value = data.declined ?? []
+    $posthog?.capture?.('deal_pipeline_declined_viewed', { declined: declined.value.length })
+  } finally {
+    loadingDeclined.value = false
+  }
+}
 
 const statusLabel = (s: string) => (te(`deals.status.${s}`) ? t(`deals.status.${s}`) : s)
 
@@ -98,6 +146,15 @@ function metaLine(d: Row) {
 </script>
 
 <style scoped>
+.audience {
+  color: #ccc;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+}
+.row-declined {
+  opacity: 0.8;
+}
 .section-title {
   font-size: 1.15rem;
   font-weight: 700;

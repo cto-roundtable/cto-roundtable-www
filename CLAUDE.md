@@ -240,13 +240,18 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   condition (`caseVisibleSql`), shared by the list, the page and the document
   download, re-checked on every request:
   - committee (`current-komite`, `server/utils/committee.ts`) and board: every case
-    that is investor-visible or has a round, drafts included;
-  - members of the ACTIVE SPV (`network_groups.invest_phase = 'deploying'`):
-    investor-visible deals no SPV has invested in yet (the working pipeline);
+    in active work, investor-visible or with a round, drafts included;
+  - members of the ACTIVE SPV (`network_groups.invest_phase = 'deploying'`): every
+    deal in active work (`ACTIVE_STATUSES`: reviewing, waiting, to_be_voted,
+    pending_transfer) or marked investor-visible that no SPV has invested in yet
+    (the working pipeline; unreviewed leads are left out, dc-33 2026-10-23);
   - members of a round's group: that case once the round is open;
   - members of an SPV that invested: that company. A completed SPV sees its own
     companies and nothing else.
-  A case you may not see is the same 404 as one that does not exist.
+  A case you may not see is the same 404 as one that does not exist. Seeing a case
+  is not seeing its material: the blurb and the documents are shared only once the
+  committee marks it investor-visible or a round has opened (`materialSharedSql`);
+  before that a member sees name, stage, owner and date, and can ask and give input.
 - **Documents** (`deal_documents`): versioned, never overwritten (a ballot attests
   to a hash). Shown raw material first, the committee memo last. Bytes are in the
   private `GCS_DEAL_DOCUMENTS_BUCKET`, proxied after the case check
@@ -279,7 +284,10 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   decision 2026-10-22 §6): the same rows as the case rule (`caseVisibleSql`), split into
   "working" (not invested by any SPV; open vote first, then `to_be_voted`, `reviewing`,
   then last activity) and "invested" (companies an SPV of the viewer's invested in, or
-  all for staff). A member of a completed SPV sees only the second. Each working row
+  all for staff). A member of a completed SPV sees only the second. The page names
+  who sees it ("only CTORI 3 and the committee"). Declined companies (`rejected`;
+  `passed` stays out until the founder is told) load only on request
+  (`?declined=1`), name, stage and date. Each working row
   links to the case page: `#qa` to ask, `?innspill=objection#innspill` /
   `?innspill=signal#innspill` to write input with that kind preselected.
 - **The vote** (`server/utils/dealRounds.ts`, `deal_rounds` / `deal_ballots` /
