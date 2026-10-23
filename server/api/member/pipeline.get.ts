@@ -8,5 +8,7 @@ export default defineEventHandler(async (event) => {
   return {
     viewer: { isCommittee: viewer.isCommittee, isStaff: viewer.isStaff },
     ...(await listPipeline(viewer, { declined })),
+    // The newest digest that went out to the viewer's investing SPV (every second Monday).
+    latestDigest: declined ? null : await latestSentDigest(viewer),
   }
 })

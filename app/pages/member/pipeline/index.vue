@@ -15,6 +15,12 @@
     </div>
 
     <template v-else>
+      <details v-if="latestDigest && !onlyInvested" class="digest-box mb-6">
+        <summary>{{ t('deals.pipelineDigest.latest', { date: formatDate(latestDigest.periodStart, 'short') }) }}</summary>
+        <!-- Rendered from a strict, escape-first markdown subset (no raw HTML). -->
+        <div class="d-body mt-3" v-html="renderMarkdown(latestDigest.bodyMd)" />
+      </details>
+
       <section v-if="!onlyInvested" class="mb-8">
         <h2 class="section-title mb-3">{{ t('deals.pipeline.working') }}</h2>
         <p v-if="!working.length" style="color: #aaa; font-size: 14px;">{{ t('deals.pipeline.workingEmpty') }}</p>
@@ -32,6 +38,7 @@
             <template v-if="d.status !== 'pending_transfer'">
               <NuxtLink :to="`/member/caser/${d.slug}?innspill=objection#innspill`" class="action">{{ t('deals.pipeline.object') }}</NuxtLink>
               <NuxtLink :to="`/member/caser/${d.slug}?innspill=signal#innspill`" class="action">{{ t('deals.pipeline.knowThem') }}</NuxtLink>
+              <NuxtLink :to="`/member/caser/${d.slug}#inhabil`" class="action action-quiet">{{ t('deals.pipeline.conflict') }}</NuxtLink>
             </template>
           </div>
         </article>
@@ -90,6 +97,7 @@ interface Row {
   canOpen: boolean
 }
 interface PipelineResponse {
+  latestDigest: { periodStart: string; bodyMd: string } | null
   audience: string[]
   working: Row[]
   invested: Row[]
@@ -104,6 +112,7 @@ const loading = ref(true)
 const working = ref<Row[]>([])
 const invested = ref<Row[]>([])
 const audience = ref<string[]>([])
+const latestDigest = ref<PipelineResponse['latestDigest']>(null)
 const declined = ref<Row[] | null>(null)
 const loadingDeclined = ref(false)
 
@@ -114,6 +123,7 @@ watchEffect(async () => {
       working.value = data.working
       invested.value = data.invested
       audience.value = data.audience
+      latestDigest.value = data.latestDigest
       $posthog?.capture?.('deal_pipeline_viewed', { working: data.working.length, invested: data.invested.length })
     } finally {
       loading.value = false
@@ -154,6 +164,30 @@ function metaLine(d: Row) {
 }
 .row-declined {
   opacity: 0.8;
+}
+.digest-box {
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 14px 18px;
+}
+.digest-box summary {
+  cursor: pointer;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+}
+.d-body {
+  color: #ddd;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.d-body :deep(p) {
+  margin: 0 0 10px;
+}
+.d-body :deep(ul) {
+  margin: 0 0 10px;
+  padding-left: 20px;
 }
 .section-title {
   font-size: 1.15rem;
@@ -216,6 +250,10 @@ function metaLine(d: Row) {
   min-height: 36px;
   display: inline-flex;
   align-items: center;
+}
+.action-quiet {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #bbb;
 }
 .action:hover,
 .action:focus-visible {

@@ -705,7 +705,32 @@
       "showDeclined": "Show the ones we said no to",
       "declined": "Said no to",
       "declinedIntro": "Companies the committee reviewed and said no to.",
-      "declinedEmpty": "None to show."
+      "declinedEmpty": "None to show.",
+      "conflict": "I have a conflict"
+    },
+    "conflict": {
+      "title": "Conflict of interest?",
+      "intro": "Do you work at the company, own part of it, or have another tie to it? Then you can only vote blank when it comes to a vote (mandate §9). Say so here and it is recorded. Only the committee sees who has said so.",
+      "reasonLabel": "Briefly why (optional)",
+      "declare": "I have a conflict",
+      "declared": "You have declared a conflict ({date}). You can only vote blank on this company.",
+      "withdraw": "Withdraw",
+      "lockedWhileOpen": "A vote is open now, so it cannot be withdrawn until the vote is over.",
+      "openRoundNote": "The vote that is open now has already locked its list of voters. Vote blank there yourself. This applies from the next vote.",
+      "staffLabel": "1 has declared a conflict | {count} have declared a conflict"
+    },
+    "pipelineDigest": {
+      "toApprove": "Pipeline update to approve",
+      "draftTitle": "{group}, {date}",
+      "waiting": "Waiting for you",
+      "draftIntro": "Made by {who}. It goes to everyone in the SPV by email and Slack once a committee member approves it. For the first four weeks the committee approves each one; after that it goes out on its own.",
+      "approve": "Approve and send",
+      "approveEdited": "Approve with the changes",
+      "edit": "Edit",
+      "reject": "Do not send",
+      "rejectReason": "Why not (the agent sees this)",
+      "rejectConfirm": "Do not send this one",
+      "latest": "Latest update ({date})"
     }
   }
 }

@@ -705,7 +705,32 @@
       "showDeclined": "Visa de vi har sagt nej till",
       "declined": "Sagt nej till",
       "declinedIntro": "Bolag kommittén har utvärderat och sagt nej till.",
-      "declinedEmpty": "Inga att visa."
+      "declinedEmpty": "Inga att visa.",
+      "conflict": "Jag är jävig"
+    },
+    "conflict": {
+      "title": "Jävig?",
+      "intro": "Arbetar du på bolaget, äger du en del av det, eller har du en annan koppling? Då kan du bara rösta blankt när det blir omröstning om dem (mandatet §9). Säg till här så registreras det. Bara kommittén ser vem som har sagt till.",
+      "reasonLabel": "Kort varför (valfritt)",
+      "declare": "Jag är jävig",
+      "declared": "Du har sagt att du är jävig ({date}). Du kan bara rösta blankt på det här bolaget.",
+      "withdraw": "Dra tillbaka",
+      "lockedWhileOpen": "En omröstning är öppen nu, så det kan inte dras tillbaka förrän den är klar.",
+      "openRoundNote": "Omröstningen som är öppen nu har redan låst listan över röstberättigade. Rösta blankt där själv. Detta gäller från nästa gång.",
+      "staffLabel": "1 har anmält jäv | {count} har anmält jäv"
+    },
+    "pipelineDigest": {
+      "toApprove": "Pipeline-sammanfattning att godkänna",
+      "draftTitle": "{group}, {date}",
+      "waiting": "Väntar på dig",
+      "draftIntro": "Gjord av {who}. Den går till alla i SPV:t via e-post och Slack när någon i kommittén har godkänt den. De första fyra veckorna godkänner kommittén varje gång, sedan går den av sig själv.",
+      "approve": "Godkänn och skicka",
+      "approveEdited": "Godkänn med ändringarna",
+      "edit": "Redigera",
+      "reject": "Skicka inte",
+      "rejectReason": "Varför inte (agenten ser det)",
+      "rejectConfirm": "Skicka inte den här",
+      "latest": "Senaste sammanfattningen ({date})"
     }
   }
 }

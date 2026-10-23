@@ -256,9 +256,11 @@ interface CountedBallot {
   registered_by: string | null
 }
 
-/** The roster of an SPV group right now: active members, primary email, standing default. */
-async function freezeRoster(groupId: string): Promise<RosterEntry[]> {
+/** The roster of an SPV group right now: active members, primary email, standing
+ *  default, and each member's declared §9 conflict on this deal (deal_conflicts). */
+async function freezeRoster(groupId: string, dealId: string): Promise<RosterEntry[]> {
   const sql = useDatabase()
+  const conflicted = await conflictedPersonIds(dealId)
   const rows = await sql`
     SELECT p.id, p.name, m.default_vote,
            (SELECT ci.value FROM contact_infos ci
@@ -274,7 +276,7 @@ async function freezeRoster(groupId: string): Promise<RosterEntry[]> {
     name: r.name,
     email: r.email,
     default_vote: r.default_vote === 'blank' ? 'blank' : null,
-    conflict: false,
+    conflict: conflicted.has(r.id),
   }))
 }
 
@@ -358,7 +360,7 @@ export async function openRound(roundId: string, byPersonId: string) {
   const r = await loadRound(roundId)
   if (!r) throw createError({ statusCode: 404, message: 'Round not found' })
   if (r.status !== 'draft') throw createError({ statusCode: 409, message: `Round is ${r.status}, not draft` })
-  const roster = await freezeRoster(r.group_id)
+  const roster = await freezeRoster(r.group_id, r.deal_id)
   if (roster.length === 0) throw createError({ statusCode: 400, message: `${r.group_slug} has no active members` })
   const windowH = Number(r.rules?.window_h ?? 48)
   const sql = useDatabase()

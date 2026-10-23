@@ -12,6 +12,11 @@
       <v-progress-circular indeterminate color="white" />
     </div>
     <p v-else-if="forbidden" style="color: #aaa;">{{ t('deals.committee.forbidden') }}</p>
+
+    <section v-if="!loading && drafts.length" class="mb-6">
+      <h2 class="section-title mb-3">{{ t('deals.pipelineDigest.toApprove') }}</h2>
+      <DealsPipelineDigestReview v-for="d in drafts" :key="d.id" :digest="d" class="mb-3" @changed="reload" />
+    </section>
     <p v-else-if="!cases.length" style="color: #aaa;">{{ t('deals.list.empty') }}</p>
 
     <section v-else class="feed">
@@ -52,11 +57,18 @@ const { session, checked } = useAuthSession()
 const loading = ref(true)
 const forbidden = ref(false)
 const cases = ref<any[]>([])
+const drafts = ref<any[]>([])
+
+async function reload() {
+  const data = await $fetch<{ cases: any[]; pipelineDigests: { drafts: any[] } }>('/api/member/committee/overview')
+  cases.value = data.cases
+  drafts.value = data.pipelineDigests.drafts
+}
 
 watchEffect(async () => {
   if (checked.value && session.value.authenticated && loading.value) {
     try {
-      cases.value = (await $fetch<{ cases: any[] }>('/api/member/committee/overview')).cases
+      await reload()
     } catch {
       forbidden.value = true
     } finally {
@@ -67,6 +79,11 @@ watchEffect(async () => {
 </script>
 
 <style scoped>
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+}
 .back-link {
   color: #aaa;
   text-decoration: none;
