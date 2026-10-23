@@ -267,6 +267,12 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   API. An agent answer is labelled as unchecked until the owner or a committee member
   confirms it; a correction supersedes it. The asker gets a mail when it is answered
   and the owner when a question is routed to them (`server/utils/mail.ts`).
+- **Comments** (`server/utils/dealComments.ts`, `deal_comments`): input that does not
+  count as a vote (comment, objection, suggestion, question for the founder, "I know
+  them"). Named to the committee and the board, hidden from every other member: a
+  member sees only their own and can withdraw it (the row is kept). Nothing is sealed
+  in the database (decision 2026-10-22 §5, which replaced the plan's anonymous
+  comments). The digest agent reads them with names.
 - **Mail**: every portal mail goes through `server/utils/mail.ts` (Resend). Without
   `RESEND_API_KEY` a local run logs instead of sending.
 - **Admin API**: `/api/admin/deals` and `/api/admin/deals/:slug` (GET; PATCH sets
