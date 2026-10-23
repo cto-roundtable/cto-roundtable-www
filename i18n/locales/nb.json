@@ -705,7 +705,32 @@
       "showDeclined": "Vis de vi har sagt nei til",
       "declined": "Sagt nei til",
       "declinedIntro": "Selskaper komiteen har vurdert og sagt nei til.",
-      "declinedEmpty": "Ingen å vise."
+      "declinedEmpty": "Ingen å vise.",
+      "conflict": "Jeg er inhabil"
+    },
+    "conflict": {
+      "title": "Inhabil?",
+      "intro": "Jobber du i selskapet, eier du en del av det, eller har du en annen tilknytning? Da kan du bare stemme blankt når det blir avstemning om dem (mandatet §9). Si fra her, så blir det registrert. Bare komiteen ser hvem som har sagt fra.",
+      "reasonLabel": "Kort hvorfor (valgfritt)",
+      "declare": "Jeg er inhabil",
+      "declared": "Du har sagt at du er inhabil ({date}). Du kan bare stemme blankt på dette selskapet.",
+      "withdraw": "Trekk tilbake",
+      "lockedWhileOpen": "Det er en åpen avstemning nå, så det kan ikke trekkes tilbake før den er ferdig.",
+      "openRoundNote": "Avstemningen som er åpen nå har allerede låst listen over stemmeberettigede. Stem blankt der selv. Dette gjelder fra neste gang.",
+      "staffLabel": "1 har sagt fra om inhabilitet | {count} har sagt fra om inhabilitet"
+    },
+    "pipelineDigest": {
+      "toApprove": "Pipeline-oppsummering til godkjenning",
+      "draftTitle": "{group}, {date}",
+      "waiting": "Venter på deg",
+      "draftIntro": "Laget av {who}. Den går til alle i SPV-en på e-post og Slack når en i komiteen har godkjent den. De første fire ukene godkjenner komiteen hver gang, så går den av seg selv.",
+      "approve": "Godkjenn og send",
+      "approveEdited": "Godkjenn med endringene",
+      "edit": "Rediger",
+      "reject": "Ikke send",
+      "rejectReason": "Hvorfor ikke (agenten ser det)",
+      "rejectConfirm": "Ikke send denne",
+      "latest": "Siste oppsummering ({date})"
     }
   }
 }

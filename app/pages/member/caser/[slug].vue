@@ -90,6 +90,16 @@
         @changed="reload"
       />
 
+      <DealsConflict
+        id="inhabil"
+        class="mb-4"
+        :slug="slug"
+        :conflict="data.conflict"
+        :conflicts="data.conflicts"
+        :open-round="data.rounds.some((r) => r.status === 'open')"
+        @changed="reload"
+      />
+
       <p v-if="data.viewer.isStaff" class="staff-note">
         <v-icon size="14" class="mr-1">mdi-account-tie-outline</v-icon>{{ t('deals.case.staffNote') }}
       </p>
@@ -138,6 +148,8 @@ interface CaseResponse {
   questionsWaiting: number
   canAnswer: boolean
   comments: any[]
+  conflict: { declaredAt: string; reason: string | null } | null
+  conflicts: { person: { id: string; name: string }; declaredAt: string; reason: string | null }[] | null
   digests: { committee: any | null; spv: any | null }
 }
 
