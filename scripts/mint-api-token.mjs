@@ -24,7 +24,20 @@ import { createHash, randomBytes } from 'node:crypto'
 import { parseArgs } from 'node:util'
 import { neon } from '@neondatabase/serverless'
 
-const SCOPES = ['events:read', 'events:write', 'surveys:read', 'surveys:write']
+// Keep in step with API_SCOPES in server/utils/apiTokens.ts (and the CHECK on api_tokens.scopes).
+const SCOPES = [
+  'events:read',
+  'events:write',
+  'surveys:read',
+  'surveys:write',
+  'deals:read',
+  'deals:write',
+  'rounds:write',
+  'comments:read',
+  'digests:write',
+  'qa:read',
+  'qa:write',
+]
 const BOARD_GROUP = 'styret'
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 

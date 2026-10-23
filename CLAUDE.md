@@ -152,7 +152,9 @@ Machine access to portal data for agents on the boxes, so nothing automatic need
 browser session or the shared `INGEST_API_KEY`. Each agent has its own bearer token
 (`ctr_` + 43 base64url chars), owned by a board member who answers for it. Only the
 token's sha256 is stored (`api_tokens`, hq migration 026), so a request is a hash
-lookup. Scopes: `events:read`, `events:write`, `surveys:read`, `surveys:write`.
+lookup. Scopes: `events:read`, `events:write`, `surveys:read`, `surveys:write`, and for
+deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digests:write`,
+`qa:read`, `qa:write` (hq migration 032).
 
 - **The gate** is `requireApiToken` in `server/utils/apiTokens.ts`, checked on every
   request: not revoked, not expired, the owner an active `styret` member right now
@@ -168,7 +170,7 @@ lookup. Scopes: `events:read`, `events:write`, `surveys:read`, `surveys:write`.
   UPDATE, DELETE and TRUNCATE.
 - **Routes**: `whoami`, `events`, `events/import` (one finished Luma event: upserts
   `events` on `luma_event_id` and writes `event_hosted`/`event_attended` with the
-  track-event-attendance dedup keys; only the two network calendars), `surveys` (list, create), `surveys/:id` (show; PATCH
+  track-event-attendance dedup keys; only the two network calendars), `deals` and `deals/:slug` (see Caser below), `surveys` (list, create), `surveys/:id` (show; PATCH
   close/reopen only), `surveys/:id/results` (names and free text only with
   `?texts=1`), `surveys/sweep` (`sweepPastEventSurveys`, `?dryRun=1`). The survey
   routes call the helpers in `server/utils/surveys.ts` and have no SQL of their own.
@@ -225,6 +227,37 @@ asking "do you know a CTO" come in through the invest side. The gate is
 `requireOpenToWorkViewer` in `server/utils/openToWork.ts`, checked per request.
 Table: `open_to_work` (`ctoroundtable-hq/infrastructure/db/migrations/021_open_to_work.sql`),
 one open row per person, withdrawn rows kept as `closed` history.
+
+### Caser: deal votes, Q&A and input (`/member/caser`)
+
+A case is a deal as an SPV sees it before and during its vote. Built in steps
+(V2 read-only case page, then Q&A, comments, the ballot, the committee digest
+and the pipeline feed); plan and rules: `research/portal-deal-votes-plan.md`
+and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema:
+`ctoroundtable-hq/infrastructure/db/migrations/032_deal_rounds.sql`.
+
+- **All case SQL is in `server/utils/deals.ts`.** Who sees a case is one SQL
+  condition (`caseVisibleSql`), shared by the list, the page and the document
+  download, re-checked on every request:
+  - committee (`current-komite`, `server/utils/committee.ts`) and board: every case
+    that is investor-visible or has a round, drafts included;
+  - members of the ACTIVE SPV (`network_groups.invest_phase = 'deploying'`):
+    investor-visible deals no SPV has invested in yet (the working pipeline);
+  - members of a round's group: that case once the round is open;
+  - members of an SPV that invested: that company. A completed SPV sees its own
+    companies and nothing else.
+  A case you may not see is the same 404 as one that does not exist.
+- **Documents** (`deal_documents`): versioned, never overwritten (a ballot attests
+  to a hash). Shown raw material first, the committee memo last. Bytes are in the
+  private `GCS_DEAL_DOCUMENTS_BUCKET`, proxied after the case check
+  (`/api/member/deals/:slug/documents/:id`). Locally, `DEAL_DOCUMENTS_DIR` points the
+  same keys at a folder (ignored on Cloud Run and whenever a bucket is set).
+- **Admin API**: `/api/admin/deals` and `/api/admin/deals/:slug` (GET; PATCH sets
+  `investorVisible` / `investorBlurb`). Scopes `deals:read deals:write rounds:write
+  comments:read digests:write qa:read qa:write`. The route list with request and
+  response JSON is memory `votes/admin-api.md` in ctori-4; `ctr` calls only what
+  it lists.
+- i18n keys live under `deals.*` (and `nav.deals`).
 
 ### Data sources
 - **Members**: Neon Postgres (`persons`, `memberships`, `organizations` tables)

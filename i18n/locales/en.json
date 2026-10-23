@@ -18,7 +18,8 @@
     "investorUpdates": "Investor updates",
     "boardMeetings": "Board meetings",
     "boardActivity": "Activity (board)",
-    "sweden": "Sweden"
+    "sweden": "Sweden",
+    "deals": "Cases"
   },
   "layout": {
     "signedInAs": "Signed in as",
@@ -502,6 +503,58 @@
       },
       "hostChapter": "Which chapter is the offer for?",
       "hostChapterSummary": "Chapter"
+    }
+  },
+  "deals": {
+    "list": {
+      "title": "Cases",
+      "intro": "The companies the committee is reviewing for your SPV, and the votes on them. The raw material is here (deck, notes from the founder calls, numbers), with the memo next to it.",
+      "staffNote": "You see this as committee or board: drafts and every SPV included.",
+      "empty": "No cases to show right now.",
+      "lastActivity": "Last changed {date}"
+    },
+    "status": {
+      "incoming": "New",
+      "reviewing": "In review",
+      "to_be_voted": "Up for a vote",
+      "pending_transfer": "Approved, transfer pending",
+      "invested": "Invested",
+      "rejected": "Rejected",
+      "passed": "Passed",
+      "waiting": "Waiting on the company",
+      "monitoring": "Monitoring",
+      "missed": "Missed",
+      "dead": "Closed",
+      "archived": "Archived"
+    },
+    "round": {
+      "openUntil": "Vote open until {when}",
+      "status": {
+        "draft": "Draft",
+        "open": "Vote open",
+        "closed": "Closed",
+        "cancelled": "Cancelled"
+      },
+      "result": {
+        "passed": "Approved",
+        "failed": "Not approved",
+        "no_quorum": "No valid votes",
+        "withdrawn": "Withdrawn"
+      }
+    },
+    "case": {
+      "allCases": "All cases",
+      "owner": "Owner: {name}",
+      "rounds": "Vote",
+      "roundOpen": "{group}: opened {opened}, closes {closes}.",
+      "roundClosed": "{group}: {result}, closed {closed}.",
+      "roundOther": "{group}: {status}.",
+      "material": "The material",
+      "materialIntro": "Raw material first, the memo last. Read what you need.",
+      "noDocuments": "No documents published yet.",
+      "memoLabel": "The committee's memo",
+      "docMeta": "Version {version} · {date} · {size}",
+      "staffNote": "You see this case as committee or board."
     }
   }
 }
