@@ -551,6 +551,7 @@
       "material": "Materialet",
       "materialIntro": "Råmaterialet først, memoet til slutt. Les det du trenger.",
       "noDocuments": "Ingen dokumenter lagt ut ennå.",
+      "materialNotShared": "Komiteen har ikke delt materiale om dette selskapet ennå. Du kan likevel spørre og gi innspill.",
       "memoLabel": "Komiteens memo",
       "docMeta": "Versjon {version} · {date} · {size}",
       "staffNote": "Du ser denne casen som komité eller styre."
@@ -699,7 +700,12 @@
       "voteOpen": "Åpen avstemning",
       "ask": "Jeg har et spørsmål",
       "object": "Jeg har innvendinger",
-      "knowThem": "Jeg kjenner dem"
+      "knowThem": "Jeg kjenner dem",
+      "audience": "Dette ser bare medlemmene i {groups} og komiteen.",
+      "showDeclined": "Vis de vi har sagt nei til",
+      "declined": "Sagt nei til",
+      "declinedIntro": "Selskaper komiteen har vurdert og sagt nei til.",
+      "declinedEmpty": "Ingen å vise."
     }
   }
 }

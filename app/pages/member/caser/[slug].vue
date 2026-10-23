@@ -29,8 +29,9 @@
 
       <section class="panel mb-4">
         <h2 class="panel-title mb-1">{{ t('deals.case.material') }}</h2>
-        <p class="meta mb-3">{{ t('deals.case.materialIntro') }}</p>
-        <p v-if="!rawDocs.length && !memo" style="color: #aaa; font-size: 14px;">{{ t('deals.case.noDocuments') }}</p>
+        <p v-if="data.deal.materialShared" class="meta mb-3">{{ t('deals.case.materialIntro') }}</p>
+        <p v-if="!data.deal.materialShared" style="color: #aaa; font-size: 14px;">{{ t('deals.case.materialNotShared') }}</p>
+        <p v-else-if="!rawDocs.length && !memo" style="color: #aaa; font-size: 14px;">{{ t('deals.case.noDocuments') }}</p>
         <a
           v-for="d in rawDocs"
           :key="d.id"
@@ -129,6 +130,7 @@ interface CaseResponse {
     blurb: string | null
     owner: { id: string; name: string } | null
     lastActivityAt: string | null
+    materialShared: boolean
   }
   documents: CaseDocument[]
   rounds: CaseRound[]

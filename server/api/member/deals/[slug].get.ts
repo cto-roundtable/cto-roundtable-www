@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   const viewer = await caseViewer(event.context.session.personId)
   const deal = await requireCase(viewer, slug)
   const [documents, rounds, qa, comments, digests] = await Promise.all([
-    listCaseDocuments(deal.id),
+    deal.materialShared ? listCaseDocuments(deal.id) : Promise.resolve([]),
     caseRoundsView(viewer, deal.id),
     listCaseQuestions(viewer, deal.id),
     listCaseComments(viewer, deal.id),
