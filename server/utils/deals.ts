@@ -124,12 +124,19 @@ export async function canSeeCases(personId: string): Promise<boolean> {
   const viewer = await caseViewer(personId)
   if (viewer.isStaff) return true
   const sql = useDatabase()
-  const rows = await sql`
-    SELECT 1 FROM pipeline_deals pd
-    WHERE pd.slug IS NOT NULL AND ${caseVisibleSql(sql, viewer)}
-    LIMIT 1
-  `
-  return rows.length > 0
+  // /api/auth/session asks this on every page: a failure here (say the 032 tables
+  // are not in this database yet) must hide the nav item, never break sign-in.
+  try {
+    const rows = await sql`
+      SELECT 1 FROM pipeline_deals pd
+      WHERE pd.slug IS NOT NULL AND ${caseVisibleSql(sql, viewer)}
+      LIMIT 1
+    `
+    return rows.length > 0
+  } catch (err) {
+    console.error('[deals] canSeeCases failed, hiding the Caser nav', err)
+    return false
+  }
 }
 
 export interface CaseDeal {
