@@ -170,7 +170,7 @@ deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digest
   UPDATE, DELETE and TRUNCATE.
 - **Routes**: `whoami`, `events`, `events/import` (one finished Luma event: upserts
   `events` on `luma_event_id` and writes `event_hosted`/`event_attended` with the
-  track-event-attendance dedup keys; only the two network calendars), `deals` and `deals/:slug` (see Caser below), `surveys` (list, create), `surveys/:id` (show; PATCH
+  track-event-attendance dedup keys; only the two network calendars), `deals`, `deals/:slug`, `deals/:slug/documents/:key`, `deals/:slug/rounds` (see Caser below), `surveys` (list, create), `surveys/:id` (show; PATCH
   close/reopen only), `surveys/:id/results` (names and free text only with
   `?texts=1`), `surveys/sweep` (`sweepPastEventSurveys`, `?dryRun=1`). The survey
   routes call the helpers in `server/utils/surveys.ts` and have no SQL of their own.
@@ -252,8 +252,15 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   private `GCS_DEAL_DOCUMENTS_BUCKET`, proxied after the case check
   (`/api/member/deals/:slug/documents/:id`). Locally, `DEAL_DOCUMENTS_DIR` points the
   same keys at a folder (ignored on Cloud Run and whenever a bucket is set).
+- **Publishing** (`ctr deals publish`): `PUT /api/admin/deals/:slug/documents/:key`
+  uploads a version (same bytes as the current one change nothing), and
+  `POST /api/admin/deals/:slug/rounds` creates a DRAFT round (`server/utils/dealRounds.ts`):
+  the proposal and the current version of each named document are snapshotted and
+  hashed into `bundle_sha256`, which every ballot attests to. The rules (A+, 48 h,
+  2/3 of yes + no, choices to the committee only) are the server's, never the caller's.
 - **Admin API**: `/api/admin/deals` and `/api/admin/deals/:slug` (GET; PATCH sets
-  `investorVisible` / `investorBlurb`). Scopes `deals:read deals:write rounds:write
+  `investorVisible` / `investorBlurb`), `deals/:slug/documents/:key` (PUT),
+  `deals/:slug/rounds` (POST). Scopes `deals:read deals:write rounds:write
   comments:read digests:write qa:read qa:write`. The route list with request and
   response JSON is memory `votes/admin-api.md` in ctori-4; `ctr` calls only what
   it lists.
