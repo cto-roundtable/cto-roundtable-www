@@ -7,6 +7,9 @@
       </p>
     </header>
 
+    <!-- Open deal votes the member has not voted in yet (/member/caser) -->
+    <DealsOpenVoteBanner />
+
     <!-- Open surveys the member has not answered yet (/member/surveys) -->
     <NuxtLink
       v-for="s in pendingSurveys"

@@ -546,9 +546,6 @@
       "allCases": "All cases",
       "owner": "Owner: {name}",
       "rounds": "Vote",
-      "roundOpen": "{group}: opened {opened}, closes {closes}.",
-      "roundClosed": "{group}: {result}, closed {closed}.",
-      "roundOther": "{group}: {status}.",
       "material": "The material",
       "materialIntro": "Raw material first, the memo last. Read what you need.",
       "noDocuments": "No documents published yet.",
@@ -620,6 +617,54 @@
       "by": "{name}, {date}",
       "withdraw": "Withdraw",
       "withdrawnOn": "Withdrawn {date}"
+    },
+    "ballot": {
+      "proposal": "Proposal: {amount}, {instrument}{cap}",
+      "cap": ", cap {cap}",
+      "backfill": "Vote by email, closed {date}. Only the counts were recorded.",
+      "draftNote": "Draft. Members do not see the vote until it is opened.",
+      "open": "Open the vote",
+      "openYes": "Open now",
+      "openConfirm": "Opening locks the list of who may vote in {group}, and the deadline becomes 48 hours from now. The job sends the email and Slack notices.",
+      "deadline": "Closes {when}",
+      "timeLeft": "{h} h {m} min left",
+      "closing": "closing now",
+      "youVoted": "You voted {choice} ({when}).",
+      "standingBlank": "You stand as blank until you vote yourself.",
+      "notVotedYet": "You have not voted yet.",
+      "conflict": "You are marked as conflicted on this company and can only vote blank.",
+      "changeUntil": "You can change your vote until the deadline. The last one counts.",
+      "notOnRoster": "You are not on the voting list of {group}.",
+      "choice": {
+        "yes": "Yes",
+        "no": "No",
+        "blank": "Blank"
+      },
+      "counts": "Yes {yes} · No {no} · Blank {blank} · Not voted {none}",
+      "countsDefault": "(+1 standing blank) | (+{count} standing blank)",
+      "turnout": "Turnout {pct} of {n} who may vote.",
+      "secret": "You see the counts, not who voted what. The committee sees the names. The proposal passes with at least 2/3 yes of the yes and no votes.",
+      "protocol": "The protocol (PDF)",
+      "namedLabel": "Named ballots (committee and board only)",
+      "counted": {
+        "yes": "Yes",
+        "no": "No",
+        "blank": "Blank",
+        "default_blank": "Standing blank",
+        "none": "Not voted"
+      },
+      "method": {
+        "portal": "in the portal",
+        "email": "by email",
+        "on_behalf": "registered on their behalf",
+        "null": ""
+      },
+      "late": "came after the deadline"
+    },
+    "banner": {
+      "title": "Open vote: {name}",
+      "body": "{group} is voting. Closes {when}.",
+      "cta": "Vote"
     }
   }
 }
