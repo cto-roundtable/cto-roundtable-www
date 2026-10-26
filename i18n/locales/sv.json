@@ -511,7 +511,8 @@
       "intro": "Bolagen som kommittén utvärderar för ditt SPV, och omröstningarna om dem. Här finns råmaterialet (deck, anteckningar från samtalen med grundarna, siffror) med memot bredvid.",
       "staffNote": "Du ser detta som kommitté eller styrelse: även utkast och alla SPV.",
       "empty": "Inga case att visa just nu.",
-      "lastActivity": "Senast ändrad {date}"
+      "lastActivity": "Senast ändrad {date}",
+      "committeeLink": "Kommitténs översikt"
     },
     "status": {
       "incoming": "Ny",
@@ -665,6 +666,27 @@
       "title": "Öppen omröstning: {name}",
       "body": "{group} röstar. Sista dag {when}.",
       "cta": "Rösta"
+    },
+    "digest": {
+      "titleCommittee": "Sammanfattning av synpunkterna (kommittén)",
+      "titleSpv": "Det här har vi hört",
+      "madeBy": "Gjord av {who} {date}, från {n} synpunkter.",
+      "agent": "agenten",
+      "theme": "{theme}: {count}",
+      "themeOf": "{theme}: {count} av {of}",
+      "newInformation": "Ny information",
+      "founderQuestions": "Frågor till grundaren"
+    },
+    "committee": {
+      "title": "Kommitténs översikt",
+      "intro": "Alla case med det som väntar på kommittén: frågor som skickats till den som äger caset, agentsvar som inte är bekräftade, och nya synpunkter sedan senaste sammanfattningen.",
+      "forbidden": "Bara för kommittén och styrelsen.",
+      "routed": "1 fråga väntar på ägaren | {count} frågor väntar på ägaren",
+      "unconfirmed": "1 agentsvar att bekräfta | {count} agentsvar att bekräfta",
+      "withAgent": "1 fråga hos agenten | {count} frågor hos agenten",
+      "comments": "{all} synpunkter, {fresh} nya",
+      "digest": "Sammanfattning {date}",
+      "noDigest": "Ingen sammanfattning än."
     }
   }
 }
