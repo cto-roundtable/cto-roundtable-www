@@ -249,9 +249,12 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   A case you may not see is the same 404 as one that does not exist.
 - **Documents** (`deal_documents`): versioned, never overwritten (a ballot attests
   to a hash). Shown raw material first, the committee memo last. Bytes are in the
-  private `GCS_DEAL_DOCUMENTS_BUCKET`, proxied after the case check
-  (`/api/member/deals/:slug/documents/:id`). Locally, `DEAL_DOCUMENTS_DIR` points the
-  same keys at a folder (ignored on Cloud Run and whenever a bucket is set).
+  private bucket `cto-roundtable-deal-documents` (`infrastructure/tofu/storage.tf`;
+  Cloud Run gets it as `NUXT_GCS_DEAL_DOCUMENTS_BUCKET`, since only `NUXT_` names
+  override runtimeConfig at runtime), proxied after the case check
+  (`/api/member/deals/:slug/documents/:id`). Vote protocols go in the same bucket.
+  Locally, `DEAL_DOCUMENTS_DIR` points the same keys at a folder (ignored on Cloud
+  Run and whenever a bucket is set).
 - **Publishing** (`ctr deals publish`): `PUT /api/admin/deals/:slug/documents/:key`
   uploads a version (same bytes as the current one change nothing), and
   `POST /api/admin/deals/:slug/rounds` creates a DRAFT round (`server/utils/dealRounds.ts`):
