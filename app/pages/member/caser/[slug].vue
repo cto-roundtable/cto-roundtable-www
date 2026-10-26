@@ -100,6 +100,15 @@
         @changed="reload"
       />
 
+      <!-- Committee only (dc-39): who earns the CTORI4 incentive. Re-reads when a vote closes. -->
+      <DealsHovedbok
+        v-if="data.viewer.isCommittee"
+        :key="data.rounds.map((r) => r.status).join()"
+        id="hovedbok"
+        class="mb-4"
+        :slug="slug"
+      />
+
       <p v-if="data.viewer.isStaff" class="staff-note">
         <v-icon size="14" class="mr-1">mdi-account-tie-outline</v-icon>{{ t('deals.case.staffNote') }}
       </p>

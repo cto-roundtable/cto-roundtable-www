@@ -125,6 +125,8 @@ export function roundObject(r: any) {
     result: r.result,
     tally: null as Tally | null,
     protocol: r.result_sha256 ? { sha256: r.result_sha256 } : null,
+    // The hovedbok snapshot (dc-39), null for every round outside an incentive model.
+    ledger: r.ledger ?? null,
   }
 }
 
@@ -601,8 +603,20 @@ export async function listRounds(status: string | null) {
  * Close a round once its 48 hours are up: count, freeze the snapshot, render
  * the protocol PDF (who took part, not what they chose) to GCS with its hash,
  * log round_closed. Idempotent: a closed round returns its frozen result.
+ *
+ * A round whose group has an incentive model (CTORI4, dc-39) also stores the
+ * hovedbok snapshot (`ledger`, server/utils/dealLedger.ts) in the same UPDATE. A
+ * passed one needs the deal's lead and follow-up owner: without them the close is
+ * a 409 `{missing}`, and the committee's close screen names them (`people`), which
+ * are written as deal_people rows in the same transaction. `via: 'api'` (the
+ * deal-rounds job) records the ledger with recorded_by null.
  */
-export async function closeRound(roundId: string, byPersonId: string | null) {
+export async function closeRound(
+  roundId: string,
+  byPersonId: string | null,
+  people: { lead?: unknown; followUpOwner?: unknown } = {},
+  via: 'portal' | 'api' = 'portal',
+) {
   const r = await loadRound(roundId)
   if (!r) throw createError({ statusCode: 404, message: 'Round not found' })
   if (r.status === 'closed') return closedOut(r)
@@ -614,6 +628,44 @@ export async function closeRound(roundId: string, byPersonId: string | null) {
   const { current, late } = await loadBallots(roundId)
   const { tally, rows } = countRound(r.roster, current, late)
   const result = resultOf(tally)
+
+  // The hovedbok (CTORI4 only): who is named now, plus who the close screen adds.
+  const model = await modelForGroup(r.group_id)
+  const addRows: { personId: string; role: 'lead' | 'follow_up_owner' }[] = []
+  let ledger: ReturnType<typeof buildLedger> | null = null
+  if (model) {
+    const now = await dealPeopleNow(r.deal_id)
+    if (people.lead !== undefined && people.lead !== null) {
+      if (now.drivers.some((d) => d.role === 'lead')) {
+        throw createError({ statusCode: 409, message: 'The deal already has a lead' })
+      }
+      const p = await requirePerson(people.lead, 'lead')
+      addRows.push({ personId: p.id, role: 'lead' })
+      now.drivers.push({ person_id: p.id, role: 'lead', name: p.name })
+    }
+    if (people.followUpOwner !== undefined && people.followUpOwner !== null) {
+      if (now.followUpOwner) {
+        throw createError({ statusCode: 409, message: 'The deal already has a follow-up owner' })
+      }
+      const p = await requirePerson(people.followUpOwner, 'followUpOwner')
+      addRows.push({ personId: p.id, role: 'follow_up_owner' })
+      now.followUpOwner = { person_id: p.id, name: p.name, since: new Date().toISOString() }
+    }
+    const missing = ledgerGaps(now, result)
+    if (missing.length) {
+      throw createError({
+        statusCode: 409,
+        message: `The vote passed; before it closes the hovedbok needs: ${missing.join(', ')}`,
+        data: { code: 'ledger_incomplete', missing },
+      })
+    }
+    const committee = (await committeeNow()).map((c) => c.id)
+    if (!committee.length) throw createError({ statusCode: 409, message: 'The committee group has no members' })
+    // recorded_by is the committee member who closed it here; null when the job closes it via the API.
+    ledger = buildLedger(model, now, committee, via === 'portal' ? byPersonId : null)
+  } else if (people.lead || people.followUpOwner) {
+    throw createError({ statusCode: 400, message: 'This group keeps no hovedbok' })
+  }
   const snapshot = {
     tally,
     rules: r.rules,
@@ -646,12 +698,14 @@ export async function closeRound(roundId: string, byPersonId: string | null) {
   }
 
   const sql = useDatabase()
-  const [updated] = await sql.transaction([
+  await sql.transaction([
+    // Rows first: the 039 trigger checks the ledger against the deal's current deal_people.
+    ...addRows.map((a) => dealPeopleInsert(r.deal_id, a.personId, a.role, byPersonId, 'Named on the close screen')),
     sql`
       UPDATE deal_rounds
       SET status = 'closed', closed_at = NOW(), closed_by = ${byPersonId}, result = ${result},
           result_snapshot = ${JSON.stringify(snapshot)}::jsonb, result_sha256 = ${sha},
-          protocol_object_key = ${objectKey}
+          protocol_object_key = ${objectKey}, ledger = ${ledger ? JSON.stringify(ledger) : null}::jsonb
       WHERE id = ${roundId} AND status = 'open'
       RETURNING id
     `,
@@ -663,7 +717,6 @@ export async function closeRound(roundId: string, byPersonId: string | null) {
       WHERE EXISTS (SELECT 1 FROM deal_rounds WHERE id = ${roundId} AND status = 'closed' AND result_sha256 = ${sha})
     `,
   ])
-  void updated
   return closedOut(await loadRound(roundId))
 }
 
@@ -959,10 +1012,25 @@ export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
         me: me
           ? { onRoster: true, defaultVote: me.default_vote, conflict: me.conflict, ballot: myBallot }
           : { onRoster: false, defaultVote: null, conflict: false, ballot: null },
-        ...(viewer.isStaff ? { named, canOpen: r.status === 'draft' && viewer.isCommittee } : {}),
+        ...(viewer.isStaff
+          ? { named, canOpen: r.status === 'draft' && viewer.isCommittee, close: await closeInfo(r, viewer, tally) }
+          : {}),
       }
     }),
   )
+}
+
+/**
+ * For the committee's close screen: whether the deadline has passed, whether the
+ * round keeps a hovedbok, and what a close would still need (a passed CTORI4 vote
+ * needs the deal's lead and follow-up owner, dc-39).
+ */
+async function closeInfo(r: any, viewer: CaseViewer, tally: Tally | null) {
+  const due = r.status === 'open' && viewer.isCommittee && new Date(r.closes_at).getTime() <= Date.now()
+  if (!due) return { due: false, hovedbok: false, missing: [] as LedgerGap[] }
+  const model = await modelForGroup(r.group_id)
+  if (!model || !tally) return { due, hovedbok: Boolean(model), missing: [] as LedgerGap[] }
+  return { due, hovedbok: true, missing: ledgerGaps(await dealPeopleNow(r.deal_id), resultOf(tally)) }
 }
 
 /** A round on this deal, or 404 (for the member routes under /api/member/deals/:slug/rounds/:id). */

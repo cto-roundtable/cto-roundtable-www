@@ -64,6 +64,43 @@
         <p class="meta mt-2">{{ t('deals.ballot.changeUntil') }}</p>
       </div>
       <p v-else class="meta mt-2">{{ t('deals.ballot.notOnRoster', { group: round.group.name }) }}</p>
+
+      <!-- Committee, once the 48 hours are up: close it (the deal-rounds job does the same).
+           A passed CTORI4 vote needs the hovedbok's lead and follow-up owner first (dc-39). -->
+      <div v-if="round.close?.due" class="close-box mt-4">
+        <p class="line mb-1">{{ t('deals.ballot.closeDue') }}</p>
+        <template v-if="round.close.missing.length">
+          <p class="meta mb-3">{{ t('deals.ballot.closeNeeds') }}</p>
+          <v-select
+            v-if="round.close.missing.includes('lead')"
+            v-model="lead"
+            :items="candidates"
+            item-title="name"
+            item-value="id"
+            :label="t('deals.ballot.closeLead')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="mb-3"
+          />
+          <v-select
+            v-if="round.close.missing.includes('follow_up_owner')"
+            v-model="owner"
+            :items="candidates"
+            item-title="name"
+            item-value="id"
+            :label="t('deals.ballot.closeOwner')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            class="mb-3"
+          />
+        </template>
+        <p v-else-if="round.close.hovedbok" class="meta mb-3">{{ t('deals.ballot.closeHovedbok') }}</p>
+        <v-btn :loading="busy" :disabled="!closeReady" style="background-color: white; color: #111;" @click="close">
+          {{ t('deals.ballot.close') }}
+        </v-btn>
+      </div>
     </template>
 
     <v-alert v-if="error" type="warning" variant="outlined" density="compact" class="mt-3">{{ error }}</v-alert>
@@ -138,6 +175,7 @@ interface CaseRoundView {
   }
   named?: { name: string; counted: string; method: string | null; castAt: string | null; late: boolean }[]
   canOpen?: boolean
+  close?: { due: boolean; hovedbok: boolean; missing: ('lead' | 'follow_up_owner')[] }
 }
 
 const props = defineProps<{ slug: string; round: CaseRoundView }>()
@@ -151,6 +189,9 @@ const choices = ['yes', 'no', 'blank'] as const
 const busy = ref(false)
 const error = ref('')
 const confirmOpen = ref(false)
+const lead = ref<string | null>(null)
+const owner = ref<string | null>(null)
+const candidates = ref<{ id: string; name: string }[]>([])
 
 // Ticks so "time left" stays right on a page left open.
 const now = ref(Date.now())
@@ -219,6 +260,47 @@ async function vote(choice: string) {
   }
 }
 
+// The people the committee can name on the close screen, fetched only when needed.
+watch(
+  () => props.round.close?.missing?.length,
+  async (missing) => {
+    if (!missing || candidates.value.length) return
+    try {
+      const data = await $fetch<{ candidates?: { id: string; name: string }[] }>(
+        `/api/member/deals/${props.slug}/ledger`,
+      )
+      candidates.value = data.candidates ?? []
+    } catch (e: any) {
+      error.value = errorText(e)
+    }
+  },
+  { immediate: true },
+)
+
+const closeReady = computed(() => {
+  const missing = props.round.close?.missing ?? []
+  return (
+    (!missing.includes('lead') || Boolean(lead.value)) && (!missing.includes('follow_up_owner') || Boolean(owner.value))
+  )
+})
+
+async function close() {
+  error.value = ''
+  busy.value = true
+  try {
+    await $fetch(`/api/member/deals/${props.slug}/rounds/${props.round.id}/close`, {
+      method: 'POST',
+      body: { lead: lead.value ?? undefined, followUpOwner: owner.value ?? undefined },
+    })
+    $posthog?.capture?.('deal_round_closed', { slug: props.slug })
+    emit('changed')
+  } catch (e: any) {
+    error.value = errorText(e)
+  } finally {
+    busy.value = false
+  }
+}
+
 async function open() {
   error.value = ''
   busy.value = true
@@ -236,6 +318,11 @@ async function open() {
 </script>
 
 <style scoped>
+.close-box {
+  border: 1px solid rgba(255, 183, 77, 0.5);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
 .round + .round {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: 16px;
