@@ -131,3 +131,55 @@ output "board_protocols_bucket" {
   description = "GCS bucket holding issued styreprotokoller (generated + signed PDFs)"
   value       = google_storage_bucket.board_protocols.name
 }
+
+# =============================================================================
+# Object storage - Deal documents (the investor pack behind a deal vote)
+#
+# Backs /member/caser, SPV-gated. `ctr deals publish` uploads each document
+# version through the portal's admin API (PUT /api/admin/deals/:slug/documents/:key),
+# and closing a vote renders its protocol PDF here, so the portal WRITES: the
+# Cloud Run SA needs objectAdmin, as for board_protocols.
+#
+#   deals/<slug>/<key>/v<n>-<sha8>.<ext>        <- uploaded, never overwritten
+#   protocols/<slug>/<round-id>-<sha8>.pdf      <- vote protocol, written once
+#
+# A ballot attests to the sha256 of the exact versions it was cast on, so a
+# version is never overwritten (the portal makes a new one); versioning and soft
+# delete are the backstop if something does.
+#
+# Serving model is identical: private, no signed URLs, streamed to the member
+# after the case check (requireCase) on every request.
+# =============================================================================
+
+resource "google_storage_bucket" "deal_documents" {
+  name     = "cto-roundtable-deal-documents"
+  location = "EUROPE-NORTH1"
+
+  public_access_prevention    = "enforced"
+  uniform_bucket_level_access = true
+
+  versioning {
+    enabled = true
+  }
+
+  soft_delete_policy {
+    retention_duration_seconds = 7776000 # 90 days
+  }
+
+  labels = {
+    app     = "cto-roundtable-www"
+    purpose = "deal-documents"
+  }
+}
+
+# The portal writes uploaded versions and vote protocols, and reads them back to serve them.
+resource "google_storage_bucket_iam_member" "www_deal_documents_admin" {
+  bucket = google_storage_bucket.deal_documents.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.www.email}"
+}
+
+output "deal_documents_bucket" {
+  description = "GCS bucket holding deal documents (investor packs) and vote protocol PDFs"
+  value       = google_storage_bucket.deal_documents.name
+}

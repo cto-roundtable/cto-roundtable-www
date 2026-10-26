@@ -191,6 +191,11 @@ resource "google_cloud_run_v2_service" "www" {
         value = google_storage_bucket.board_protocols.name
       }
 
+      env {
+        name  = "NUXT_GCS_DEAL_DOCUMENTS_BUCKET"
+        value = google_storage_bucket.deal_documents.name
+      }
+
       # Canonical public origin for magic-link URLs. Live value is
       # https://www.ctoroundtable.no; without it validate-config falls back to
       # the request Host header, which server/api/auth is explicit about not
