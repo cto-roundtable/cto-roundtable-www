@@ -662,7 +662,13 @@
         "on_behalf": "registered on their behalf",
         "null": ""
       },
-      "late": "came after the deadline"
+      "late": "came after the deadline",
+      "closeDue": "The deadline has passed. Close the vote to lock the result and make the protocol.",
+      "closeNeeds": "The proposal passed. Before the vote closes, the ledger needs who drove the case and who takes the follow-up.",
+      "closeLead": "Lead (drove the case)",
+      "closeOwner": "Follow-up owner",
+      "closeHovedbok": "The CTORI 4 ledger is saved when you close: the committee as it is now, the lead and the follow-up owner.",
+      "close": "Close the vote"
     },
     "banner": {
       "title": "Open vote: {name}",
@@ -731,6 +737,46 @@
       "rejectReason": "Why not (the agent sees this)",
       "rejectConfirm": "Do not send this one",
       "latest": "Latest update ({date})"
+    },
+    "hovedbok": {
+      "title": "Ledger",
+      "intro": "Who earns the incentive on this investment: {total} % of the gain, {followUp} % to the follow-up, {committee} % to the committee and {drivers} % to whoever drove the case. Only the committee sees this.",
+      "introNoModel": "Who earns the incentive on this investment. Only the committee sees this.",
+      "drivers": "Drove the case",
+      "role": {
+        "lead": "lead",
+        "co_lead": "co-lead"
+      },
+      "noLead": "No lead recorded.",
+      "followUp": "Follow-up",
+      "since": "since {date}",
+      "noOwner": "No follow-up owner yet.",
+      "now": "now",
+      "months": "{m} mo",
+      "handOver": "Hand the follow-up to",
+      "setOwner": "Set the follow-up owner",
+      "save": "Save",
+      "confirm": "Yes, save",
+      "confirmHandOver": "{from} hands the follow-up to {to} from today. It is saved with the date, and the share is split by the months each has held it.",
+      "confirmSet": "{to} becomes the follow-up owner from today. It is saved with the date.",
+      "snapshot": "{group}, vote closed {date}",
+      "recordedBy": "Saved by {name} when the vote closed.",
+      "recordedByJob": "Saved automatically when the vote closed.",
+      "part": {
+        "followUp": "Follow-up",
+        "committee": "The committee",
+        "drivers": "Drove the case"
+      },
+      "nobody": "Nobody recorded.",
+      "adjusted": "Adjusted by the committee: {reason}",
+      "default": {
+        "followUp": "Split by the months each has held the follow-up.",
+        "committee": "Split equally across the committee as it was when the vote closed.",
+        "drivers": "Split equally between the lead and co-lead."
+      },
+      "noSnapshot": "No vote has closed yet. The ledger is saved when a CTORI 4 vote closes.",
+      "period": "{from} to {to}",
+      "notPassed": "Not passed, so there is no gain to share."
     }
   }
 }

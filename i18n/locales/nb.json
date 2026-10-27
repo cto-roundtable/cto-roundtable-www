@@ -662,7 +662,13 @@
         "on_behalf": "registrert på vegne",
         "null": ""
       },
-      "late": "kom etter fristen"
+      "late": "kom etter fristen",
+      "closeDue": "Fristen er ute. Avslutt avstemningen for å låse resultatet og lage protokollen.",
+      "closeNeeds": "Forslaget er vedtatt. Før avstemningen lukkes trenger hovedboka hvem som drev casen og hvem som tar oppfølgingen.",
+      "closeLead": "Ansvarlig (drev casen)",
+      "closeOwner": "Oppfølgingsansvarlig",
+      "closeHovedbok": "Hovedboka for CTORI 4 lagres når du avslutter: komiteen slik den er nå, lead og oppfølgingsansvarlig.",
+      "close": "Avslutt avstemningen"
     },
     "banner": {
       "title": "Åpen avstemning: {name}",
@@ -731,6 +737,46 @@
       "rejectReason": "Hvorfor ikke (agenten ser det)",
       "rejectConfirm": "Ikke send denne",
       "latest": "Siste oppsummering ({date})"
+    },
+    "hovedbok": {
+      "title": "Hovedbok",
+      "intro": "Hvem som får insentivet på denne investeringen: {total} % av gevinsten, {followUp} % til oppfølgingen, {committee} % til komiteen og {drivers} % til den eller de som drev casen. Bare komiteen ser dette.",
+      "introNoModel": "Hvem som får insentivet på denne investeringen. Bare komiteen ser dette.",
+      "drivers": "Drev casen",
+      "role": {
+        "lead": "ansvarlig",
+        "co_lead": "medansvarlig"
+      },
+      "noLead": "Ingen lead registrert.",
+      "followUp": "Oppfølging",
+      "since": "siden {date}",
+      "noOwner": "Ingen oppfølgingsansvarlig ennå.",
+      "now": "nå",
+      "months": "{m} mnd",
+      "handOver": "Gi oppfølgingen videre til",
+      "setOwner": "Sett oppfølgingsansvarlig",
+      "save": "Lagre",
+      "confirm": "Ja, lagre",
+      "confirmHandOver": "{from} gir oppfølgingen videre til {to} fra i dag. Det lagres med dato, og andelen deles etter hvor mange måneder hver har hatt den.",
+      "confirmSet": "{to} blir oppfølgingsansvarlig fra i dag. Det lagres med dato.",
+      "snapshot": "{group}, avstemning avsluttet {date}",
+      "recordedBy": "Lagret av {name} da avstemningen ble avsluttet.",
+      "recordedByJob": "Lagret automatisk da avstemningen ble avsluttet.",
+      "part": {
+        "followUp": "Oppfølging",
+        "committee": "Komiteen",
+        "drivers": "Drev casen"
+      },
+      "nobody": "Ingen registrert.",
+      "adjusted": "Justert av komiteen: {reason}",
+      "default": {
+        "followUp": "Delt etter hvor mange måneder hver har hatt oppfølgingen.",
+        "committee": "Delt likt på komiteen slik den var da avstemningen ble avsluttet.",
+        "drivers": "Delt likt mellom lead og co-lead."
+      },
+      "noSnapshot": "Ingen avstemning er avsluttet ennå. Hovedboka lagres når en CTORI 4-avstemning avsluttes.",
+      "period": "{from} til {to}",
+      "notPassed": "Ikke vedtatt, så det er ingen gevinst å dele."
     }
   }
 }

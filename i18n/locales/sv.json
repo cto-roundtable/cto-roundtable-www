@@ -662,7 +662,13 @@
         "on_behalf": "registrerad för deras räkning",
         "null": ""
       },
-      "late": "kom efter sista dag"
+      "late": "kom efter sista dag",
+      "closeDue": "Tidsfristen har gått ut. Avsluta omröstningen för att låsa resultatet och skapa protokollet.",
+      "closeNeeds": "Förslaget har antagits. Innan omröstningen stängs behöver huvudboken veta vem som drev caset och vem som tar uppföljningen.",
+      "closeLead": "Ansvarig (drev caset)",
+      "closeOwner": "Uppföljningsansvarig",
+      "closeHovedbok": "Huvudboken för CTORI 4 sparas när du avslutar: kommittén som den är nu, lead och uppföljningsansvarig.",
+      "close": "Avsluta omröstningen"
     },
     "banner": {
       "title": "Öppen omröstning: {name}",
@@ -731,6 +737,46 @@
       "rejectReason": "Varför inte (agenten ser det)",
       "rejectConfirm": "Skicka inte den här",
       "latest": "Senaste sammanfattningen ({date})"
+    },
+    "hovedbok": {
+      "title": "Huvudbok",
+      "intro": "Vem som får incitamentet på den här investeringen: {total} % av vinsten, {followUp} % till uppföljningen, {committee} % till kommittén och {drivers} % till den eller de som drev caset. Bara kommittén ser detta.",
+      "introNoModel": "Vem som får incitamentet på den här investeringen. Bara kommittén ser detta.",
+      "drivers": "Drev caset",
+      "role": {
+        "lead": "ansvarig",
+        "co_lead": "medansvarig"
+      },
+      "noLead": "Ingen lead registrerad.",
+      "followUp": "Uppföljning",
+      "since": "sedan {date}",
+      "noOwner": "Ingen uppföljningsansvarig ännu.",
+      "now": "nu",
+      "months": "{m} mån",
+      "handOver": "Lämna över uppföljningen till",
+      "setOwner": "Ange uppföljningsansvarig",
+      "save": "Spara",
+      "confirm": "Ja, spara",
+      "confirmHandOver": "{from} lämnar över uppföljningen till {to} från i dag. Det sparas med datum, och andelen delas efter hur många månader var och en har haft den.",
+      "confirmSet": "{to} blir uppföljningsansvarig från i dag. Det sparas med datum.",
+      "snapshot": "{group}, omröstning avslutad {date}",
+      "recordedBy": "Sparad av {name} när omröstningen avslutades.",
+      "recordedByJob": "Sparad automatiskt när omröstningen avslutades.",
+      "part": {
+        "followUp": "Uppföljning",
+        "committee": "Kommittén",
+        "drivers": "Drev caset"
+      },
+      "nobody": "Ingen registrerad.",
+      "adjusted": "Justerad av kommittén: {reason}",
+      "default": {
+        "followUp": "Delad efter hur många månader var och en har haft uppföljningen.",
+        "committee": "Delad lika på kommittén som den var när omröstningen avslutades.",
+        "drivers": "Delad lika mellan lead och co-lead."
+      },
+      "noSnapshot": "Ingen omröstning har avslutats ännu. Huvudboken sparas när en CTORI 4-omröstning avslutas.",
+      "period": "{from} till {to}",
+      "notPassed": "Inte antaget, så det finns ingen vinst att dela."
     }
   }
 }

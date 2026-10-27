@@ -331,6 +331,21 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   `deal-rounds` job only triggers it and records its Slack posts (`.../notices`).
   Mail and on-behalf ballots come in through `.../ballots` while the round is open.
   A banner on `/member` points at open votes the member has not cast.
+- **Hovedbok** (`server/utils/dealLedger.ts`, hq migration 039, dc-39): CTORI4 pays 10%
+  of the gain, 4 to the follow-up owner, 3 to the committee, 3 to the case drivers.
+  The model is the round's group's `network_groups.incentive_model` (`incentive_models`,
+  never a hard-coded slug); CTORI1-3 have none and keep no ledger. Drivers are the
+  deal's current `lead` + `co_lead` rows in `deal_people`, the follow-up owner its
+  current `follow_up_owner` row, the committee `current-komite` at close. `closeRound`
+  writes the snapshot (`deal_rounds.ledger`) in the UPDATE that closes the round, and
+  the 039 trigger checks it against `deal_people`. A passed CTORI4 vote with no lead or
+  owner is a 409 `{code: 'ledger_incomplete', missing}`; the committee's close screen on
+  the case page (`POST /api/member/deals/:slug/rounds/:id/close`) names them, written as
+  `deal_people` rows in the same transaction. A close through the admin API records
+  `recorded_by: null`. The committee-only Hovedbok panel shows each snapshot with its
+  shares (equal, follow-up by months held from `deal_follow_up_months`, or the newest
+  `deal_ledger_splits` row) and hands the follow-up over (close the row, open a new one,
+  dated). Members never see any of it.
 - **Mail**: every portal mail goes through `server/utils/mail.ts` (Resend). Without
   `RESEND_API_KEY` a local run logs instead of sending.
 - **Admin API**: `/api/admin/deals` and `/api/admin/deals/:slug` (GET; PATCH sets
