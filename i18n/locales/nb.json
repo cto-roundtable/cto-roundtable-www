@@ -665,7 +665,7 @@
       "late": "kom etter fristen",
       "closeDue": "Fristen er ute. Avslutt avstemningen for å låse resultatet og lage protokollen.",
       "closeNeeds": "Forslaget er vedtatt. Før avstemningen lukkes trenger hovedboka hvem som drev casen og hvem som tar oppfølgingen.",
-      "closeLead": "Lead (drev casen)",
+      "closeLead": "Ansvarlig (drev casen)",
       "closeOwner": "Oppfølgingsansvarlig",
       "closeHovedbok": "Hovedboka for CTORI 4 lagres når du avslutter: komiteen slik den er nå, lead og oppfølgingsansvarlig.",
       "close": "Avslutt avstemningen"
@@ -744,8 +744,8 @@
       "introNoModel": "Hvem som får insentivet på denne investeringen. Bare komiteen ser dette.",
       "drivers": "Drev casen",
       "role": {
-        "lead": "lead",
-        "co_lead": "co-lead"
+        "lead": "ansvarlig",
+        "co_lead": "medansvarlig"
       },
       "noLead": "Ingen lead registrert.",
       "followUp": "Oppfølging",

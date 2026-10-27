@@ -665,7 +665,7 @@
       "late": "kom efter sista dag",
       "closeDue": "Tidsfristen har gått ut. Avsluta omröstningen för att låsa resultatet och skapa protokollet.",
       "closeNeeds": "Förslaget har antagits. Innan omröstningen stängs behöver huvudboken veta vem som drev caset och vem som tar uppföljningen.",
-      "closeLead": "Lead (drev caset)",
+      "closeLead": "Ansvarig (drev caset)",
       "closeOwner": "Uppföljningsansvarig",
       "closeHovedbok": "Huvudboken för CTORI 4 sparas när du avslutar: kommittén som den är nu, lead och uppföljningsansvarig.",
       "close": "Avsluta omröstningen"
@@ -744,8 +744,8 @@
       "introNoModel": "Vem som får incitamentet på den här investeringen. Bara kommittén ser detta.",
       "drivers": "Drev caset",
       "role": {
-        "lead": "lead",
-        "co_lead": "co-lead"
+        "lead": "ansvarig",
+        "co_lead": "medansvarig"
       },
       "noLead": "Ingen lead registrerad.",
       "followUp": "Uppföljning",
