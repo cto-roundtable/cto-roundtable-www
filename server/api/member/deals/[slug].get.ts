@@ -12,12 +12,14 @@ export default defineEventHandler(async (event) => {
 
   const viewer = await caseViewer(event.context.session.personId)
   const deal = await requireCase(viewer, slug)
-  const [documents, rounds, qa, comments, digests] = await Promise.all([
-    listCaseDocuments(deal.id),
+  const [documents, rounds, qa, comments, digests, conflict, conflicts] = await Promise.all([
+    deal.materialShared ? listCaseDocuments(deal.id) : Promise.resolve([]),
     caseRoundsView(viewer, deal.id),
     listCaseQuestions(viewer, deal.id),
     listCaseComments(viewer, deal.id),
     caseDigests(viewer, deal.id),
+    myConflict(viewer.personId, deal.id),
+    viewer.isStaff ? listConflicts(deal.id) : Promise.resolve(null),
   ])
 
   const { id: _id, ...publicDeal } = deal
@@ -33,5 +35,8 @@ export default defineEventHandler(async (event) => {
     comments,
     // The newest digest of the comments: the committee one for staff, the SPV one for all.
     digests,
+    // "Jeg er inhabil" (dc-33 H3): the member's own; everyone's for the committee and board.
+    conflict,
+    conflicts,
   }
 })

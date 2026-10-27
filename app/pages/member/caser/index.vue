@@ -3,6 +3,9 @@
     <header class="mb-6">
       <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">{{ t('deals.list.title') }}</h1>
       <p style="color: #aaa; font-size: 14px; max-width: 640px;">{{ t('deals.list.intro') }}</p>
+      <NuxtLink to="/member/pipeline" class="pipeline-link d-inline-flex align-center mt-2">
+        {{ t('deals.list.pipelineLink') }} <v-icon size="16" class="ml-1">mdi-arrow-right</v-icon>
+      </NuxtLink>
       <p v-if="viewer.isStaff" class="staff-note mt-3">
         <v-icon size="14" class="mr-1">mdi-account-tie-outline</v-icon>{{ t('deals.list.staffNote') }}
         <NuxtLink to="/member/komite" class="staff-link">{{ t('deals.list.committeeLink') }}</NuxtLink>
@@ -114,6 +117,14 @@ watchEffect(async () => {
 .staff-note {
   color: #ffb74d;
   font-size: 13px;
+}
+.pipeline-link {
+  color: #fff;
+  font-size: 14px;
+  text-decoration: none;
+}
+.pipeline-link:hover {
+  text-decoration: underline;
 }
 .staff-link {
   color: #ffb74d;

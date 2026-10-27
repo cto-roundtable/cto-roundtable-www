@@ -170,7 +170,7 @@ deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digest
   UPDATE, DELETE and TRUNCATE.
 - **Routes**: `whoami`, `events`, `events/import` (one finished Luma event: upserts
   `events` on `luma_event_id` and writes `event_hosted`/`event_attended` with the
-  track-event-attendance dedup keys; only the two network calendars), `deals`, `deals/:slug`, `deals/:slug/documents/:key`, `deals/:slug/rounds`, `rounds`, `rounds/:id` and its actions, `comments`, `deals/:slug/digests`, `questions`, `questions/:id`, `questions/:id/answers`, `answers` (see Caser below), `surveys` (list, create), `surveys/:id` (show; PATCH
+  track-event-attendance dedup keys; only the two network calendars), `deals`, `deals/:slug`, `deals/:slug/documents/:key`, `deals/:slug/rounds`, `rounds`, `rounds/:id` and its actions, `comments`, `deals/:slug/digests`, `pipeline-digests` and its actions, `questions`, `questions/:id`, `questions/:id/answers`, `answers` (see Caser below), `surveys` (list, create), `surveys/:id` (show; PATCH
   close/reopen only), `surveys/:id/results` (names and free text only with
   `?texts=1`), `surveys/sweep` (`sweepPastEventSurveys`, `?dryRun=1`). The survey
   routes call the helpers in `server/utils/surveys.ts` and have no SQL of their own.
@@ -240,13 +240,18 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   condition (`caseVisibleSql`), shared by the list, the page and the document
   download, re-checked on every request:
   - committee (`current-komite`, `server/utils/committee.ts`) and board: every case
-    that is investor-visible or has a round, drafts included;
-  - members of the ACTIVE SPV (`network_groups.invest_phase = 'deploying'`):
-    investor-visible deals no SPV has invested in yet (the working pipeline);
+    in active work, investor-visible or with a round, drafts included;
+  - members of the ACTIVE SPV (`network_groups.invest_phase = 'deploying'`): every
+    deal in active work (`ACTIVE_STATUSES`: reviewing, waiting, to_be_voted,
+    pending_transfer) or marked investor-visible that no SPV has invested in yet
+    (the working pipeline; unreviewed leads are left out, dc-33 2026-10-23);
   - members of a round's group: that case once the round is open;
   - members of an SPV that invested: that company. A completed SPV sees its own
     companies and nothing else.
-  A case you may not see is the same 404 as one that does not exist.
+  A case you may not see is the same 404 as one that does not exist. Seeing a case
+  is not seeing its material: the blurb and the documents are shared only once the
+  committee marks it investor-visible or a round has opened (`materialSharedSql`);
+  before that a member sees name, stage, owner and date, and can ask and give input.
 - **Documents** (`deal_documents`): versioned, never overwritten (a ballot attests
   to a hash). Shown raw material first, the committee memo last. Bytes are in the
   private bucket `cto-roundtable-deal-documents` (`infrastructure/tofu/storage.tf`;
@@ -284,6 +289,31 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   case. `/member/komite` (committee and board) lists every case with what waits for
   the committee: routed questions, agent answers to confirm, new comments since the
   last digest, the vote, and the newest digest.
+- **Pipeline feed** (`/member/pipeline`, `listPipeline` in `server/utils/deals.ts`,
+  decision 2026-10-22 §6): the same rows as the case rule (`caseVisibleSql`), split into
+  "working" (not invested by any SPV; open vote first, then `to_be_voted`, `reviewing`,
+  then last activity) and "invested" (companies an SPV of the viewer's invested in, or
+  all for staff). A member of a completed SPV sees only the second. The page names
+  who sees it ("only CTORI 3 and the committee"). Declined companies (`rejected`;
+  `passed` stays out until the founder is told) load only on request
+  (`?declined=1`), name, stage and date. Each working row
+  links to the case page: `#qa` to ask, `?innspill=objection#innspill` /
+  `?innspill=signal#innspill` to write input with that kind preselected.
+- **"Jeg er inhabil"** (`server/utils/dealConflicts.ts`, `deal_conflicts`, hq migration
+  033, mandate §9, dc-33 H3): a member declares a conflict on a company on its case
+  page (also linked from each feed row). It freezes into the roster when a round
+  opens (`freezeRoster`), and then the member can only vote blank there. It can be
+  withdrawn until a round is open. The committee and board see who declared.
+- **Pipeline digest** (`server/utils/pipelineDigests.ts`, `pipeline_digests`, hq
+  migration 033, dc-33 H4): every second Monday the box job reads
+  `GET /api/admin/pipeline-digests/source` (stages, dates and event KINDS, never the
+  committee's event text), an agent drafts, and the job posts it. For the first four
+  weeks a committee member approves each draft on `/member/komite` (optionally
+  edited); once the group's first approved digest is 28 days old, new drafts are
+  approved on their own. The job then calls `.../:id/send` (the portal mails the
+  group; marked sent before the first mail, so a retry never mails twice) and posts
+  to Slack itself (`PATCH .../:id {slackRef}`). The newest sent one sits on top of
+  the feed.
 - **The vote** (`server/utils/dealRounds.ts`, `deal_rounds` / `deal_ballots` /
   `deal_round_notices`, protocol `server/utils/votePdf.ts`). A committee member opens a
   draft on the case page (or the job does, `PATCH /api/admin/rounds/:id`): the roster
@@ -312,7 +342,9 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   (GET), `rounds/:id` (GET with roster, named ballots and notices; PATCH open),
   `rounds/:id/close`, `cancel`, `ballots`, `notify`, `notices` (POST),
   `rounds/:id/protocol` (GET, the PDF); `/api/admin/comments` (GET, with names),
-  `deals/:slug/digests` (GET, POST). Scopes `deals:read deals:write rounds:write
+  `deals/:slug/digests` (GET, POST); `/api/admin/pipeline-digests` (GET, POST),
+  `pipeline-digests/source` (GET), `pipeline-digests/:id` (GET, PATCH slackRef),
+  `pipeline-digests/:id/send` (POST). Scopes `deals:read deals:write rounds:write
   comments:read digests:write qa:read qa:write`. The route list with request and
   response JSON is memory `votes/admin-api.md` in ctori-4; `ctr` calls only what
   it lists.

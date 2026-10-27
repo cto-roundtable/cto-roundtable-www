@@ -8,15 +8,26 @@ import { createHash } from 'node:crypto'
  * Who sees a case is derived on every request, never stored
  * (decision 2026-10-22 on the vote model, project ctori-4):
  *   - the committee (`current-komite`) and the board (`styret`): every case that is
- *     investor-visible or has a round, drafts included;
+ *     in active work, investor-visible or has a round, drafts included;
  *   - a member of the ACTIVE invest group (the SPV deploying now,
- *     network_groups.invest_phase = 'deploying'): every investor-visible case
- *     that no SPV has invested in yet (the working pipeline);
+ *     network_groups.invest_phase = 'deploying'): every case in active work
+ *     (ACTIVE_STATUSES) or marked investor-visible that no SPV has invested in yet
+ *     (the working pipeline, dc-33 H1 2026-10-23: all active work, no unreviewed leads);
  *   - a member of a round's group: that case, once the round is open;
  *   - a member of an invest group that invested in the company (investments):
  *     that case. A completed SPV sees its own companies and nothing else.
  * A deal without a slug is never a case.
+ *
+ * Seeing a case is not seeing its material: the blurb and the documents are shared
+ * only once the committee marks it investor-visible or a round has opened
+ * (materialSharedSql). Before that a member sees the name, stage, owner and date,
+ * and can ask and give input.
  */
+
+/** Active work (deal_statuses): what the active SPV sees. Leads ('incoming') are not. */
+export const ACTIVE_STATUSES = ['reviewing', 'waiting', 'to_be_voted', 'pending_transfer']
+/** Declined: shown on the feed only on request. 'passed' stays out until the founder is told ('rejected'). */
+export const DECLINED_STATUSES = ['rejected']
 
 export interface CaseViewer {
   personId: string
@@ -61,7 +72,8 @@ export interface CaseSummary {
 export async function listCases(viewer: CaseViewer): Promise<CaseSummary[]> {
   const sql = useDatabase()
   const rows = await sql`
-    SELECT pd.id, pd.slug, o.name, pd.status, pd.investor_blurb, pd.last_activity_at,
+    SELECT pd.id, pd.slug, o.name, pd.status, pd.last_activity_at,
+           CASE WHEN ${materialSharedSql(sql, viewer)} THEN pd.investor_blurb END AS investor_blurb,
            r.id AS round_id, ng.slug AS round_group, ng.name AS round_group_name, r.status AS round_status, r.closes_at, r.result
     FROM pipeline_deals pd
     JOIN organizations o ON o.id = pd.organization_id
@@ -102,11 +114,12 @@ export async function listCases(viewer: CaseViewer): Promise<CaseSummary[]> {
  */
 function caseVisibleSql(sql: ReturnType<typeof useDatabase>, viewer: CaseViewer) {
   if (viewer.isStaff) {
-    return sql`(pd.investor_visible OR EXISTS (SELECT 1 FROM deal_rounds r0 WHERE r0.deal_id = pd.id))`
+    return sql`(pd.investor_visible OR pd.status = ANY(${ACTIVE_STATUSES})
+                OR EXISTS (SELECT 1 FROM deal_rounds r0 WHERE r0.deal_id = pd.id))`
   }
   const p = viewer.personId
   return sql`(
-    (pd.investor_visible
+    ((pd.investor_visible OR pd.status = ANY(${ACTIVE_STATUSES}))
       AND NOT EXISTS (SELECT 1 FROM investments i0 WHERE i0.deal_id = pd.id)
       AND EXISTS (
         SELECT 1 FROM memberships m JOIN network_groups g ON g.id = m.group_id
@@ -119,6 +132,12 @@ function caseVisibleSql(sql: ReturnType<typeof useDatabase>, viewer: CaseViewer)
           SELECT 1 FROM investments i JOIN memberships m ON m.group_id = i.group_id
           WHERE i.deal_id = pd.id AND m.person_id = ${p}))
   )`
+}
+
+/** Whether the blurb and the documents of a visible case are shared with this viewer. */
+function materialSharedSql(sql: ReturnType<typeof useDatabase>, viewer: CaseViewer) {
+  return sql`(${viewer.isStaff} OR pd.investor_visible
+              OR EXISTS (SELECT 1 FROM deal_rounds r2 WHERE r2.deal_id = pd.id AND r2.status <> 'draft'))`
 }
 
 /** Whether this viewer may see any case at all: decides the "Caser" nav item. */
@@ -149,6 +168,8 @@ export interface CaseDeal {
   blurb: string | null
   owner: { id: string; name: string } | null
   lastActivityAt: string | null
+  /** blurb and documents are shared with this viewer (materialSharedSql) */
+  materialShared: boolean
 }
 
 /**
@@ -159,7 +180,7 @@ export async function requireCase(viewer: CaseViewer, slug: string): Promise<Cas
   const sql = useDatabase()
   const rows = await sql`
     SELECT pd.id, pd.slug, o.name, pd.status, pd.investor_blurb, pd.last_activity_at,
-           owner.id AS owner_id, owner.name AS owner_name
+           owner.id AS owner_id, owner.name AS owner_name, ${materialSharedSql(sql, viewer)} AS material_shared
     FROM pipeline_deals pd
     JOIN organizations o ON o.id = pd.organization_id
     LEFT JOIN persons owner ON owner.id = pd.driver_person_id
@@ -173,9 +194,10 @@ export async function requireCase(viewer: CaseViewer, slug: string): Promise<Cas
     slug: r.slug,
     name: r.name,
     status: r.status,
-    blurb: r.investor_blurb,
+    blurb: r.material_shared ? r.investor_blurb : null,
     owner: r.owner_id ? { id: r.owner_id, name: r.owner_name } : null,
     lastActivityAt: r.last_activity_at,
+    materialShared: r.material_shared,
   }
 }
 
@@ -465,5 +487,109 @@ export async function uploadDealDocument(
   return {
     document: { key: input.key, title, version, sha256, bytes: input.data.length, current: true },
     unchanged: false,
+  }
+}
+
+// --- The pipeline feed (/member/pipeline) ---------------------------------------------
+
+/** Stages that count as "in review now", in the order the feed shows them. */
+const IN_REVIEW = ['to_be_voted', 'reviewing']
+
+export interface PipelineRow {
+  slug: string
+  name: string
+  status: string
+  /** only when the material is shared (materialSharedSql) */
+  blurb: string | null
+  owner: string | null
+  lastActivityAt: string | null
+  /** an SPV this viewer is in invested in it */
+  ours: boolean
+  openRound: { closesAt: string; group: string } | null
+  /** the case page opens for this viewer (always, except some declined rows) */
+  canOpen: boolean
+}
+
+/**
+ * The feed (decision 2026-10-22 §6, dc-33 2026-10-23): the ACTIVE SPV sees all active
+ * work, open vote first, then up for a vote, in review, then by last activity; a
+ * COMPLETED SPV sees only the companies it invested in. Which deals count is the case
+ * rule (caseVisibleSql), so the feed, the case page and its actions never disagree.
+ * With `declined`, also the companies the committee said no to (on request, dc-33 H1),
+ * for the same people who see the working pipeline. `audience` names who sees the
+ * working pipeline, so the page can say it plainly (dc-33 H2).
+ */
+export async function listPipeline(
+  viewer: CaseViewer,
+  opts: { declined: boolean } = { declined: false },
+): Promise<{ audience: string[]; working: PipelineRow[]; invested: PipelineRow[]; declined: PipelineRow[] | null }> {
+  const sql = useDatabase()
+  const columns = sql`
+    pd.slug, o.name, pd.status, pd.last_activity_at, owner.name AS owner_name,
+    CASE WHEN ${materialSharedSql(sql, viewer)} THEN pd.investor_blurb END AS investor_blurb,
+    EXISTS (
+      SELECT 1 FROM investments i JOIN memberships m ON m.group_id = i.group_id
+      WHERE i.deal_id = pd.id AND m.person_id = ${viewer.personId}
+    ) AS ours,
+    EXISTS (SELECT 1 FROM investments i WHERE i.deal_id = pd.id) AS invested,
+    (SELECT json_build_object('closesAt', r.closes_at, 'group', ng.name)
+     FROM deal_rounds r JOIN network_groups ng ON ng.id = r.group_id
+     WHERE r.deal_id = pd.id AND r.status = 'open' LIMIT 1) AS open_round`
+  const activeGroups = (await sql`
+    SELECT g.name FROM network_groups g
+    WHERE g.invest_phase = 'deploying'
+      AND (${viewer.isStaff} OR EXISTS (SELECT 1 FROM memberships m WHERE m.group_id = g.id AND m.person_id = ${viewer.personId}))
+    ORDER BY g.name
+  `) as any[]
+  const [rows, declinedRows] = await Promise.all([
+    sql`
+      SELECT ${columns}, TRUE AS can_open
+      FROM pipeline_deals pd
+      JOIN organizations o ON o.id = pd.organization_id
+      LEFT JOIN persons owner ON owner.id = pd.driver_person_id
+      WHERE pd.slug IS NOT NULL AND ${caseVisibleSql(sql, viewer)}
+    ` as Promise<any[]>,
+    opts.declined && activeGroups.length
+      ? (sql`
+          SELECT ${columns}, ${caseVisibleSql(sql, viewer)} AS can_open
+          FROM pipeline_deals pd
+          JOIN organizations o ON o.id = pd.organization_id
+          LEFT JOIN persons owner ON owner.id = pd.driver_person_id
+          WHERE pd.slug IS NOT NULL AND pd.status = ANY(${DECLINED_STATUSES})
+            AND NOT EXISTS (SELECT 1 FROM investments i0 WHERE i0.deal_id = pd.id)
+          ORDER BY pd.last_activity_at DESC NULLS LAST, o.name
+          LIMIT 100
+        ` as Promise<any[]>)
+      : Promise.resolve(null),
+  ])
+  const out = (r: any): PipelineRow => ({
+    slug: r.slug,
+    name: r.name,
+    status: r.status,
+    blurb: r.investor_blurb,
+    owner: r.owner_name,
+    lastActivityAt: r.last_activity_at,
+    ours: r.ours,
+    openRound: r.open_round,
+    canOpen: r.can_open,
+  })
+  const rank = (r: any) =>
+    r.open_round ? -1 : IN_REVIEW.includes(r.status) ? IN_REVIEW.indexOf(r.status) : IN_REVIEW.length
+  const byActivity = (a: any, b: any) =>
+    rank(a) - rank(b) ||
+    new Date(b.last_activity_at ?? 0).getTime() - new Date(a.last_activity_at ?? 0).getTime() ||
+    a.name.localeCompare(b.name)
+  return {
+    audience: activeGroups.map((g) => g.name),
+    // A declined deal with a closed round stays visible to that round's group, but it is not work.
+    working: rows
+      .filter((r) => !r.invested && !DECLINED_STATUSES.includes(r.status))
+      .sort(byActivity)
+      .map(out),
+    invested: rows
+      .filter((r) => r.invested && (r.ours || viewer.isStaff))
+      .sort(byActivity)
+      .map(out),
+    declined: declinedRows ? declinedRows.map(out) : null,
   }
 }

@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
 
   const viewer = await caseViewer(event.context.session.personId)
   const deal = await requireCase(viewer, slug)
-  const doc = await loadCaseDocument(deal.id, id)
+  const doc = deal.materialShared ? await loadCaseDocument(deal.id, id) : null
   if (!doc) throw createError({ statusCode: 404, message: 'Document not found' })
 
   const obj = await readDealDocumentObject(doc.objectKey)

@@ -512,7 +512,8 @@
       "staffNote": "Du ser dette som komité eller styre: også utkast og alle SPV-er.",
       "empty": "Ingen caser å vise akkurat nå.",
       "lastActivity": "Sist endret {date}",
-      "committeeLink": "Komiteens oversikt"
+      "committeeLink": "Komiteens oversikt",
+      "pipelineLink": "Se hele pipelinen"
     },
     "status": {
       "incoming": "Ny",
@@ -550,6 +551,7 @@
       "material": "Materialet",
       "materialIntro": "Råmaterialet først, memoet til slutt. Les det du trenger.",
       "noDocuments": "Ingen dokumenter lagt ut ennå.",
+      "materialNotShared": "Komiteen har ikke delt materiale om dette selskapet ennå. Du kan likevel spørre og gi innspill.",
       "memoLabel": "Komiteens memo",
       "docMeta": "Versjon {version} · {date} · {size}",
       "staffNote": "Du ser denne casen som komité eller styre."
@@ -687,6 +689,48 @@
       "comments": "{all} innspill, {fresh} nye",
       "digest": "Oppsummering {date}",
       "noDigest": "Ingen oppsummering ennå."
+    },
+    "pipeline": {
+      "title": "Pipelinen",
+      "intro": "Det komiteen jobber med nå, til avstemning og under vurdering først. Spør, si fra om innvendinger, eller si at du kjenner dem, lenge før det blir avstemning. Komiteen ser hvem som skrev, de andre medlemmene gjør ikke det.",
+      "introInvested": "Selskapene SPV-en din har investert i. Pipelinen som jobbes med nå er for SPV-en som investerer nå.",
+      "working": "Under arbeid",
+      "workingEmpty": "Ingen selskaper å vise akkurat nå.",
+      "invested": "Selskaper SPV-en din har investert i",
+      "voteOpen": "Åpen avstemning",
+      "ask": "Jeg har et spørsmål",
+      "object": "Jeg har innvendinger",
+      "knowThem": "Jeg kjenner dem",
+      "audience": "Dette ser bare medlemmene i {groups} og komiteen.",
+      "showDeclined": "Vis de vi har sagt nei til",
+      "declined": "Sagt nei til",
+      "declinedIntro": "Selskaper komiteen har vurdert og sagt nei til.",
+      "declinedEmpty": "Ingen å vise.",
+      "conflict": "Jeg er inhabil"
+    },
+    "conflict": {
+      "title": "Inhabil?",
+      "intro": "Jobber du i selskapet, eier du en del av det, eller har du en annen tilknytning? Da kan du bare stemme blankt når det blir avstemning om dem (mandatet §9). Si fra her, så blir det registrert. Bare komiteen ser hvem som har sagt fra.",
+      "reasonLabel": "Kort hvorfor (valgfritt)",
+      "declare": "Jeg er inhabil",
+      "declared": "Du har sagt at du er inhabil ({date}). Du kan bare stemme blankt på dette selskapet.",
+      "withdraw": "Trekk tilbake",
+      "lockedWhileOpen": "Det er en åpen avstemning nå, så det kan ikke trekkes tilbake før den er ferdig.",
+      "openRoundNote": "Avstemningen som er åpen nå har allerede låst listen over stemmeberettigede. Stem blankt der selv. Dette gjelder fra neste gang.",
+      "staffLabel": "1 har sagt fra om inhabilitet | {count} har sagt fra om inhabilitet"
+    },
+    "pipelineDigest": {
+      "toApprove": "Pipeline-oppsummering til godkjenning",
+      "draftTitle": "{group}, {date}",
+      "waiting": "Venter på deg",
+      "draftIntro": "Laget av {who}. Den går til alle i SPV-en på e-post og Slack når en i komiteen har godkjent den. De første fire ukene godkjenner komiteen hver gang, så går den av seg selv.",
+      "approve": "Godkjenn og send",
+      "approveEdited": "Godkjenn med endringene",
+      "edit": "Rediger",
+      "reject": "Ikke send",
+      "rejectReason": "Hvorfor ikke (agenten ser det)",
+      "rejectConfirm": "Ikke send denne",
+      "latest": "Siste oppsummering ({date})"
     }
   }
 }

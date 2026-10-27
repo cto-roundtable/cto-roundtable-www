@@ -512,7 +512,8 @@
       "staffNote": "You see this as committee or board: drafts and every SPV included.",
       "empty": "No cases to show right now.",
       "lastActivity": "Last changed {date}",
-      "committeeLink": "The committee's overview"
+      "committeeLink": "The committee's overview",
+      "pipelineLink": "See the whole pipeline"
     },
     "status": {
       "incoming": "New",
@@ -550,6 +551,7 @@
       "material": "The material",
       "materialIntro": "Raw material first, the memo last. Read what you need.",
       "noDocuments": "No documents published yet.",
+      "materialNotShared": "The committee has not shared material on this company yet. You can still ask and give input.",
       "memoLabel": "The committee's memo",
       "docMeta": "Version {version} · {date} · {size}",
       "staffNote": "You see this case as committee or board."
@@ -687,6 +689,48 @@
       "comments": "{all} inputs, {fresh} new",
       "digest": "Summary {date}",
       "noDigest": "No summary yet."
+    },
+    "pipeline": {
+      "title": "The pipeline",
+      "intro": "What the committee is working on now, up for a vote and in review first. Ask, raise an objection, or say you know them, long before a vote. The committee sees who wrote; the other members do not.",
+      "introInvested": "The companies your SPV invested in. The pipeline being worked on now is for the SPV that is investing now.",
+      "working": "In progress",
+      "workingEmpty": "No companies to show right now.",
+      "invested": "Companies your SPV invested in",
+      "voteOpen": "Vote open",
+      "ask": "I have a question",
+      "object": "I have objections",
+      "knowThem": "I know them",
+      "audience": "Only the members of {groups} and the committee see this.",
+      "showDeclined": "Show the ones we said no to",
+      "declined": "Said no to",
+      "declinedIntro": "Companies the committee reviewed and said no to.",
+      "declinedEmpty": "None to show.",
+      "conflict": "I have a conflict"
+    },
+    "conflict": {
+      "title": "Conflict of interest?",
+      "intro": "Do you work at the company, own part of it, or have another tie to it? Then you can only vote blank when it comes to a vote (mandate §9). Say so here and it is recorded. Only the committee sees who has said so.",
+      "reasonLabel": "Briefly why (optional)",
+      "declare": "I have a conflict",
+      "declared": "You have declared a conflict ({date}). You can only vote blank on this company.",
+      "withdraw": "Withdraw",
+      "lockedWhileOpen": "A vote is open now, so it cannot be withdrawn until the vote is over.",
+      "openRoundNote": "The vote that is open now has already locked its list of voters. Vote blank there yourself. This applies from the next vote.",
+      "staffLabel": "1 has declared a conflict | {count} have declared a conflict"
+    },
+    "pipelineDigest": {
+      "toApprove": "Pipeline update to approve",
+      "draftTitle": "{group}, {date}",
+      "waiting": "Waiting for you",
+      "draftIntro": "Made by {who}. It goes to everyone in the SPV by email and Slack once a committee member approves it. For the first four weeks the committee approves each one; after that it goes out on its own.",
+      "approve": "Approve and send",
+      "approveEdited": "Approve with the changes",
+      "edit": "Edit",
+      "reject": "Do not send",
+      "rejectReason": "Why not (the agent sees this)",
+      "rejectConfirm": "Do not send this one",
+      "latest": "Latest update ({date})"
     }
   }
 }
