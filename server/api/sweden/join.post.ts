@@ -1,3 +1,5 @@
+import type { H3Event } from 'h3'
+
 // Interest signup for the Swedish chapter (/sweden page).
 // Creates a prospect person + contact info and a pending join_request tagged
 // to the roundtable-sweden group. Public endpoint: validate and rate-guard.
@@ -7,9 +9,54 @@
 // that person (no contact_infos, no name, no status, no memberships): what was
 // submitted goes on the join_request as unverified notes, for a human to check
 // and copy over. Only a person the form itself creates gets the submitted
-// contact data. The answer is the same `{ ok: true }` either way.
+// contact data. The answer is the same `{ ok: true }` either way, and it takes
+// at least ANSWER_FLOOR_MS, so the time it takes does not tell whether the email
+// was known (the known and new paths run a different number of queries).
 
 const SWEDEN_GROUP_SLUG = 'roundtable-sweden'
+
+// Rate limit: a fixed window per client address plus a global cap. In-process,
+// so it is PER INSTANCE and a best effort: Cloud Run may run several instances,
+// and a restart forgets it. It bounds a flood from one place; it is not a quota.
+// The real signup rate is a handful a month, so the limits are far above it.
+const WINDOW_MS = 15 * 60 * 1000
+const PER_CLIENT = 5
+const GLOBAL = 60
+const ANSWER_FLOOR_MS = 1000
+
+let globalWindow = { start: 0, count: 0 }
+const clients = new Map<string, { start: number; count: number }>()
+
+/**
+ * The client address. Cloud Run (domain mapping, no load balancer) appends the
+ * address it saw to whatever X-Forwarded-For the client sent, so the FIRST hop is
+ * the client's to choose and the LAST is the one Google wrote. Without the header
+ * (a local run) it is the socket address.
+ */
+function clientKey(event: H3Event): string {
+  const xff = getRequestHeader(event, 'x-forwarded-for')
+  const last = xff?.split(',').pop()?.trim()
+  return (last || getRequestIP(event) || 'unknown').slice(0, 64)
+}
+
+/** Counts this request; true when it is over a limit. */
+function overLimit(key: string, now = Date.now()): boolean {
+  if (now - globalWindow.start >= WINDOW_MS) globalWindow = { start: now, count: 0 }
+  if (clients.size > 5000) {
+    for (const [k, w] of clients) if (now - w.start >= WINDOW_MS) clients.delete(k)
+    if (clients.size > 5000) clients.clear()
+  }
+  let w = clients.get(key)
+  if (!w || now - w.start >= WINDOW_MS) {
+    w = { start: now, count: 0 }
+    clients.set(key, w)
+  }
+  w.count++
+  globalWindow.count++
+  return w.count > PER_CLIENT || globalWindow.count > GLOBAL
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 function clean(value: unknown, max: number): string {
   return typeof value === 'string' ? value.trim().slice(0, max) : ''
@@ -18,6 +65,11 @@ function clean(value: unknown, max: number): string {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default defineEventHandler(async (event) => {
+  if (overLimit(clientKey(event))) {
+    setResponseHeader(event, 'Retry-After', Math.ceil(WINDOW_MS / 1000))
+    throw createError({ statusCode: 429, message: 'Too many sign-ups from here right now. Please try again later.' })
+  }
+
   const body = await readBody(event)
 
   // Honeypot: real users never fill this hidden field.
@@ -35,6 +87,15 @@ export default defineEventHandler(async (event) => {
   if (!EMAIL_RE.test(email)) throw createError({ statusCode: 400, message: 'A valid email is required' })
   if (!linkedin) throw createError({ statusCode: 400, message: 'LinkedIn profile is required' })
 
+  const started = Date.now()
+  try {
+    return await record({ name, email, linkedin, company, why })
+  } finally {
+    await sleep(ANSWER_FLOOR_MS - (Date.now() - started))
+  }
+})
+
+async function record({ name, email, linkedin, company, why }: Record<string, string>) {
   const sql = useDatabase()
 
   const groups = await sql`SELECT id FROM network_groups WHERE slug = ${SWEDEN_GROUP_SLUG} LIMIT 1`
@@ -94,4 +155,4 @@ export default defineEventHandler(async (event) => {
   `
 
   return { ok: true }
-})
+}

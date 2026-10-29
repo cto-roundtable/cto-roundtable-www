@@ -229,7 +229,11 @@ async function submit() {
     await $fetch('/api/sweden/join', { method: 'POST', body: { ...form } })
     submitted.value = true
   } catch (e: any) {
-    error.value = e?.data?.message || 'Something went wrong. Please try again.'
+    // 429: the form's rate limit (server/api/sweden/join.post.ts).
+    error.value =
+      e?.statusCode === 429
+        ? 'Too many sign-ups from here right now. Please try again in a little while.'
+        : e?.data?.message || 'Something went wrong. Please try again.'
   } finally {
     loading.value = false
   }
