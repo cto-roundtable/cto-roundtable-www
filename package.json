@@ -13,7 +13,10 @@
     "render:protocol": "node --experimental-strip-types scripts/render-protocol.mjs",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "format": "biome format --write ."
+    "format": "biome format --write .",
+    "e2e": "e2e/preview.sh test",
+    "preview:up": "e2e/preview.sh up",
+    "preview:down": "e2e/preview.sh down"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.14.0",
@@ -34,6 +37,7 @@
     "@biomejs/biome": "^2.4.9",
     "@mdi/font": "^7.4.47",
     "@nuxt/image": "^1.11.0",
+    "@playwright/test": "1.64.1",
     "@types/pdfkit": "^0.17.6",
     "openlogs": "^0.0.2",
     "sass-embedded": "^1.98.0",

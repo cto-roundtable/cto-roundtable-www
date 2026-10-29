@@ -23,3 +23,4 @@ dist
 # Vim swap files
 *.swp
 infrastructure/tofu/.terraform/
+e2e/.run/

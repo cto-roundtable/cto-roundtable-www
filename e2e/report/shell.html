@@ -1,0 +1,284 @@
+<!doctype html>
+<!-- Copied from the house brand page-shell (vongohren/brand). Do not restyle here: change the brand, then re-copy. -->
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Page title</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%20aria-hidden%3D%22true%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23FBFCFD%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.9%22%20fill%3D%22%231659B5%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%228%22%20r%3D%222.9%22%20fill%3D%22%231659B5%22/%3E%3Ccircle%20cx%3D%2224%22%20cy%3D%228%22%20r%3D%222.9%22%20fill%3D%22%231659B5%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%2216%22%20r%3D%222.9%22%20fill%3D%22%231659B5%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%222.9%22%20fill%3D%22%231659B5%22/%3E%3Ccircle%20cx%3D%2224%22%20cy%3D%2216%22%20r%3D%223.8%22%20fill%3D%22%23FCDB45%22/%3E%3Ccircle%20cx%3D%2224%22%20cy%3D%2216%22%20r%3D%221.6%22%20fill%3D%22%23192029%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%2224%22%20r%3D%222.9%22%20fill%3D%22%231659B5%22/%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2224%22%20r%3D%222.9%22%20fill%3D%22%231659B5%22/%3E%3Ccircle%20cx%3D%2224%22%20cy%3D%2224%22%20r%3D%222.9%22%20fill%3D%22%231659B5%22/%3E%3Cpath%20d%3D%22M29.4%2011.4C27.6%208.6%2022.6%208.1%2019.9%2010.5C17.2%2013%2017.6%2018.6%2021.3%2020.5C25.2%2022.5%2030.3%2020.3%2030.5%2015.6C30.6%2014.1%2030.1%2012.7%2029.1%2011.6%22%20fill%3D%22none%22%20stroke%3D%22%23C62A1F%22%20stroke-width%3D%222.3%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..800&display=swap" rel="stylesheet">
+<style>
+/* Rettelse tokens. Paste this block at the top of a page's <style>.
+   Fonts, once in <head>:
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,400..800&display=swap">
+   Commit Mono is loaded by the @font-face rule below (Fontsource, 48 KB, latin 400).
+   The pen is the signature, so rough.js is in every public piece and in any page with a pen mark:
+   Light and dark follow the OS via light-dark(). Agents use the SEMANTIC layer only.
+   Same token names as Trikk, Rodpenn, Kjellerlogg, Flaten and the first hybrid, so the proposals swap. */
+
+@font-face {
+  font-family: "Commit Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/commit-mono@latest/latin-400-normal.woff2) format("woff2");
+}
+
+:root {
+  color-scheme: light dark;
+
+  /* primitives: the log (cool winter light, slate ink) */
+  --papir: #F4F7FA;        /* paper: page background, light */
+  --papir-flate: #FBFCFD;  /* paper surface: cards, charts, the mark's plate */
+  --papir-senk: #EBEFF4;   /* sunken: callouts, code */
+  --blekk: #192029;        /* ink: blue-black, never #000 or #111 */
+  --natt: #14191F;         /* night: page background, dark */
+
+  /* primitives: the print and the pen (public pieces, same in both modes) */
+  --trikkeblaa: #1659B5;   /* tram blue: the ONE field colour, and the accent */
+  --signal: #FCDB45;       /* the one yellow: healing, the full stop on a field. A fill, never text */
+  --fjord: #96C6DD;        /* fjord: the ghost word on the banner field, and the fjord plate */
+  --rod: #C62A1F;          /* the one red: the pen first, the fault fill second */
+
+  /* semantic: the only layer agents use */
+  --bg: light-dark(#F4F7FA, #14191F);
+  --surface: light-dark(#FBFCFD, #192029);
+  --sunken: light-dark(#EBEFF4, #10141A);
+  --line: light-dark(#DCE2E9, #29313B);
+  --line-strong: light-dark(#858F9B, #5F6B79);  /* control edges, 3:1 */
+  --text: light-dark(#192029, #E4E8ED);
+  --text-muted: light-dark(#5C646F, #9AA3AE);
+  --tick: light-dark(#7A838E, #6B7581);           /* ok runs in a run-strip */
+
+  --accent: light-dark(#1659B5, #4C86E0);
+  --accent-text: light-dark(#1659B5, #8DB4F2);
+  --on-accent: light-dark(#FBFCFD, #0F141A);
+  --accent-soft: light-dark(#E3ECFA, #16294A);
+
+  /* status: --x is the ink (text-safe on bg and on --x-soft), --x-soft the fill */
+  --ok: light-dark(#1A5439, #7FD3B0);
+  --ok-soft: light-dark(#E2F0E6, #15302A);
+  --warn: light-dark(#5E4800, #EDE0A6);           /* warn = healing, came back */
+  --warn-soft: light-dark(#FDF0B8, #3A3416);
+  --fault: light-dark(#A3221A, #F49C8B);
+  --fault-soft: light-dark(#FBE6E2, #3A1C17);
+  --info: light-dark(#1D4F78, #9CC2EE);
+  --info-soft: light-dark(#E1EDF7, #172A40);
+
+  /* marks: shapes that carry state, not text */
+  --signal-fill: #FCDB45;                          /* the healing box, the full stop */
+  --on-signal: #192029;
+  --fault-mark: light-dark(#C62A1F, #EE6B5A);      /* failed tick, fault square */
+
+  /* the pen: the signature. A hand-drawn line and the short words beside it, on paper only.
+     Public: one correction per piece. Working: at most one mark per screen, on content that changed. */
+  --pen: light-dark(#C62A1F, #F2766A);
+  --pen-stretch: 75%;      /* the pen's words: Archivo width 75, weight 600 public, 500 in documents */
+
+  --focus: light-dark(#192029, #E4E8ED);           /* ink ring; the yellow halo sits outside it */
+
+  /* the field: PUBLIC register only, at most ONE per piece, always tram blue. Same in both modes.
+     The four pillar names are kept so the first hybrid swaps in; here they all resolve to tram blue. */
+  --field: #1659B5;                      --on-field: #F4F7FA;
+  --field-agent-factory: var(--field);         --on-field-agent-factory: var(--on-field);
+  --field-engineering-taste: var(--field);     --on-field-engineering-taste: var(--on-field);
+  --field-product-over-tech: var(--field);     --on-field-product-over-tech: var(--on-field);
+  --field-building-in-the-open: var(--field);  --on-field-building-in-the-open: var(--on-field);
+
+  /* plates: the colour of a SUBJECT, the same wherever it appears. Strong plate + pictogram for the
+     brand's subjects and the system's objects; soft plate + emoji for life subjects in the working
+     register. A plate is 24 to 64 px. Bigger is a field, and the One Field Rule applies. */
+  --plate-trikk: light-dark(#1659B5, #2A6AC6);  --on-plate-trikk: #F4F7FA;  --plate-trikk-soft: light-dark(#D7E4F8, #1A2F52);
+  --plate-gran: light-dark(#1A5439, #267A52);  --on-plate-gran: #F4F7FA;  --plate-gran-soft: light-dark(#D6EBDD, #173A2C);
+  --plate-fjord: #96C6DD;  --on-plate-fjord: #192029;  --plate-fjord-soft: light-dark(#CFE6F0, #15343F);
+  --plate-lyng: light-dark(#6B4FA0, #7A5BB5);  --on-plate-lyng: #F4F7FA;  --plate-lyng-soft: light-dark(#E2D8F2, #2A2242);
+  --plate-sand: #E2CB8A;  --on-plate-sand: #192029;  --plate-sand-soft: light-dark(#F1E3BC, #3A321A);
+  --plate-natt: light-dark(#192029, #E4E8ED);  --on-plate-natt: light-dark(#F4F7FA, #192029);  --plate-natt-soft: light-dark(#DDE2E8, #28303A);
+  --plate-signal: #FCDB45;  --on-plate-signal: #192029;  /* needs you: at most one per screen */
+
+  /* chart (palette.md, validated against --surface and --bg in both modes). No red, no signal yellow */
+  --series-1: light-dark(#1659B5, #4C86E0);  /* trikk */
+  --series-2: light-dark(#D2638F, #D96B97);  /* rosa */
+  --series-3: light-dark(#7F9A1F, #7A9520);  /* mose */
+  --series-4: light-dark(#2E9FCB, #2B95C0);  /* fjord */
+  --series-5: light-dark(#A98000, #B08500);  /* oker */
+  --series-6: light-dark(#8B5CC6, #A07BE0);  /* syrin */
+  --series-7: light-dark(#2E8B57, #2F9A62);  /* gran */
+  --series-muted: light-dark(#A9B1BB, #4A5564);
+  --grid: light-dark(#DCE2E9, #29313B);
+
+  /* type: one family, the width axis is the hierarchy, plus one mono for data */
+  --font-display: "Archivo", "Arial Narrow", sans-serif;
+  --font-body: "Archivo", system-ui, sans-serif;
+  --font-code: "Commit Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --stretch-poster: 62%;  /* 48px and up, public */
+  --stretch-head: 75%;    /* 22px and up, both registers */
+  --stretch-body: 100%;   /* body and UI */
+  --measure: 64ch;
+
+  --step--2: 0.75rem;     /* 12: axis ticks, meta. The floor */
+  --step--1: 0.8125rem;   /* 13: captions, dense rows */
+  --step-0: 1rem;         /* 16: body, UI */
+  --step-1: 1.1875rem;    /* 19: lede, public body */
+  --step-2: 1.5rem;       /* 24: h2 */
+  --step-3: 2rem;         /* 32: artifact title */
+  --step-4: clamp(2.5rem, 1.2rem + 5.6vw, 4.75rem);  /* public display */
+  --step-poster: clamp(3.5rem, 15vw, 9.5rem);         /* fields only */
+
+  /* space: 4px base */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+  --row: 44px;            /* working row height = the tap target */
+
+  /* shape: almost square, the plate is the only round thing. No shadows */
+  --radius: 2px;          /* everything */
+  --radius-1: 2px;        /* alias, Trikk name */
+  --radius-2: 4px;        /* frames that hold specimens */
+  --radius-plate: 22%;    /* the sign plate: the mark, section numbers, icon plates */
+  --ease: cubic-bezier(.2, 0, 0, 1);
+}
+
+/* the pen's words: same family, narrower, in pen red. No handwriting font: the hand is in the stroke */
+.pen-note { font: 500 var(--step--1)/1.25 var(--font-display); font-stretch: var(--pen-stretch); color: var(--pen); }
+
+/* focus: an ink ring, then a yellow halo outside it. The ring carries the contrast */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 6px var(--signal-fill);
+}
+
+/* mono means data: numbers that align, timestamps, ids, paths */
+.num, td.n, time, code, kbd, samp {
+  font-family: var(--font-code);
+  font-variant-numeric: tabular-nums;
+  font-size: .92em;
+  letter-spacing: -0.01em;
+}
+
+/* plates: a pictogram on a strong plate, or an emoji on a soft one. Colour = the subject's family */
+.plate{--plate-size:32px;flex:none;display:inline-grid;place-items:center;width:var(--plate-size);height:var(--plate-size);border-radius:var(--radius-plate);background:var(--plate-bg);color:var(--plate-fg);vertical-align:middle}
+.plate svg{width:58%;height:58%;display:block}
+.plate-emoji{background:var(--plate-soft);font:400 calc(var(--plate-size) * .56)/1 "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.plate-24{--plate-size:24px}.plate-32{--plate-size:32px}.plate-44{--plate-size:44px}.plate-56{--plate-size:56px}.plate-64{--plate-size:64px}
+.plate-trikk{--plate-bg:var(--plate-trikk);--plate-fg:var(--on-plate-trikk);--plate-soft:var(--plate-trikk-soft)}
+.plate-gran{--plate-bg:var(--plate-gran);--plate-fg:var(--on-plate-gran);--plate-soft:var(--plate-gran-soft)}
+.plate-fjord{--plate-bg:var(--plate-fjord);--plate-fg:var(--on-plate-fjord);--plate-soft:var(--plate-fjord-soft)}
+.plate-lyng{--plate-bg:var(--plate-lyng);--plate-fg:var(--on-plate-lyng);--plate-soft:var(--plate-lyng-soft)}
+.plate-sand{--plate-bg:var(--plate-sand);--plate-fg:var(--on-plate-sand);--plate-soft:var(--plate-sand-soft)}
+.plate-natt{--plate-bg:var(--plate-natt);--plate-fg:var(--on-plate-natt);--plate-soft:var(--plate-natt-soft)}
+.plate-signal{--plate-bg:var(--plate-signal);--plate-fg:var(--on-plate-signal)}
+/* inline glyph: Phosphor Bold, beside a word, in the word's colour */
+.glyph{width:1.15em;height:1.15em;flex:none;vertical-align:-.2em;fill:currentColor}
+.btn .glyph{margin-inline:-.1em .1em}
+
+
+/* ---- Rettelse components. Keep this block whole. ---- */
+*,*::before,*::after{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+body{margin:0;background:var(--bg);color:var(--text);font:400 var(--step-0)/1.55 var(--font-body);-webkit-text-size-adjust:100%}
+main{max-width:880px;margin:0 auto;padding:24px 16px 96px}
+p{margin:0 0 var(--space-3);max-width:var(--measure)}
+a{color:var(--accent-text);text-underline-offset:3px}
+h1,h2,h3{font-family:var(--font-display);margin:0;font-weight:800}
+h1{font-size:var(--step-3);font-stretch:var(--stretch-head);line-height:1.02}
+h2{font-size:var(--step-1);letter-spacing:-.01em;line-height:1.2;margin:32px 0 6px}
+.lede{font-size:var(--step-1);line-height:1.4;margin:10px 0 6px}
+.meta,.cap{font-size:var(--step--1);color:var(--text-muted)}
+.kick{display:flex;align-items:center;gap:8px;font-size:var(--step--1);color:var(--text-muted);margin-bottom:var(--space-4)}
+.was{color:var(--text-muted);text-decoration:line-through;text-decoration-thickness:1.5px}
+mark{background:var(--signal-fill);color:var(--on-signal);padding:0 3px;border-radius:var(--radius)}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.readout{margin:18px 0 0;border-top:2px solid var(--text)}
+.readout>div{display:grid;grid-template-columns:1fr auto;column-gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.readout dt{font-size:var(--step--1);font-weight:600}
+.readout dd{margin:0}
+.readout dd.num{font-size:var(--step-1);text-align:right;grid-row:span 2;align-self:center}
+.readout dd.rn{font-size:var(--step--2);color:var(--text-muted)}
+.chartbox{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 4px 4px;position:relative}
+.chart{display:block;width:100%;height:auto;overflow:visible}
+.chart .grid{stroke:var(--grid);stroke-width:1}
+.chart .axis{stroke:var(--line-strong);stroke-width:1}
+.chart .ax{font:11px var(--font-code);fill:var(--text-muted)}
+.chart .lab{font:12px var(--font-code);fill:var(--text)}
+.chart .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .dot{stroke:var(--surface);stroke-width:2}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:var(--step--1);color:var(--text-muted);margin:4px 0 6px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.tip{position:absolute;pointer-events:none;background:var(--text);color:var(--bg);font:12px/1.4 var(--font-code);padding:5px 7px;border-radius:var(--radius);white-space:nowrap;display:none}
+details.tv{margin-top:6px;font-size:var(--step--1)}
+details.tv summary{color:var(--text-muted);cursor:pointer;min-height:36px;display:flex;align-items:center}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl{width:100%;border-collapse:collapse;font-size:var(--step--1)}
+.tbl th{text-align:left;font-weight:600;color:var(--text-muted);padding:6px 6px 6px 0;border-bottom:1px solid var(--line-strong);white-space:nowrap}
+.tbl td{padding:8px 6px 8px 0;border-bottom:1px solid var(--line)}
+.tbl .n{text-align:right}
+.callout{margin:20px 0 0;background:var(--sunken);border-radius:var(--radius);padding:12px 14px}
+.callout p{margin:0}
+.st{display:inline-flex;align-items:center;gap:6px;font:600 var(--step--2)/1 var(--font-body);padding:5px 7px;border-radius:var(--radius);white-space:nowrap}
+.st svg{width:10px;height:10px;flex:none}
+.st-ok{background:var(--ok-soft);color:var(--ok)}
+.st-warn{background:var(--warn-soft);color:var(--warn)}
+.st-fault{background:var(--fault-soft);color:var(--fault)}
+.st-info{background:var(--info-soft);color:var(--info)}
+.st-idle{color:var(--text-muted);border:1px solid var(--line)}
+.btn{display:inline-flex;align-items:center;justify-content:center;font:700 var(--step--1)/1 var(--font-body);min-height:44px;padding:0 16px;border-radius:var(--radius);border:1px solid var(--line-strong);background:var(--surface);color:var(--text);cursor:pointer}
+.btn-p{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.btn-q{background:transparent;border-color:transparent;color:var(--accent-text);text-decoration:underline;text-underline-offset:3px;padding:0 8px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.field{width:100%;height:44px;padding:0 12px;border:1px solid var(--line-strong);border-radius:var(--radius);background:var(--surface);color:var(--text);font:inherit}
+.label{display:block;font-size:var(--step--1);font-weight:600;margin-bottom:6px}
+.empty{margin-top:18px;border:1px dashed var(--line-strong);border-radius:var(--radius);padding:16px 14px}
+.empty-t{font-weight:700;margin:0 0 2px}.empty-m{font-size:var(--step--1);color:var(--text-muted);margin-bottom:12px}
+.rg{display:block;max-width:100%;height:auto;overflow:visible}
+.rg .tk{fill:var(--tick)}.rg .tk-f{fill:var(--fault-mark)}.rg .hl{fill:var(--signal-fill)}.rg .tk-h{fill:var(--on-signal)}
+.rg-t{font-family:var(--font-code);fill:var(--text-muted);font-size:var(--step--2)}
+.penhost{position:relative}
+.pen-layer{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;color:var(--pen)}
+.pen-note{font:500 var(--step--1)/1.25 var(--font-display);font-stretch:var(--pen-stretch);color:var(--pen)}
+.penword{white-space:nowrap}
+.pen-old{color:var(--text-muted)}
+.pen-g{color:var(--pen)}
+/* the correction: struck claim + the measured number written in above it (display type) */
+.fix{position:relative;display:inline-block;white-space:nowrap}
+.fix .ins{position:absolute;left:.05em;bottom:calc(100% - .08em);font:600 .5em/1 var(--font-display);font-stretch:var(--pen-stretch);color:var(--pen);white-space:nowrap}
+/* inline write-in, for documents and rows */
+.pen-ins{margin-left:.3em;font-family:var(--font-display);font-weight:600;font-stretch:var(--pen-stretch);color:var(--pen);white-space:nowrap}
+.tgt{position:absolute;pointer-events:none}
+.stop{color:var(--signal-fill)}
+a.btn{text-decoration:none}
+.btn{gap:.4em}
+/* lists: 44 px rows, hairlines, one container level. A plate on every row or on none */
+.list{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.row{display:flex;align-items:center;gap:12px;min-height:var(--row);padding:8px 0;border-bottom:1px solid var(--line)}
+.row-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.row-t{font-weight:600;line-height:1.25}
+.row-m{font-size:var(--step--1);color:var(--text-muted)}
+.row-m code{margin-right:6px}
+.row>time{flex:none;font-size:var(--step--2);color:var(--text-muted)}
+</style>
+</head>
+<body>
+<!-- the sprite: the four pillar pictograms (p-*), every registered pictogram (i-*, Phosphor Fill 2.1.1, MIT),
+     the inline glyphs (a-*, Phosphor Bold) and the status shapes (g-*). One symbol per line: delete the lines you
+     do not use. A subject that is missing: scripts/brand-icon <name> prints its line. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="g-ok" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="currentColor"/></symbol>
+<symbol id="g-heal" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5.4" fill="var(--signal-fill)" stroke="var(--on-signal)" stroke-width="1"/><circle cx="6" cy="6" r="2" fill="var(--on-signal)"/></symbol>
+<symbol id="g-fault" viewBox="0 0 12 12"><path d="M1.6 3.4 3.4 1.6 6 4.2 8.6 1.6l1.8 1.8L7.8 6l2.6 2.6-1.8 1.8L6 7.8 3.4 10.4 1.6 8.6 4.2 6z" fill="var(--fault-mark)"/></symbol>
+<symbol id="g-info" viewBox="0 0 12 12"><rect x="1.5" y="1.5" width="9" height="9" rx="1" fill="currentColor"/></symbol>
+<symbol id="g-idle" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+<symbol id="i-user" viewBox="0 0 256 256" fill="currentColor"><path d="M230.93,220a8,8,0,0,1-6.93,4H32a8,8,0,0,1-6.92-12c15.23-26.33,38.7-45.21,66.09-54.16a72,72,0,1,1,73.66,0c27.39,8.95,50.86,27.83,66.09,54.16A8,8,0,0,1,230.93,220Z"/></symbol>
+<symbol id="i-users-three" viewBox="0 0 256 256" fill="currentColor"><path d="M64.12,147.8a4,4,0,0,1-4,4.2H16a8,8,0,0,1-7.8-6.17,8.35,8.35,0,0,1,1.62-6.93A67.79,67.79,0,0,1,37,117.51a40,40,0,1,1,66.46-35.8,3.94,3.94,0,0,1-2.27,4.18A64.08,64.08,0,0,0,64,144C64,145.28,64,146.54,64.12,147.8Zm182-8.91A67.76,67.76,0,0,0,219,117.51a40,40,0,1,0-66.46-35.8,3.94,3.94,0,0,0,2.27,4.18A64.08,64.08,0,0,1,192,144c0,1.28,0,2.54-.12,3.8a4,4,0,0,0,4,4.2H240a8,8,0,0,0,7.8-6.17A8.33,8.33,0,0,0,246.17,138.89Zm-89,43.18a48,48,0,1,0-58.37,0A72.13,72.13,0,0,0,65.07,212,8,8,0,0,0,72,224H184a8,8,0,0,0,6.93-12A72.15,72.15,0,0,0,157.19,182.07Z"/></symbol>
+<symbol id="i-key" viewBox="0 0 256 256" fill="currentColor"><path d="M216.57,39.43A80,80,0,0,0,83.91,120.78L28.69,176A15.86,15.86,0,0,0,24,187.31V216a16,16,0,0,0,16,16H72a8,8,0,0,0,8-8V208H96a8,8,0,0,0,8-8V184h16a8,8,0,0,0,5.66-2.34l9.56-9.57A79.73,79.73,0,0,0,160,176h.1A80,80,0,0,0,216.57,39.43ZM180,92a16,16,0,1,1,16-16A16,16,0,0,1,180,92Z"/></symbol>
+<symbol id="i-lock-simple" viewBox="0 0 256 256" fill="currentColor"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96Z"/></symbol>
+</defs></svg>
+<main>
+
+<!--BODY-->
+</main>
+</body>
+</html>
