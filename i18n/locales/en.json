@@ -83,7 +83,11 @@
         "active": "Active",
         "testing": "Testing",
         "pending": "Under review"
-      }
+      },
+      "details": "Read more",
+      "close": "Close",
+      "visit": "Go to {company}",
+      "internalNotes": "Internal notes · visible to the board only"
     },
     "faq": {
       "title": "FAQ",

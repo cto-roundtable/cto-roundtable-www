@@ -83,7 +83,11 @@
         "active": "Aktivt",
         "testing": "Testas",
         "pending": "Under bedömning"
-      }
+      },
+      "details": "Läs mer",
+      "close": "Stäng",
+      "visit": "Gå till {company}",
+      "internalNotes": "Interna anteckningar · syns bara för styrelsen"
     },
     "faq": {
       "title": "Vanliga frågor",
