@@ -6,6 +6,7 @@
 # account impersonate it. After this, box-tofu.sh runs plan/apply with no human
 # credentials on the box.
 #
+# Done 2026-10-29 (Snorre ran it on beast). Kept to recreate the setup.
 # Run it ONCE with an owner's gcloud login (CLOUDSDK_CONFIG pointing at a
 # config that holds that login). Idempotent: every step checks first.
 #
