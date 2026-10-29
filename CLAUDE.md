@@ -36,6 +36,15 @@ cat .openlogs/nuxt-dev.raw.log
 
 Logs are per-run with timestamps (e.g. `nuxt-dev.2026-03-28T13-26-17Z.txt`). The `nuxt-dev.txt` symlink always points to the latest dev server run. The `.openlogs/` directory is gitignored.
 
+### Persona e2e (who sees what)
+
+`e2e/preview.sh up|test|publish|down` runs the built portal on a Neon branch of
+production and walks it as each kind of member (screenshots, video, and an
+access matrix of every member API route). See `e2e/README.md`. Run it before
+merging anything that changes who can see what, and add a persona to
+`e2e/support/personas.ts` when the code starts checking a new group (a new
+`invest-N`, a new role). Never point it at production: the guard refuses.
+
 ## Architecture
 
 ### Server API routes (`server/`)
