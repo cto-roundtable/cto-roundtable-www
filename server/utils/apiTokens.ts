@@ -4,7 +4,7 @@ import type { AuditEntry } from './audit'
 
 /**
  * Machine access to portal data for agents: /api/admin/**, used by the `ctr`
- * CLI (cli/ctr.mjs). Table api_tokens
+ * CLI (Rust, cto-roundtable/ctr-cli). Table api_tokens
  * (ctoroundtable-hq/infrastructure/db/migrations/026_api_tokens_and_audit.sql).
  *
  * A token is `ctr_` + 43 base64url characters (32 random bytes), shown once:

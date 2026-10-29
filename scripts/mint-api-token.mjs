@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 /**
- * Mint, list and revoke API tokens for /api/admin/** (the `ctr` CLI).
+ * BREAK-GLASS: mint, list and revoke API tokens for /api/admin/** (the `ctr` CLI).
+ * The normal way an agent gets a token is `ctr login` (the device flow, approved
+ * by styret at /member/device). Use this only when that is unavailable, and to revoke.
+ *
  *
  *   DATABASE_URL=... node scripts/mint-api-token.mjs mint \
  *     --name cto-roundtable-box --owner <email|person uuid> \
