@@ -43,7 +43,7 @@
           </v-chip>
         </div>
 
-        <p class="offer-terms mb-3">{{ offer.terms || '—' }}</p>
+        <p class="offer-terms clamp mb-3">{{ offer.terms || '—' }}</p>
 
         <!-- Active: show the code to redeem -->
         <div v-if="offer.status === 'active' && offer.code" class="mb-3">
@@ -87,11 +87,67 @@
           {{ t('member.discounts.offeredBy', { name: offer.contactName }) }}
         </p>
 
-        <p v-if="isBoard && offer.notes" class="offer-notes mt-2 mb-0">
-          {{ offer.notes }}
-        </p>
+        <button class="details-link mt-auto pt-3" @click="openDetails(offer)">
+          {{ t('member.discounts.details') }} →
+        </button>
       </v-card>
     </section>
+
+    <v-dialog v-model="detailsOpen" max-width="560" scrollable>
+      <v-card v-if="selected" class="offer-dialog">
+        <v-card-title class="d-flex align-center pt-5 px-6" style="gap: 10px;">
+          <span class="offer-company">{{ selected.company }}</span>
+          <v-chip
+            :color="statusColor(selected.status)"
+            variant="flat"
+            size="x-small"
+            class="text-uppercase font-weight-bold"
+            style="letter-spacing: 0.05em;"
+          >
+            {{ statusLabel(selected.status) }}
+          </v-chip>
+        </v-card-title>
+
+        <v-card-text class="px-6">
+          <p class="offer-terms full mb-4">{{ selected.terms || '—' }}</p>
+
+          <div v-if="selected.status === 'active' && selected.code" class="mb-4">
+            <button class="code-pill" @click="copyCode(selected)">
+              <v-icon size="14" class="mr-1">mdi-content-copy</v-icon>
+              <span>{{ copiedCode === selected.code ? t('common.copied') : selected.code }}</span>
+            </button>
+          </div>
+
+          <p v-if="selected.contactName" class="offer-contact mb-0">
+            {{ t('member.discounts.offeredBy', { name: selected.contactName }) }}
+          </p>
+
+          <div v-if="isBoard && selected.notes" class="offer-notes mt-4">
+            <div class="notes-label mb-1">{{ t('member.discounts.internalNotes') }}</div>
+            {{ selected.notes }}
+          </div>
+        </v-card-text>
+
+        <v-card-actions class="px-6 pb-5">
+          <v-btn
+            v-if="selected.redemptionUrl || selected.website"
+            :href="selected.redemptionUrl || selected.website || undefined"
+            target="_blank"
+            rel="noopener"
+            size="small"
+            variant="flat"
+            style="background-color: #fff; color: #111;"
+            @click="trackLink(selected)"
+          >
+            {{ t('member.discounts.visit', { company: selected.company }) }}
+          </v-btn>
+          <v-spacer />
+          <v-btn size="small" variant="text" color="white" @click="detailsOpen = false">
+            {{ t('member.discounts.close') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -123,6 +179,18 @@ const isBoard = ref(false)
 const busy = ref<string | null>(null)
 const copiedCode = ref<string | null>(null)
 const { $posthog } = useNuxtApp()
+const detailsOpen = ref(false)
+const selected = ref<Offer | null>(null)
+
+function openDetails(offer: Offer) {
+  selected.value = offer
+  detailsOpen.value = true
+  $posthog?.capture?.('offer_details_opened', { offer_id: offer.id, company: offer.company, status: offer.status })
+}
+
+function trackLink(offer: Offer) {
+  $posthog?.capture?.('offer_link_clicked', { offer_id: offer.id, company: offer.company })
+}
 
 watchEffect(async () => {
   if (checked.value && session.value.authenticated && loading.value) {
@@ -208,6 +276,8 @@ function statusLabel(status: string): string {
 }
 
 .offer-card {
+  display: flex;
+  flex-direction: column;
   background: #161616 !important;
   border-color: rgba(255, 255, 255, 0.12) !important;
   color: #fff !important;
@@ -229,6 +299,40 @@ function statusLabel(status: string): string {
   color: #ddd;
   font-size: 14px;
   line-height: 1.5;
+}
+
+.offer-terms.clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.offer-terms.full {
+  white-space: pre-line;
+}
+
+.details-link {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 13px;
+  cursor: pointer;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.details-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.offer-dialog {
+  background: #161616 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff !important;
 }
 
 .code-pill {
@@ -259,10 +363,19 @@ function statusLabel(status: string): string {
 }
 
 .offer-notes {
-  color: #777;
+  color: #888;
   font-size: 12px;
-  font-style: italic;
+  line-height: 1.5;
+  white-space: pre-line;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding-top: 8px;
+  padding-top: 12px;
+}
+
+.notes-label {
+  color: #aaa;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 </style>

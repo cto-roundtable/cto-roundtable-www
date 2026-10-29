@@ -83,7 +83,11 @@
         "active": "Aktiv",
         "testing": "Til testing",
         "pending": "Under vurdering"
-      }
+      },
+      "details": "Les mer",
+      "close": "Lukk",
+      "visit": "Gå til {company}",
+      "internalNotes": "Interne notater · kun synlig for styret"
     },
     "faq": {
       "title": "FAQ",
