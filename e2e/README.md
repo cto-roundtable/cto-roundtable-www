@@ -16,6 +16,11 @@ arguments (`e2e/preview.sh test e2e/access.spec.ts`), shorten the walk with
 `E2E_PAGES=/member,/member/caser`, and add one exact person with
 `E2E_AS=<email or person id>` (an extra `as` persona in the views).
 
+A tour of ONE persona follows that persona's own menu instead of a fixed page
+list, on desktop and on a phone, plus one level of the member pages those pages
+link to: `E2E_TOUR=sweden e2e/preview.sh test e2e/tour.spec.ts` (output in
+`e2e/.run/tour/<persona>/`). Without `E2E_TOUR` the tour is skipped.
+
 ## How it signs in
 
 The session is a stateless HMAC cookie (`server/utils/session.ts`). The preview
