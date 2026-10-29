@@ -1,8 +1,6 @@
 <template>
   <div class="case text-left">
-    <DealsPreviewBar v-if="data?.preview && previewRoles" :roles="previewRoles" :current="data.preview.slug" />
-
-    <NuxtLink :to="{ path: '/member/caser', query: linkQuery }" class="back-link">
+    <NuxtLink to="/member/caser" class="back-link">
       <v-icon size="16" class="mr-1" aria-hidden="true">mdi-arrow-left</v-icon> {{ t('deals.case.allCases') }}
     </NuxtLink>
 
@@ -24,12 +22,22 @@
             <dt>{{ t('deals.case.ownerLabel') }}</dt>
             <dd>{{ data.deal.owner?.name ?? t('deals.case.noOwner') }}</dd>
           </div>
+          <div v-if="data.deal.coLeads.length" class="fact">
+            <dt>{{ t('deals.case.coLeadLabel') }}</dt>
+            <dd>{{ data.deal.coLeads.map((p) => p.name).join(', ') }}</dd>
+          </div>
           <div class="fact">
             <dt>{{ t('deals.case.lastActivityLabel') }}</dt>
             <dd>{{ data.deal.lastActivityAt ? formatDate(data.deal.lastActivityAt, 'long') : t('deals.case.noActivity') }}</dd>
           </div>
         </dl>
         <p v-if="data.deal.blurb" class="blurb">{{ data.deal.blurb }}</p>
+        <!-- Invested: the company's own investor updates, for those whose SPV invested. -->
+        <NuxtLink v-if="data.deal.followUp && data.deal.ours" :to="`/member/updates/${slug}`" class="updates-link">
+          <v-icon size="18" class="mr-2" aria-hidden="true">mdi-finance</v-icon>
+          {{ t('deals.case.followUp.updates', { name: data.deal.name }) }}
+          <v-icon size="16" class="ml-1" aria-hidden="true">mdi-chevron-right</v-icon>
+        </NuxtLink>
       </header>
 
       <!-- Where to go on this page: every action a member has lives in its own section below. -->
@@ -39,8 +47,9 @@
         </a>
       </nav>
 
-      <div :inert="Boolean(data.preview)" class="sections">
-        <section v-if="data.rounds.length" id="vote" class="panel">
+      <div class="sections">
+        <!-- A follow-up page (invested) has no vote, no "Jeg er inhabil" and no review chips. -->
+        <section v-if="data.rounds.length && !data.deal.followUp" id="vote" class="panel">
           <h2 class="panel-title mb-3">{{ t('deals.case.rounds') }}</h2>
           <DealsBallot v-for="r in data.rounds" :key="r.id" :slug="slug" :round="r" @changed="reload" />
         </section>
@@ -85,6 +94,7 @@
           :questions="data.questions"
           :waiting="data.questionsWaiting"
           :can-answer="data.canAnswer"
+          :follow-up="data.deal.followUp"
           @changed="reload"
         />
 
@@ -93,6 +103,7 @@
           :slug="slug"
           :comments="data.comments"
           :is-committee="data.viewer.isCommittee"
+          :follow-up="data.deal.followUp"
           @changed="reload"
         >
           <!-- The agent's digest of the comments: "what we heard" for the SPV, the committee's own for the committee. -->
@@ -110,6 +121,7 @@
         </DealsComments>
 
         <DealsConflict
+          v-if="!data.deal.followUp"
           id="inhabil"
           :slug="slug"
           :conflict="data.conflict"
@@ -131,11 +143,10 @@
 </template>
 
 <script setup lang="ts">
-// One case: where it stands (status, owner, last activity) on top, then calm sections
-// for the vote, the material, Q&A, input to the committee and "Jeg er inhabil". The
-// actions the old pipeline cards repeated on every row land here, in their section
-// (/member/caser/<slug>#qa, ?innspill=objection#innspill, #inhabil). A committee member
-// previewing a role (?som=) sees the page as that role, with every form inert.
+// One case: where it stands (status, ansvarlig from deal_people, last activity) on top,
+// then calm sections for the vote, the material, Q&A, input to the committee and "Jeg er
+// inhabil". The actions the old pipeline cards repeated on every row land here, in their
+// section (/member/caser/<slug>#qa, ?innspill=objection#innspill, #inhabil).
 definePageMeta({ layout: 'member' })
 
 const { t, te, n } = useI18n()
@@ -151,22 +162,19 @@ interface CaseDocument {
   bytes: number
   uploadedAt: string
 }
-interface Role {
-  slug: string
-  name: string | null
-  phase: string | null
-}
 interface CaseResponse {
   viewer: { isCommittee: boolean }
-  preview: Role | null
   deal: {
     slug: string
     name: string
     status: string
     blurb: string | null
     owner: { id: string; name: string } | null
+    coLeads: { id: string; name: string }[]
     lastActivityAt: string | null
     materialShared: boolean
+    followUp: boolean
+    ours: boolean
   }
   documents: CaseDocument[]
   // The round view is typed where it is drawn (DealsBallot).
@@ -185,38 +193,28 @@ const slug = route.params.slug as string
 const { session, checked } = useAuthSession()
 const loading = ref(true)
 const data = ref<CaseResponse | null>(null)
-const previewRoles = ref<Role[] | null>(null)
 const { $posthog } = useNuxtApp()
 
-const som = computed(() => (typeof route.query.som === 'string' ? route.query.som : ''))
-const linkQuery = computed(() => (som.value ? { som: som.value } : undefined))
-
 function fetchCase() {
-  return $fetch<CaseResponse>(`/api/member/deals/${slug}`, { query: som.value ? { som: som.value } : {} })
+  return $fetch<CaseResponse>(`/api/member/deals/${slug}`)
 }
 
 watch(
-  [() => checked.value && session.value.authenticated, som],
-  async ([ready]) => {
+  () => checked.value && session.value.authenticated,
+  async (ready) => {
     if (!ready) return
     loading.value = true
     try {
       data.value = await fetchCase()
-      if (data.value.preview && !previewRoles.value) {
-        previewRoles.value = (
-          await $fetch<{ previewRoles: Role[] | null }>('/api/member/deals', { query: { som: som.value } })
-        ).previewRoles
-      }
       $posthog?.capture?.('deal_case_viewed', {
         slug,
         documents: data.value.documents.length,
-        preview: data.value.preview?.slug ?? null,
       })
       // A link from a mail lands on #q-<id>, a link from elsewhere on a section: scroll once rendered.
       if (route.hash) nextTick(() => document.querySelector(route.hash)?.scrollIntoView())
     } catch {
-      // 404 (no such case, or not one this member or previewed role may see): back to the list.
-      await navigateTo({ path: '/member/caser', query: linkQuery.value })
+      // 404 (no such case, or not one this member may see): back to the list.
+      await navigateTo('/member/caser')
       return
     } finally {
       loading.value = false
@@ -278,6 +276,13 @@ const tone = computed(() => {
 const sections = computed(() => {
   const d = data.value
   if (!d) return []
+  if (d.deal.followUp) {
+    return [
+      { id: 'materiale', label: t('deals.case.material'), count: d.documents.length },
+      { id: 'qa', label: t('deals.case.followUp.qaTitle'), count: d.questions.length },
+      { id: 'innspill', label: t('deals.case.followUp.inputTitle'), count: 0 },
+    ]
+  }
   return [
     ...(d.rounds.length ? [{ id: 'vote', label: t('deals.case.rounds'), count: 0 }] : []),
     { id: 'materiale', label: t('deals.case.material'), count: d.documents.length },
@@ -326,6 +331,23 @@ function trackOpen(d: CaseDocument) {
 </script>
 
 <style scoped>
+.updates-link {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 16px;
+  padding: 10px 14px;
+  min-height: 44px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+}
+.updates-link:hover,
+.updates-link:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+}
 .back-link {
   display: inline-flex;
   align-items: center;

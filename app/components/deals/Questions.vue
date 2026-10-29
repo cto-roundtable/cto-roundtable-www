@@ -1,12 +1,12 @@
 <template>
   <section class="panel">
-    <h2 class="panel-title mb-1">{{ t('deals.qa.title') }}</h2>
-    <p class="meta mb-4">{{ t('deals.qa.intro') }}</p>
+    <h2 class="panel-title mb-1">{{ t(followUp ? 'deals.qa.followUp.title' : 'deals.qa.title') }}</h2>
+    <p class="meta mb-4">{{ t(followUp ? 'deals.qa.followUp.intro' : 'deals.qa.intro') }}</p>
 
     <form class="ask mb-5" @submit.prevent="ask">
       <v-textarea
         v-model="draft"
-        :label="t('deals.qa.askLabel')"
+        :label="t(followUp ? 'deals.qa.followUp.askLabel' : 'deals.qa.askLabel')"
         :counter="MAX_QUESTION"
         :maxlength="MAX_QUESTION"
         rows="3"
@@ -102,8 +102,8 @@
 
 <script setup lang="ts">
 // Q&A on a case. Members ask and read answers; who asked is shown to the committee
-// only (server/utils/dealQuestions.ts decides what each viewer gets). The deal
-// owner, the committee and the board answer, confirm an agent's answer, or close.
+// only (server/utils/dealQuestions.ts decides what each viewer gets). The deal's
+// ansvarlig (lead or co-lead) or the committee answers, confirms an agent's answer, or closes.
 interface Answer {
   id: string
   bodyMd: string
@@ -131,6 +131,8 @@ const props = defineProps<{
   questions: Question[]
   waiting: number
   canAnswer: boolean
+  /** an invested company: questions about how it is going, same routing to the lead */
+  followUp?: boolean
 }>()
 const emit = defineEmits<{ changed: [] }>()
 

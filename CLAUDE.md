@@ -251,21 +251,28 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   condition (`caseVisibleSql`), shared by the list, the page and the document
   download, re-checked on every request:
   - committee (`current-komite`, `server/utils/committee.ts`): every case in active
-    work, investor-visible or with a round, drafts included. The board (`styret`) gets
-    nothing extra on cases: a board member is a member here (Snorre, 2026-10-29);
+    work, investor-visible, with a round or invested in, drafts included;
   - members of the ACTIVE SPV (`network_groups.invest_phase = 'deploying'`): every
     deal in active work (`ACTIVE_STATUSES`: reviewing, waiting, to_be_voted,
     pending_transfer) or marked investor-visible that no SPV has invested in yet
-    (the working pipeline; unreviewed leads are left out, dc-33 2026-10-23);
-  - members of a round's group: that case once the round is open;
-  - members of an SPV that invested: that company. A completed SPV sees its own
-    companies and nothing else.
-  The membership rules read `viewer.groupIds` (the person's network groups), never
-  `memberships` by person, so a role preview can swap them. A case you may not see is
+    (the working pipeline; unreviewed leads are left out, dc-33 2026-10-23), and a
+    case once a round for the active SPV is open;
+  - members of an SPV that invested (`investments`): that company, always, whatever
+    the visible flag or rounds say (dc-59 H1, 2026-10-30). A completed SPV (Invest 1,
+    2) sees the companies it invested in and nothing of the working pipeline.
+  Visibility comes from the person's own memberships only (`viewer.groupIds`). The
+  board (`styret`) adds nothing to what anyone sees of investments, anywhere in the
+  portal (Snorre, 2026-10-29 and 10-30); board-only are the admin pages (styremøter,
+  protocols, Aktivitet (styret), API tokens). A case you may not see is
   the same 404 as one that does not exist. Seeing a case
   is not seeing its material: the blurb and the documents are shared only once the
   committee marks it investor-visible or a round has opened (`materialSharedSql`);
-  before that a member sees name, stage, owner and date, and can ask and give input.
+  before that a member sees name, stage, ansvarlig and date, and can ask and give input.
+- **Ansvarlig** is the deal's CURRENT `lead` and `co_lead` rows in `deal_people`
+  (`valid_to IS NULL`), read through `dealOwnerJoin` in `server/utils/deals.ts`, on the
+  overview, the case page, `/member/komite`, the admin API and question routing; never
+  `pipeline_deals.driver_person_id` or a file (Snorre, 2026-10-30). hq migration 042
+  refuses a current lead or co-lead who has no row in `memberships`.
 - **Documents** (`deal_documents`): versioned, never overwritten (a ballot attests
   to a hash). Shown raw material first, the committee memo last. Bytes are in the
   private bucket `cto-roundtable-deal-documents` (`infrastructure/tofu/storage.tf`;
@@ -283,11 +290,11 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
 - **Q&A** (`server/utils/dealQuestions.ts`, `deal_questions` / `deal_answers`): a
   member asks on the case page; the `deal-qa` job on the box claims the question
   (`PATCH /api/admin/questions/:id` `agent_working`, a compare-and-set), answers from
-  the deal's investor pack with sources, or routes it to the deal owner
-  (`driver_person_id`), who answers on the case page. The ANSWER is shown to everyone
-  who can see the case, but its `sources` (investor-pack quotes) only once the material
-  is shared with them (Snorre, 2026-10-29); WHO ASKED only to the committee, never in
-  the admin API. An agent answer is labelled as unchecked until the owner or a committee member
+  the deal's investor pack with sources, or routes it to the deal's current lead
+  (`deal_people`); the lead or a co-lead answers on the case page. The ANSWER is shown
+  to everyone who can see the case, but its `sources` (investor-pack quotes) only once
+  the material is shared with them (Snorre, 2026-10-29); WHO ASKED only to the
+  committee, never in the admin API. An agent answer is labelled as unchecked until the owner or a committee member
   confirms it; a correction supersedes it. The asker gets a mail when it is answered
   and the owner when a question is routed to them (`server/utils/mail.ts`).
 - **Comments** (`server/utils/dealComments.ts`, `deal_comments`): input that does not
@@ -311,31 +318,26 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   committee's view is `/member/komite`). Sections: decided, being carried out
   (`pending_transfer`); under review now (an open vote, `to_be_voted`, or
   reviewing/waiting with activity in the last `INACTIVE_AFTER_DAYS` = 56 days, on
-  `last_activity_at`, else `updated_at`); inactive (folded); what the member's SPVs
-  invested in; the declined ones on request. `/member/pipeline` redirects here. The
-  actions (ask, object, "I know them", "Jeg er inhabil") live on the case page, in
-  their sections, never on the list.
-- **Nav and role preview**: "Caser" always opens the member view. The committee gets
-  sub-items: "Som medlem", "Komiteen" and "Se som ...". The preview is `?som=<invest
-  group slug | ingen | aktiv>` on `/api/member/deals` and `/api/member/deals/:slug`
-  (`viewerForRequest`): committee only, it answers as a member of exactly that SPV who
-  owns nothing (nil person id), and the page makes every form inert. Write routes never
-  read `?som=`.
-- **Pipeline feed** (`/member/pipeline`, `listPipeline` in `server/utils/deals.ts`,
-  decision 2026-10-22 §6): the same rows as the case rule (`caseVisibleSql`), split into
-  "working" (not invested by any SPV; open vote first, then `to_be_voted`, `reviewing`,
-  then last activity) and "invested" (companies an SPV of the viewer's invested in, or
-  all for staff). A member of a completed SPV sees only the second. The page names
-  who sees it ("only CTORI 3 and the committee"). Declined companies (`rejected`;
-  `passed` stays out until the founder is told) load only on request
-  (`?declined=1`), name, stage and date. Each working row
-  links to the case page: `#qa` to ask, `?innspill=objection#innspill` /
-  `?innspill=signal#innspill` to write input with that kind preselected.
+  `last_activity_at`, else `updated_at`); inactive (folded); what the member's own SPVs
+  invested in (`investments` joined to their memberships, one tag per SPV, newest
+  `investments.invested_at` first, sortable by last activity or name, filterable by
+  SPV, each row linking to `/member/updates/<slug>`); the declined ones on request
+  (name, stage and date). `/member/pipeline` redirects here. The actions (ask, object,
+  "I know them", "Jeg er inhabil") live on the case page, in their sections, never on
+  the list.
+- **Follow-up page**: the case page of an invested company (status `invested`, or an
+  `investments` row) follows up instead of reviewing: a link to its investor updates,
+  no vote, no "Jeg er inhabil", no objection chips. Q&A becomes "Spørsmål om status"
+  and input "Oppfølging" (kinds shown as follow-up idea, I can help, other; stored as
+  032's `suggestion`, `signal`, `comment`), with the same routing and visibility.
+- **Nav**: "Caser" always opens the member view. The committee gets two sub-items,
+  "Som medlem" and "Komiteen". There is no "see as another role" (Snorre, 2026-10-30).
+  Sub-menus start folded and open on one of their pages or with their chevron.
 - **"Jeg er inhabil"** (`server/utils/dealConflicts.ts`, `deal_conflicts`, hq migration
   033, mandate §9, dc-33 H3): a member declares a conflict on a company on its case
   page (also linked from each feed row). It freezes into the roster when a round
   opens (`freezeRoster`), and then the member can only vote blank there. It can be
-  withdrawn until a round is open. The committee and board see who declared.
+  withdrawn until a round is open. The committee sees who declared.
 - **Pipeline digest** (`server/utils/pipelineDigests.ts`, `pipeline_digests`, hq
   migration 033, dc-33 H4): every second Monday the box job reads
   `GET /api/admin/pipeline-digests/source` (stages, dates and event KINDS, never the
@@ -352,10 +354,13 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   of the SPV group is frozen and the 48 hours start. A roster member votes yes, no or
   blank with one tap and can change until the deadline; every cast is a new row
   (append-only) attesting to the round's `bundle_sha256`, and the latest on-time one
-  counts. Members see the live counts and turnout, never names; the committee and the
-  board see the named list (decision 2026-10-22 §3, `rules.ballot =
-  'choices_board_only'`). A standing `memberships.default_vote = 'blank'` counts as
-  blank until the member votes. At the deadline `POST /api/admin/rounds/:id/close`
+  counts. Members see the live counts and turnout, never names; only the committee
+  sees the named list (dc-59 H3, 2026-10-30; the rule's name `choices_board_only` is
+  older). A standing `memberships.default_vote = 'blank'` counts as blank until the
+  member votes: each member sets it on `/member` per SPV ("Hvis jeg ikke stemmer, regn
+  meg som blank", `POST /api/member/default-vote`, audited by 032's trigger, never
+  'yes'). It is frozen into the roster at open, so a change counts from the next vote;
+  the committee's named list shows each member's setting and flags a change since. At the deadline `POST /api/admin/rounds/:id/close`
   computes 2/3 of yes + no, freezes `result_snapshot` (named) and renders the
   protocol PDF (who took part, NOT what they chose) to the deal-documents bucket.
   The portal sends every vote mail itself (`POST .../notify`: open, reminder,

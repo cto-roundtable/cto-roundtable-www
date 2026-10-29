@@ -974,12 +974,20 @@ export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
         const mine = current.find((b) => b.person_id === viewer.personId)
         if (mine) myBallot = { choice: mine.choice, castAt: mine.cast_at, method: mine.method }
         if (viewer.isCommittee) {
+          // Each member's standing vote: the one frozen at open (what counts in this
+          // round) and the one in memberships now (from the member's own page).
+          const nowRows = (await sql`
+            SELECT person_id, default_vote FROM memberships WHERE group_id = ${r.group_id}
+          `) as any[]
+          const now = new Map(nowRows.map((m) => [m.person_id, m.default_vote === 'blank' ? 'blank' : null]))
           named = counted.rows.map((x) => ({
             name: x.member.name,
             counted: x.counted,
             method: x.ballot?.method ?? null,
             castAt: x.ballot?.cast_at ?? null,
             late: x.late,
+            defaultVote: x.member.default_vote,
+            defaultNow: now.has(x.member.person_id) ? now.get(x.member.person_id) : x.member.default_vote,
           }))
         }
       } else if (r.status === 'closed' && r.result_snapshot) {

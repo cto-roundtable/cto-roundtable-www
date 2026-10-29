@@ -4,7 +4,7 @@
  *
  * The flow: a member asks; the deal-qa job on the box claims the question through
  * the admin API, answers it from the deal's investor pack or routes it to the
- * deal owner (pipeline_deals.driver_person_id); the owner answers in the portal.
+ * deal's lead (deal_people, dealOwnerJoin); the lead or a co-lead answers in the portal.
  *
  * Who sees what (decision 2026-10-22 on the vote model, project ctori-4):
  *   - the ANSWER is shown to everyone who can see the case;
@@ -170,7 +170,10 @@ interface QuestionRow {
   dealId: string
   slug: string
   dealName: string
+  /** the deal's current lead (deal_people): routed questions go to them */
   ownerId: string | null
+  /** the current lead and co-leads: who may answer besides the committee */
+  driverIds: string[]
   askedBy: string
   status: string
 }
@@ -179,10 +182,11 @@ async function loadQuestionRow(questionId: string): Promise<QuestionRow | null> 
   if (!/^[0-9a-f-]{36}$/i.test(questionId)) return null
   const sql = useDatabase()
   const rows = await sql`
-    SELECT q.id, q.deal_id, pd.slug, o.name AS deal_name, pd.driver_person_id, q.asked_by, q.status
+    SELECT q.id, q.deal_id, pd.slug, o.name AS deal_name, owner.id AS owner_id, owner.co_leads, q.asked_by, q.status
     FROM deal_questions q
     JOIN pipeline_deals pd ON pd.id = q.deal_id
     JOIN organizations o ON o.id = pd.organization_id
+    ${dealOwnerJoin(sql)}
     WHERE q.id = ${questionId}
   `
   const r: any = rows[0]
@@ -192,7 +196,8 @@ async function loadQuestionRow(questionId: string): Promise<QuestionRow | null> 
         dealId: r.deal_id,
         slug: r.slug,
         dealName: r.deal_name,
-        ownerId: r.driver_person_id,
+        ownerId: r.owner_id,
+        driverIds: [r.owner_id, ...(r.co_leads ?? []).map((p: { id: string }) => p.id)].filter(Boolean),
         askedBy: r.asked_by,
         status: r.status,
       }
@@ -238,10 +243,10 @@ async function insertAnswer(
   return (inserted as any[])[0].id
 }
 
-/** Staff or the deal owner may answer, confirm and close in the portal. */
+/** The committee or the deal's ansvarlig (lead, co-lead) may answer, confirm and close. */
 async function requireAnswerer(viewer: CaseViewer, q: QuestionRow): Promise<void> {
-  if (viewer.isCommittee || q.ownerId === viewer.personId) return
-  throw createError({ statusCode: 403, message: 'Only the committee or the deal owner can do this' })
+  if (viewer.isCommittee || q.driverIds.includes(viewer.personId)) return
+  throw createError({ statusCode: 403, message: 'Only the committee or the deal lead can do this' })
 }
 
 /** The owner (or a committee member) answers in the portal. Mails the asker. */
@@ -449,7 +454,7 @@ export async function adminPatchQuestion(id: string, body: Record<string, unknow
   } else if (status === 'routed') {
     const note = cleanText(body.note, MAX_ROUTE_NOTE, 'note')
     if (!q.ownerId)
-      throw createError({ statusCode: 400, message: 'The deal has no owner (driver_person_id) to route to' })
+      throw createError({ statusCode: 400, message: 'The deal has no current lead (deal_people) to route to' })
     if (!['new', 'agent_working'].includes(q.status)) {
       throw createError({
         statusCode: 409,

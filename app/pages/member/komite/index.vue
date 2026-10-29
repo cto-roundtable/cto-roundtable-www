@@ -81,6 +81,7 @@ interface CommitteeCase extends Record<CountKey, number> {
   name: string
   status: string
   owner: string | null
+  coLeads: string[]
   lastActivityAt: string | null
   comments: number
   round: { status: string; result: string | null; closesAt: string | null; group: { name: string } } | null
@@ -137,7 +138,8 @@ function stateLine(c: CommitteeCase) {
   if (c.round?.status === 'open') parts.push(t('deals.round.status.open'))
   else if (c.round?.status === 'draft') parts.push(t('deals.committee.draftRound'))
   else parts.push(te(`deals.status.${c.status}`) ? t(`deals.status.${c.status}`) : c.status)
-  if (c.owner) parts.push(c.owner)
+  const drivers = [c.owner, ...c.coLeads].filter(Boolean)
+  if (drivers.length) parts.push(drivers.join(', '))
   return parts.join(' · ')
 }
 </script>

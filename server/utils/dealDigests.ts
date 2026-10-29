@@ -199,7 +199,7 @@ export async function committeeOverview() {
   const sql = useDatabase()
   const rows = (await sql`
     SELECT pd.id, pd.slug, o.name, pd.status, COALESCE(pd.last_activity_at, pd.updated_at) AS last_activity_at,
-      owner.name AS owner_name,
+      owner.name AS owner_name, owner.co_leads,
       (SELECT COUNT(*)::int FROM deal_questions q WHERE q.deal_id = pd.id AND q.status IN ('new', 'agent_working')) AS q_open,
       (SELECT COUNT(*)::int FROM deal_questions q WHERE q.deal_id = pd.id AND q.status IN ('routed', 'founder_asked')) AS q_routed,
       (SELECT COUNT(*)::int FROM deal_answers a JOIN deal_questions q ON q.id = a.question_id
@@ -215,7 +215,7 @@ export async function committeeOverview() {
        ORDER BY (r.status = 'open') DESC, (r.status = 'draft') DESC, r.created_at DESC LIMIT 1) AS round
     FROM pipeline_deals pd
     JOIN organizations o ON o.id = pd.organization_id
-    LEFT JOIN persons owner ON owner.id = pd.driver_person_id
+    ${dealOwnerJoin(sql)}
     WHERE pd.slug IS NOT NULL
       AND (pd.status = ANY(${ACTIVE_STATUSES})
            OR EXISTS (SELECT 1 FROM deal_rounds r0 WHERE r0.deal_id = pd.id AND r0.status IN ('draft', 'open'))
@@ -237,6 +237,7 @@ export async function committeeOverview() {
         name: r.name,
         status: r.status,
         owner: r.owner_name,
+        coLeads: (r.co_leads ?? []).map((p: { name: string }) => p.name),
         lastActivityAt: r.last_activity_at,
         questionsOpen: r.q_open,
         questionsRouted: r.q_routed,

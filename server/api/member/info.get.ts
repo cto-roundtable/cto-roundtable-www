@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
 
   // Get member details with group memberships
   const memberships = await sql`
-    SELECT ng.name as group_name, ng.slug, m.role, m.created_at as joined_at
+    SELECT ng.name as group_name, ng.slug, m.role, m.created_at as joined_at, ng.invest_phase, m.default_vote
     FROM memberships m
     JOIN network_groups ng ON m.group_id = ng.id
     WHERE m.person_id = ${session.personId}
@@ -31,6 +31,9 @@ export default defineEventHandler(async (event) => {
       slug: m.slug,
       role: m.role,
       joinedAt: m.joined_at,
+      // An SPV (invest group): the member's own standing vote there, 'blank' or null (032).
+      investPhase: m.invest_phase,
+      defaultVote: m.invest_phase ? m.default_vote : null,
     })),
   }
 })

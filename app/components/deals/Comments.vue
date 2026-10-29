@@ -1,17 +1,17 @@
 <template>
   <section class="panel">
-    <h2 class="panel-title mb-1">{{ isCommittee ? t('deals.comments.titleStaff') : t('deals.comments.title') }}</h2>
-    <p class="meta mb-4">{{ isCommittee ? t('deals.comments.introStaff') : t('deals.comments.intro') }}</p>
+    <h2 class="panel-title mb-1">{{ isCommittee ? copy('titleStaff') : copy('title') }}</h2>
+    <p class="meta mb-4">{{ isCommittee ? copy('introStaff') : copy('intro') }}</p>
 
     <form class="mb-5" @submit.prevent="send">
       <v-chip-group v-model="kind" mandatory selected-class="kind-on" class="mb-2" column>
         <v-chip v-for="k in kinds" :key="k" :value="k" variant="outlined" size="small" class="kind">
-          {{ t(`deals.comments.kind.${k}`) }}
+          {{ copy(`kind.${k}`) }}
         </v-chip>
       </v-chip-group>
       <v-textarea
         v-model="draft"
-        :label="t(`deals.comments.placeholder.${kind}`)"
+        :label="copy(`placeholder.${kind}`)"
         rows="3"
         auto-grow
         variant="outlined"
@@ -26,7 +26,7 @@
           :disabled="!draft.trim()"
           style="background-color: white; color: #111;"
         >
-          {{ t('deals.comments.submit') }}
+          {{ copy('submit') }}
         </v-btn>
         <span v-if="sent" class="ok-note">{{ t('deals.comments.sent') }}</span>
       </div>
@@ -37,7 +37,7 @@
       <p class="list-label mb-2">{{ isCommittee ? t('deals.comments.allLabel', comments.length) : t('deals.comments.mineLabel') }}</p>
       <article v-for="c in comments" :key="c.id" class="comment" :class="{ withdrawn: c.withdrawnAt }">
         <div class="d-flex align-center flex-wrap mb-1" style="gap: 8px;">
-          <span class="kind-tag" :class="`kind-${c.kind}`">{{ t(`deals.comments.kind.${c.kind}`) }}</span>
+          <span class="kind-tag" :class="`kind-${c.kind}`">{{ copy(`kind.${c.kind}`) }}</span>
           <span class="meta">{{ byline(c) }}</span>
         </div>
         <p class="c-body">{{ c.body }}</p>
@@ -63,6 +63,8 @@
 <script setup lang="ts">
 // Input that does not count as a vote. The committee sees it with names; a member
 // sees only their own (server/utils/dealComments.ts decides). Decision 2026-10-22 §5.
+// On an invested company (followUp) it is follow-up input: the same rows and rules,
+// other words and kinds (Snorre, 2026-10-30; the kinds are 032's CHECK, so no migration).
 interface Comment {
   id: string
   kind: string
@@ -73,17 +75,31 @@ interface Comment {
   author?: { id: string; name: string }
 }
 
-const props = defineProps<{ slug: string; comments: Comment[]; isCommittee: boolean }>()
+const props = defineProps<{ slug: string; comments: Comment[]; isCommittee: boolean; followUp?: boolean }>()
 const emit = defineEmits<{ changed: [] }>()
 
-const { t } = useI18n()
+const { t, te } = useI18n()
+/** The copy for this mode: deals.comments.followUp.* on an invested company, where it exists. */
+function copy(key: string) {
+  return props.followUp && te(`deals.comments.followUp.${key}`)
+    ? t(`deals.comments.followUp.${key}`)
+    : t(`deals.comments.${key}`)
+}
 const { formatDate } = useLocaleDate()
 const { $posthog } = useNuxtApp()
 
-const kinds = ['comment', 'objection', 'suggestion', 'founder_question', 'signal']
+const kinds = props.followUp
+  ? ['suggestion', 'signal', 'comment']
+  : ['comment', 'objection', 'suggestion', 'founder_question', 'signal']
 // A link from elsewhere (the overview, a mail) preselects the kind: /member/caser/<slug>?innspill=objection#innspill
 const route = useRoute()
-const kind = ref(kinds.includes(String(route.query.innspill)) ? String(route.query.innspill) : 'comment')
+const kind = ref(
+  kinds.includes(String(route.query.innspill))
+    ? String(route.query.innspill)
+    : props.followUp
+      ? 'suggestion'
+      : 'comment',
+)
 const draft = ref('')
 const sending = ref(false)
 const sent = ref(false)

@@ -150,19 +150,34 @@
               :prepend-icon="item.icon"
               :title="item.title"
               :active="item.active"
-              @click="mobile && (drawer = false)"
-            />
-            <!-- Sub-items (Caser for the committee): always shown, indented under their parent. -->
-            <v-list-item
-              v-for="sub in item.children ?? []"
-              :key="sub.key"
-              :to="sub.to"
-              :title="sub.title"
-              :active="sub.active"
-              density="compact"
-              class="nav-sub"
-              @click="mobile && (drawer = false)"
-            />
+              @click="mobile && !item.children?.length && (drawer = false)"
+            >
+              <template v-if="item.children?.length" #append>
+                <button
+                  type="button"
+                  class="nav-toggle"
+                  :aria-expanded="isOpen(item)"
+                  :aria-controls="`nav-sub-${item.key}`"
+                  :aria-label="t(isOpen(item) ? 'nav.collapse' : 'nav.expand', { item: item.title })"
+                  @click.stop.prevent="toggle(item)"
+                >
+                  <v-icon size="18" aria-hidden="true">{{ isOpen(item) ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                </button>
+              </template>
+            </v-list-item>
+            <!-- Sub-items: folded away until opened, and open by themselves on one of their pages. -->
+            <div v-if="item.children?.length && isOpen(item)" :id="`nav-sub-${item.key}`">
+              <v-list-item
+                v-for="sub in item.children"
+                :key="sub.key"
+                :to="sub.to"
+                :title="sub.title"
+                :active="sub.active"
+                density="compact"
+                class="nav-sub"
+                @click="mobile && (drawer = false)"
+              />
+            </div>
           </template>
         </v-list>
       </v-navigation-drawer>
@@ -292,15 +307,16 @@ const navItems = computed(() => {
   }
   return items.map(({ key, children, ...item }: NavItem) => ({
     ...item,
-    // A parent with sub-items is never the highlighted row: the sub-item is.
-    active: children?.length ? false : undefined,
+    key,
+    // A parent with sub-items is never the highlighted row while they show: the sub-item is.
+    active: children?.length ? (isOpen({ key, children }) ? false : children.some((c) => c.active)) : undefined,
     title: t(key),
     children: children?.map((c) => ({ ...c, title: t(c.key) })),
   }))
 })
 
 interface NavSub {
-  to: string | { path: string; query?: Record<string, string> }
+  to: string
   key: string
   active: boolean
 }
@@ -312,18 +328,31 @@ interface NavItem {
   children?: NavSub[]
 }
 
-// Under Caser, for the committee only: the member view (default), the committee's
-// view, and "Se som ..." (the overview as a role sees it; `aktiv` = the SPV investing now).
+// Under Caser, for the committee only: the member view (default) and the committee's
+// view. Nobody gets a "see as another role" (Snorre, 2026-10-30).
 const casesChildren = computed<NavSub[] | undefined>(() => {
   if (!session.value.isCommittee) return undefined
-  const onCases = route.path.startsWith('/member/caser')
-  const previewing = onCases && typeof route.query.som === 'string' && route.query.som !== ''
   return [
-    { to: '/member/caser', key: 'nav.dealsMember', active: onCases && !previewing },
+    { to: '/member/caser', key: 'nav.dealsMember', active: route.path.startsWith('/member/caser') },
     { to: '/member/komite', key: 'nav.dealsCommittee', active: route.path.startsWith('/member/komite') },
-    { to: { path: '/member/caser', query: { som: 'aktiv' } }, key: 'nav.dealsPreview', active: previewing },
   ]
 })
+
+// Sub-menus start folded (Snorre, 2026-10-30). The chevron opens and closes one; it
+// opens by itself on one of its pages, and the choice holds until the next page.
+const expanded = ref<Record<string, boolean>>({})
+function isOpen(item: { key: string; children?: NavSub[] }): boolean {
+  return expanded.value[item.key] ?? Boolean(item.children?.some((c) => c.active))
+}
+function toggle(item: { key: string; children?: NavSub[] }) {
+  expanded.value = { ...expanded.value, [item.key]: !isOpen(item) }
+}
+watch(
+  () => route.path,
+  () => {
+    expanded.value = {}
+  },
+)
 
 async function submitMagicLink() {
   submitting.value = true
@@ -496,6 +525,23 @@ onMounted(async () => {
 
 .member-drawer .v-list-item--active .v-icon {
   color: #fff !important;
+}
+
+/* The chevron that folds a sub-menu: a real button, 40px to hit. */
+.member-drawer .nav-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-inline-end: -8px;
+  border-radius: 6px;
+  color: #bbb;
+}
+.member-drawer .nav-toggle:hover,
+.member-drawer .nav-toggle:focus-visible {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* Sub-items sit under their parent's title, not under its icon. */
