@@ -2,6 +2,7 @@
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
+  <ConsentBanner />
 </template>
 
 <script setup lang="ts">
