@@ -57,7 +57,7 @@ export async function listDigests(dealId: string, opts: { audience: 'committee' 
 /** The digests a case page shows: the newest committee one for staff, the newest SPV one for everyone. */
 export async function caseDigests(viewer: CaseViewer, dealId: string) {
   const [committee, spv] = await Promise.all([
-    viewer.isStaff ? listDigests(dealId, { audience: 'committee', limit: 1 }) : Promise.resolve([]),
+    viewer.isCommittee ? listDigests(dealId, { audience: 'committee', limit: 1 }) : Promise.resolve([]),
     listDigests(dealId, { audience: 'spv', limit: 1 }),
   ])
   return { committee: committee[0] ?? null, spv: spv[0] ?? null }
@@ -181,14 +181,18 @@ export async function adminListComments(opts: { since: string | null; slug: stri
 }
 
 /**
- * The committee's overview (/member/komite): every case that is visible or has
- * a round, with what waits for the committee: open and routed questions, new
- * comments since the newest committee digest, the vote, and that digest.
+ * The committee's overview (/member/komite): every case in active work, with a draft
+ * or open round, or investor-visible and not yet invested in, with what waits for the
+ * committee on it (zero counts included, so the page is never empty while there is
+ * work): open and routed questions, agent answers to confirm, new comments since
+ * the newest committee digest, the vote, and that digest. Each case carries the
+ * member overview's section (caseSection), most waiting first.
  */
 export async function committeeOverview() {
   const sql = useDatabase()
   const rows = (await sql`
-    SELECT pd.id, pd.slug, o.name, pd.status, pd.last_activity_at,
+    SELECT pd.id, pd.slug, o.name, pd.status, COALESCE(pd.last_activity_at, pd.updated_at) AS last_activity_at,
+      owner.name AS owner_name,
       (SELECT COUNT(*)::int FROM deal_questions q WHERE q.deal_id = pd.id AND q.status IN ('new', 'agent_working')) AS q_open,
       (SELECT COUNT(*)::int FROM deal_questions q WHERE q.deal_id = pd.id AND q.status IN ('routed', 'founder_asked')) AS q_routed,
       (SELECT COUNT(*)::int FROM deal_answers a JOIN deal_questions q ON q.id = a.question_id
@@ -197,15 +201,19 @@ export async function committeeOverview() {
       (SELECT COUNT(*)::int FROM deal_comments c WHERE c.deal_id = pd.id AND c.withdrawn_at IS NULL
         AND c.created_at > COALESCE((SELECT MAX(d.created_at) FROM deal_digests d
                                      WHERE d.deal_id = pd.id AND d.audience = 'committee'), '-infinity'::timestamptz)) AS comments_new,
-      (SELECT json_build_object('status', r.status, 'closesAt', r.closes_at, 'result', r.result, 'group', ng.name)
+      (SELECT json_build_object('status', r.status, 'result', r.result, 'closesAt', r.closes_at, 'closedAt', r.closed_at,
+                                'group', json_build_object('slug', ng.slug, 'name', ng.name))
        FROM deal_rounds r JOIN network_groups ng ON ng.id = r.group_id
-       WHERE r.deal_id = pd.id AND r.source = 'portal'
-       ORDER BY (r.status = 'open') DESC, r.created_at DESC LIMIT 1) AS round
+       WHERE r.deal_id = pd.id
+       ORDER BY (r.status = 'open') DESC, (r.status = 'draft') DESC, r.created_at DESC LIMIT 1) AS round
     FROM pipeline_deals pd
     JOIN organizations o ON o.id = pd.organization_id
+    LEFT JOIN persons owner ON owner.id = pd.driver_person_id
     WHERE pd.slug IS NOT NULL
-      AND (pd.investor_visible OR EXISTS (SELECT 1 FROM deal_rounds r0 WHERE r0.deal_id = pd.id AND r0.source = 'portal'))
-    ORDER BY pd.last_activity_at DESC NULLS LAST, o.name
+      AND (pd.status = ANY(${ACTIVE_STATUSES})
+           OR EXISTS (SELECT 1 FROM deal_rounds r0 WHERE r0.deal_id = pd.id AND r0.status IN ('draft', 'open'))
+           OR (pd.investor_visible AND NOT EXISTS (SELECT 1 FROM investments i WHERE i.deal_id = pd.id)))
+    ORDER BY last_activity_at DESC NULLS LAST, o.name
   `) as any[]
   const digests = rows.length
     ? ((await sql`
@@ -216,20 +224,25 @@ export async function committeeOverview() {
     : []
   const byDeal = new Map(digests.map((d) => [d.deal_id, digestOut(d)]))
   return rows
-    .map((r) => ({
-      slug: r.slug,
-      name: r.name,
-      status: r.status,
-      lastActivityAt: r.last_activity_at,
-      questionsOpen: r.q_open,
-      questionsRouted: r.q_routed,
-      answersUnconfirmed: r.a_unconfirmed,
-      comments: r.comments,
-      commentsSinceDigest: r.comments_new,
-      round: r.round,
-      digest: byDeal.get(r.id) ?? null,
-    }))
-    .sort((a, b) => needsCommittee(b) - needsCommittee(a))
+    .map((r) => {
+      const c = {
+        slug: r.slug,
+        name: r.name,
+        status: r.status,
+        owner: r.owner_name,
+        lastActivityAt: r.last_activity_at,
+        questionsOpen: r.q_open,
+        questionsRouted: r.q_routed,
+        answersUnconfirmed: r.a_unconfirmed,
+        comments: r.comments,
+        commentsSinceDigest: r.comments_new,
+        round: r.round,
+        digest: byDeal.get(r.id) ?? null,
+      }
+      // The member overview's sections, so both pages sort a case the same way.
+      return { ...c, section: caseSection(c) ?? 'active', waiting: needsCommittee(c) }
+    })
+    .sort((a, b) => b.waiting - a.waiting)
 }
 
 /** What waits for the committee on a case, for ordering the overview: most first. */

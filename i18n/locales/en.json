@@ -19,7 +19,10 @@
     "boardMeetings": "Board meetings",
     "boardActivity": "Activity (board)",
     "sweden": "Sweden",
-    "deals": "Cases"
+    "deals": "Cases",
+    "dealsMember": "As a member",
+    "dealsCommittee": "The committee",
+    "dealsPreview": "See as …"
   },
   "layout": {
     "signedInAs": "Signed in as",
@@ -512,12 +515,38 @@
   "deals": {
     "list": {
       "title": "Cases",
-      "intro": "The companies the committee is reviewing for your SPV, and the votes on them. The raw material is here (deck, notes from the founder calls, numbers), with the memo next to it.",
-      "staffNote": "You see this as committee or board: drafts and every SPV included.",
-      "empty": "No cases to show right now.",
-      "lastActivity": "Last changed {date}",
-      "committeeLink": "The committee's overview",
-      "pipelineLink": "See the whole pipeline"
+      "lastActivity": "Last activity {date}"
+    },
+    "overview": {
+      "intro": "The companies the committee is working on for the SPV that is investing now. Open a case to read the material, ask, or give the committee your input.",
+      "introInvested": "The companies your SPV invested in. The cases under review now are for the SPV that is investing now.",
+      "introNone": "No cases to show you right now. The cases under review are for the SPV that is investing now.",
+      "audience": "Members of {groups} and the committee see this.",
+      "decided": "Decided, being carried out",
+      "decidedIntro": "The SPV said yes. Papers and the transfer remain, and the committee follows up.",
+      "active": "Under review now",
+      "activeIntro": "This is where input counts most. Ask, raise an objection, or say you know them, well before any vote.",
+      "activeEmpty": "No cases are under review right now.",
+      "inactive": "Inactive",
+      "inactiveIntro": "Still under review, but no activity for more than {weeks} weeks.",
+      "invested": "Invested by your SPV",
+      "showDeclined": "Show the ones we said no to",
+      "declined": "Said no to",
+      "declinedIntro": "Companies the committee reviewed and said no to, and votes that did not end in an investment.",
+      "declinedEmpty": "Nothing to show."
+    },
+    "preview": {
+      "showing": "You see this page as a member sees it",
+      "hint": "The board sees the same as any member. Forms are locked while you look as someone else.",
+      "choose": "See as",
+      "exit": "Back to my view",
+      "role": {
+        "deploying": "Member of {group} (investing now)",
+        "completed": "Member of {group} (fully invested)",
+        "raising": "Member of {group} (raising)",
+        "other": "Member of {group}",
+        "none": "Member in no SPV"
+      }
     },
     "status": {
       "incoming": "New",
@@ -549,7 +578,7 @@
       }
     },
     "case": {
-      "allCases": "All cases",
+      "allCases": "Cases",
       "owner": "Owner: {name}",
       "rounds": "Vote",
       "material": "The material",
@@ -558,7 +587,15 @@
       "materialNotShared": "The committee has not shared material on this company yet. You can still ask and give input.",
       "memoLabel": "The committee's memo",
       "docMeta": "Version {version} · {date} · {size}",
-      "staffNote": "You see this case as committee or board."
+      "statusLabel": "Status",
+      "ownerLabel": "Owner",
+      "noOwner": "None yet",
+      "lastActivityLabel": "Last activity",
+      "noActivity": "Not recorded",
+      "jumpAria": "Parts of the case",
+      "jumpInput": "Input",
+      "jumpConflict": "I have a conflict",
+      "onlyCommittee": "Committee only"
     },
     "qa": {
       "title": "Questions and answers",
@@ -652,7 +689,7 @@
       "turnout": "Turnout {pct} of {n} who may vote.",
       "secret": "You see the counts, not who voted what. The committee sees the names. The proposal passes with at least 2/3 yes of the yes and no votes.",
       "protocol": "The protocol (PDF)",
-      "namedLabel": "Named ballots (committee and board only)",
+      "namedLabel": "Named ballots (committee only)",
       "counted": {
         "yes": "Yes",
         "no": "No",
@@ -691,32 +728,20 @@
     },
     "committee": {
       "title": "The committee's overview",
-      "intro": "Every case with what waits for the committee: questions sent to the owner of the case, agent answers not yet confirmed, and new input since the last summary.",
-      "forbidden": "For the committee and the board only.",
-      "routed": "1 question waits for the owner | {count} questions wait for the owner",
-      "unconfirmed": "1 agent answer to confirm | {count} agent answers to confirm",
-      "withAgent": "1 question with the agent | {count} questions with the agent",
-      "comments": "{all} inputs, {fresh} new",
+      "intro": "Every active case and what waits for the committee. A 0 means nothing waits.",
+      "forbidden": "For the committee only.",
       "digest": "Summary {date}",
-      "noDigest": "No summary yet."
-    },
-    "pipeline": {
-      "title": "The pipeline",
-      "intro": "What the committee is working on now, up for a vote and in review first. Ask, raise an objection, or say you know them, long before a vote. The committee sees who wrote; the other members do not.",
-      "introInvested": "The companies your SPV invested in. The pipeline being worked on now is for the SPV that is investing now.",
-      "working": "In progress",
-      "workingEmpty": "No companies to show right now.",
-      "invested": "Companies your SPV invested in",
-      "voteOpen": "Vote open",
-      "ask": "I have a question",
-      "object": "I have objections",
-      "knowThem": "I know them",
-      "audience": "Only the members of {groups} and the committee see this.",
-      "showDeclined": "Show the ones we said no to",
-      "declined": "Said no to",
-      "declinedIntro": "Companies the committee reviewed and said no to.",
-      "declinedEmpty": "None to show.",
-      "conflict": "I have a conflict"
+      "totalsAria": "What waits for the committee, all cases together",
+      "count": {
+        "questionsRouted": "Questions with the owner",
+        "answersUnconfirmed": "Agent answers to confirm",
+        "commentsSinceDigest": "New input",
+        "questionsOpen": "With the agent"
+      },
+      "empty": "No active cases.",
+      "caseCol": "Case",
+      "lastCol": "Last activity",
+      "draftRound": "Draft vote"
     },
     "conflict": {
       "title": "Conflict of interest?",

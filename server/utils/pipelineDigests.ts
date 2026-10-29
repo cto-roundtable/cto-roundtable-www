@@ -306,7 +306,7 @@ export async function sendPipelineDigest(id: string, opts: { dryRun: boolean; si
   const sql = useDatabase()
   const group = (await sql`SELECT id FROM network_groups WHERE slug = ${d.group.slug}`) as any[]
   const people = await recipients(group[0].id)
-  const link = `${opts.siteUrl}/member/pipeline`
+  const link = `${opts.siteUrl}/member/caser`
   const sent: string[] = []
   const skipped: { personId: string; reason: string }[] = []
   const failed: { personId: string; error: string }[] = []
@@ -355,13 +355,13 @@ export async function setPipelineDigestSlackRef(id: string, body: Record<string,
   return { digest: await getPipelineDigest(id) }
 }
 
-/** The newest sent digest for the viewer's investing SPV(s), shown on top of the feed. */
+/** The newest sent digest for the viewer's investing SPV(s), shown on top of the cases overview. */
 export async function latestSentDigest(viewer: CaseViewer): Promise<PipelineDigest | null> {
   const sql = useDatabase()
   const rows = (await sql`
     ${SELECT_DIGEST(sql)}
     WHERE d.status = 'sent' AND g.invest_phase = 'deploying'
-      AND (${viewer.isStaff} OR EXISTS (SELECT 1 FROM memberships m WHERE m.group_id = g.id AND m.person_id = ${viewer.personId}))
+      AND g.id = ANY(${viewer.groupIds}::uuid[])
     ORDER BY d.sent_at DESC LIMIT 1
   `) as any[]
   return rows[0] ? digestOut(rows[0]) : null

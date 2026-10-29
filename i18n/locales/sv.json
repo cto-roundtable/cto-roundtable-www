@@ -19,7 +19,10 @@
     "boardMeetings": "Styrelsemöten",
     "boardActivity": "Aktivitet (styrelsen)",
     "sweden": "Sverige",
-    "deals": "Case"
+    "deals": "Case",
+    "dealsMember": "Som medlem",
+    "dealsCommittee": "Kommittén",
+    "dealsPreview": "Se som …"
   },
   "layout": {
     "signedInAs": "Inloggad som",
@@ -512,12 +515,38 @@
   "deals": {
     "list": {
       "title": "Case",
-      "intro": "Bolagen som kommittén utvärderar för ditt SPV, och omröstningarna om dem. Här finns råmaterialet (deck, anteckningar från samtalen med grundarna, siffror) med memot bredvid.",
-      "staffNote": "Du ser detta som kommitté eller styrelse: även utkast och alla SPV.",
-      "empty": "Inga case att visa just nu.",
-      "lastActivity": "Senast ändrad {date}",
-      "committeeLink": "Kommitténs översikt",
-      "pipelineLink": "Se hela pipelinen"
+      "lastActivity": "Senaste aktivitet {date}"
+    },
+    "overview": {
+      "intro": "Bolagen kommittén arbetar med för det SPV som investerar nu. Öppna ett case för att läsa materialet, fråga eller ge kommittén dina synpunkter.",
+      "introInvested": "Bolagen ditt SPV har investerat i. De case som utvärderas nu är för det SPV som investerar nu.",
+      "introNone": "Inga case att visa för dig just nu. De case som utvärderas är för det SPV som investerar nu.",
+      "audience": "Detta ser medlemmarna i {groups} och kommittén.",
+      "decided": "Beslutade, under genomförande",
+      "decidedIntro": "SPV:t har sagt ja. Nu återstår papper och överföring, och kommittén följer upp.",
+      "active": "Under utvärdering nu",
+      "activeIntro": "Här gör synpunkter mest nytta. Fråga, säg till om invändningar, eller säg att du känner dem, långt innan det blir omröstning.",
+      "activeEmpty": "Inga case utvärderas just nu.",
+      "inactive": "Inaktiva",
+      "inactiveIntro": "Fortfarande under utvärdering, men utan aktivitet på mer än {weeks} veckor.",
+      "invested": "Investerat av ditt SPV",
+      "showDeclined": "Visa de vi har sagt nej till",
+      "declined": "Sagt nej till",
+      "declinedIntro": "Bolag kommittén har utvärderat och sagt nej till, och omröstningar som inte slutade i en investering.",
+      "declinedEmpty": "Inget att visa."
+    },
+    "preview": {
+      "showing": "Du ser sidan som en medlem ser den",
+      "hint": "Styrelsen ser samma sak som en vanlig medlem. Formulären är låsta så länge du ser som någon annan.",
+      "choose": "Se som",
+      "exit": "Tillbaka till min vy",
+      "role": {
+        "deploying": "Medlem i {group} (investerar nu)",
+        "completed": "Medlem i {group} (färdiginvesterat)",
+        "raising": "Medlem i {group} (tar in kapital)",
+        "other": "Medlem i {group}",
+        "none": "Medlem utan SPV"
+      }
     },
     "status": {
       "incoming": "Ny",
@@ -549,7 +578,7 @@
       }
     },
     "case": {
-      "allCases": "Alla case",
+      "allCases": "Case",
       "owner": "Ansvarig: {name}",
       "rounds": "Omröstning",
       "material": "Materialet",
@@ -558,7 +587,15 @@
       "materialNotShared": "Kommittén har inte delat material om det här bolaget ännu. Du kan ändå fråga och ge synpunkter.",
       "memoLabel": "Kommitténs memo",
       "docMeta": "Version {version} · {date} · {size}",
-      "staffNote": "Du ser detta case som kommitté eller styrelse."
+      "statusLabel": "Status",
+      "ownerLabel": "Ansvarig",
+      "noOwner": "Ingen än",
+      "lastActivityLabel": "Senaste aktivitet",
+      "noActivity": "Inte registrerad",
+      "jumpAria": "Delar av caset",
+      "jumpInput": "Synpunkter",
+      "jumpConflict": "Jag är jävig",
+      "onlyCommittee": "Bara kommittén"
     },
     "qa": {
       "title": "Frågor och svar",
@@ -652,7 +689,7 @@
       "turnout": "Deltagande {pct} av {n} röstberättigade.",
       "secret": "Du ser antalet röster, inte vem som röstade vad. Kommittén ser namnen. Förslaget antas med minst 2/3 ja av ja- och nej-rösterna.",
       "protocol": "Protokollet (PDF)",
-      "namedLabel": "Namngivna röster (bara kommittén och styrelsen)",
+      "namedLabel": "Namngivna röster (bara kommittén)",
       "counted": {
         "yes": "Ja",
         "no": "Nej",
@@ -691,32 +728,20 @@
     },
     "committee": {
       "title": "Kommitténs översikt",
-      "intro": "Alla case med det som väntar på kommittén: frågor som skickats till den som äger caset, agentsvar som inte är bekräftade, och nya synpunkter sedan senaste sammanfattningen.",
-      "forbidden": "Bara för kommittén och styrelsen.",
-      "routed": "1 fråga väntar på ägaren | {count} frågor väntar på ägaren",
-      "unconfirmed": "1 agentsvar att bekräfta | {count} agentsvar att bekräfta",
-      "withAgent": "1 fråga hos agenten | {count} frågor hos agenten",
-      "comments": "{all} synpunkter, {fresh} nya",
+      "intro": "Alla aktiva case och det som väntar på kommittén. Står det 0 väntar ingenting.",
+      "forbidden": "Bara för kommittén.",
       "digest": "Sammanfattning {date}",
-      "noDigest": "Ingen sammanfattning än."
-    },
-    "pipeline": {
-      "title": "Pipelinen",
-      "intro": "Det kommittén arbetar med nu, till omröstning och under utvärdering först. Fråga, säg till om invändningar, eller säg att du känner dem, långt innan det blir omröstning. Kommittén ser vem som skrev, de andra medlemmarna gör det inte.",
-      "introInvested": "Bolagen ditt SPV har investerat i. Pipelinen som bearbetas nu är för det SPV som investerar nu.",
-      "working": "Pågående",
-      "workingEmpty": "Inga bolag att visa just nu.",
-      "invested": "Bolag ditt SPV har investerat i",
-      "voteOpen": "Öppen omröstning",
-      "ask": "Jag har en fråga",
-      "object": "Jag har invändningar",
-      "knowThem": "Jag känner dem",
-      "audience": "Detta ser bara medlemmarna i {groups} och kommittén.",
-      "showDeclined": "Visa de vi har sagt nej till",
-      "declined": "Sagt nej till",
-      "declinedIntro": "Bolag kommittén har utvärderat och sagt nej till.",
-      "declinedEmpty": "Inga att visa.",
-      "conflict": "Jag är jävig"
+      "totalsAria": "Det som väntar på kommittén, alla case tillsammans",
+      "count": {
+        "questionsRouted": "Frågor hos ägaren",
+        "answersUnconfirmed": "Agentsvar att bekräfta",
+        "commentsSinceDigest": "Nya synpunkter",
+        "questionsOpen": "Hos agenten"
+      },
+      "empty": "Inga aktiva case.",
+      "caseCol": "Case",
+      "lastCol": "Senaste aktivitet",
+      "draftRound": "Utkast till omröstning"
     },
     "conflict": {
       "title": "Jävig?",

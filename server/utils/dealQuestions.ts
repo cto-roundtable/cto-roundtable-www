@@ -8,7 +8,7 @@
  *
  * Who sees what (decision 2026-10-22 on the vote model, project ctori-4):
  *   - the ANSWER is shown to everyone who can see the case;
- *   - WHO ASKED is shown to the committee and the board only, never to other
+ *   - WHO ASKED is shown to the committee only, never to other
  *     members and never through the admin API;
  *   - a member sees their own questions, answered or not, and only the answered
  *     ones of everyone else.
@@ -89,7 +89,7 @@ export async function listCaseQuestions(
   for (const r of rows as any[]) {
     const mine = r.asked_by === viewer.personId
     const answered = ANSWERED.includes(r.status) && r.a_id
-    if (!viewer.isStaff && !mine && !answered) {
+    if (!viewer.isCommittee && !mine && !answered) {
       if (r.status !== 'closed') waiting++
       continue
     }
@@ -101,7 +101,7 @@ export async function listCaseQuestions(
           byKind: r.by_kind,
           confirmed: r.confirmed_at !== null,
           createdAt: r.a_created_at,
-          ...(viewer.isStaff ? { byName: r.by_name, confirmedByName: r.confirmed_name } : {}),
+          ...(viewer.isCommittee ? { byName: r.by_name, confirmedByName: r.confirmed_name } : {}),
         }
       : null
     questions.push({
@@ -111,7 +111,7 @@ export async function listCaseQuestions(
       createdAt: r.created_at,
       mine,
       answer,
-      ...(viewer.isStaff
+      ...(viewer.isCommittee
         ? {
             askedBy: { id: r.asked_by, name: r.asker_name },
             routedTo: r.routed_to ? { id: r.routed_to, name: r.routed_name } : null,
@@ -234,7 +234,7 @@ async function insertAnswer(
 
 /** Staff or the deal owner may answer, confirm and close in the portal. */
 async function requireAnswerer(viewer: CaseViewer, q: QuestionRow): Promise<void> {
-  if (viewer.isStaff || q.ownerId === viewer.personId) return
+  if (viewer.isCommittee || q.ownerId === viewer.personId) return
   throw createError({ statusCode: 403, message: 'Only the committee or the deal owner can do this' })
 }
 

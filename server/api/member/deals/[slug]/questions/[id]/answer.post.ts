@@ -1,5 +1,5 @@
 // POST /api/member/deals/:slug/questions/:id/answer {bodyMd, fromFounder}
-// The deal owner (or a committee or board member) answers in the portal. The new
+// The deal owner (or a committee member) answers in the portal. The new
 // answer supersedes an earlier one, and the asker gets a mail.
 export default defineEventHandler(async (event) => {
   const { viewer, dealId, questionId } = await questionContext(event)

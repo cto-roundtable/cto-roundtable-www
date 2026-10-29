@@ -1,7 +1,7 @@
 <template>
   <section class="panel">
-    <h2 class="panel-title mb-1">{{ isStaff ? t('deals.comments.titleStaff') : t('deals.comments.title') }}</h2>
-    <p class="meta mb-4">{{ isStaff ? t('deals.comments.introStaff') : t('deals.comments.intro') }}</p>
+    <h2 class="panel-title mb-1">{{ isCommittee ? t('deals.comments.titleStaff') : t('deals.comments.title') }}</h2>
+    <p class="meta mb-4">{{ isCommittee ? t('deals.comments.introStaff') : t('deals.comments.intro') }}</p>
 
     <form class="mb-5" @submit.prevent="send">
       <v-chip-group v-model="kind" mandatory selected-class="kind-on" class="mb-2" column>
@@ -34,7 +34,7 @@
     </form>
 
     <template v-if="comments.length">
-      <p class="list-label mb-2">{{ isStaff ? t('deals.comments.allLabel', comments.length) : t('deals.comments.mineLabel') }}</p>
+      <p class="list-label mb-2">{{ isCommittee ? t('deals.comments.allLabel', comments.length) : t('deals.comments.mineLabel') }}</p>
       <article v-for="c in comments" :key="c.id" class="comment" :class="{ withdrawn: c.withdrawnAt }">
         <div class="d-flex align-center flex-wrap mb-1" style="gap: 8px;">
           <span class="kind-tag" :class="`kind-${c.kind}`">{{ t(`deals.comments.kind.${c.kind}`) }}</span>
@@ -54,6 +54,9 @@
         </v-btn>
       </article>
     </template>
+
+    <!-- What the page puts after the input: the digests of it. -->
+    <slot />
   </section>
 </template>
 
@@ -70,7 +73,7 @@ interface Comment {
   author?: { id: string; name: string }
 }
 
-const props = defineProps<{ slug: string; comments: Comment[]; isStaff: boolean }>()
+const props = defineProps<{ slug: string; comments: Comment[]; isCommittee: boolean }>()
 const emit = defineEmits<{ changed: [] }>()
 
 const { t } = useI18n()
@@ -78,7 +81,7 @@ const { formatDate } = useLocaleDate()
 const { $posthog } = useNuxtApp()
 
 const kinds = ['comment', 'objection', 'suggestion', 'founder_question', 'signal']
-// A link from the pipeline feed preselects the kind: /member/caser/<slug>?innspill=objection#innspill
+// A link from elsewhere (the overview, a mail) preselects the kind: /member/caser/<slug>?innspill=objection#innspill
 const route = useRoute()
 const kind = ref(kinds.includes(String(route.query.innspill)) ? String(route.query.innspill) : 'comment')
 const draft = ref('')
@@ -132,14 +135,12 @@ function byline(c: Comment) {
 
 <style scoped>
 .panel {
-  background: #161616;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 32px 0 28px;
 }
 .panel-title {
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 650;
   color: #fff;
 }
 .meta {

@@ -143,15 +143,27 @@
         </div>
 
         <v-list nav density="comfortable" color="white">
-          <v-list-item
-            v-for="item in navItems"
-            :key="item.to"
-            :to="item.to"
-            :exact="item.exact"
-            :prepend-icon="item.icon"
-            :title="item.title"
-            @click="mobile && (drawer = false)"
-          />
+          <template v-for="item in navItems" :key="item.to">
+            <v-list-item
+              :to="item.to"
+              :exact="item.exact"
+              :prepend-icon="item.icon"
+              :title="item.title"
+              :active="item.active"
+              @click="mobile && (drawer = false)"
+            />
+            <!-- Sub-items (Caser for the committee): always shown, indented under their parent. -->
+            <v-list-item
+              v-for="sub in item.children ?? []"
+              :key="sub.key"
+              :to="sub.to"
+              :title="sub.title"
+              :active="sub.active"
+              density="compact"
+              class="nav-sub"
+              @click="mobile && (drawer = false)"
+            />
+          </template>
         </v-list>
       </v-navigation-drawer>
 
@@ -244,14 +256,22 @@ const swedenOnly = computed(() => {
 
 const navItems = computed(() => {
   const chapters = session.value.chapters ?? []
-  const items = swedenOnly.value ? [...swedenNavItems] : [...baseNavItems]
+  const items: NavItem[] = swedenOnly.value ? [...swedenNavItems] : [...baseNavItems]
   // In both chapters (the Stockholm host): the Norwegian portal plus the Swedish area.
   if (!swedenOnly.value && chapters.includes('se')) {
     items.splice(1, 0, { to: '/member/sweden', key: 'nav.sweden', icon: 'mdi-map-marker-outline', exact: false })
   }
-  // Cases (deal votes): an SPV member who can see a case, or the committee.
+  // Cases (deal votes): an SPV member who can see a case, or the committee. Caser always
+  // opens on what a member sees; the committee gets its own view and the role preview
+  // as sub-items (Snorre, 2026-10-29). The board gets nothing extra here.
   if (session.value.canSeeCases) {
-    items.push({ to: '/member/caser', key: 'nav.deals', icon: 'mdi-briefcase-check-outline', exact: false })
+    items.push({
+      to: '/member/caser',
+      key: 'nav.deals',
+      icon: 'mdi-briefcase-check-outline',
+      exact: false,
+      children: casesChildren.value,
+    })
   }
   // Investor-updates: any member of an investment cohort (invest-*).
   if (session.value.isInvestor) {
@@ -261,7 +281,39 @@ const navItems = computed(() => {
     items.push({ to: '/member/board', key: 'nav.boardMeetings', icon: 'mdi-gavel', exact: false })
     items.push({ to: '/member/activity', key: 'nav.boardActivity', icon: 'mdi-pulse', exact: false })
   }
-  return items.map(({ key, ...item }) => ({ ...item, title: t(key) }))
+  return items.map(({ key, children, ...item }: NavItem) => ({
+    ...item,
+    // A parent with sub-items is never the highlighted row: the sub-item is.
+    active: children?.length ? false : undefined,
+    title: t(key),
+    children: children?.map((c) => ({ ...c, title: t(c.key) })),
+  }))
+})
+
+interface NavSub {
+  to: string | { path: string; query?: Record<string, string> }
+  key: string
+  active: boolean
+}
+interface NavItem {
+  to: string
+  key: string
+  icon: string
+  exact: boolean
+  children?: NavSub[]
+}
+
+// Under Caser, for the committee only: the member view (default), the committee's
+// view, and "Se som ..." (the overview as a role sees it; `aktiv` = the SPV investing now).
+const casesChildren = computed<NavSub[] | undefined>(() => {
+  if (!session.value.isCommittee) return undefined
+  const onCases = route.path.startsWith('/member/caser')
+  const previewing = onCases && typeof route.query.som === 'string' && route.query.som !== ''
+  return [
+    { to: '/member/caser', key: 'nav.dealsMember', active: onCases && !previewing },
+    { to: '/member/komite', key: 'nav.dealsCommittee', active: route.path.startsWith('/member/komite') },
+    { to: { path: '/member/caser', query: { som: 'aktiv' } }, key: 'nav.dealsPreview', active: previewing },
+  ]
 })
 
 async function submitMagicLink() {
@@ -434,6 +486,13 @@ onMounted(async () => {
 
 .member-drawer .v-list-item--active .v-icon {
   color: #fff !important;
+}
+
+/* Sub-items sit under their parent's title, not under its icon. */
+.member-drawer .nav-sub {
+  padding-inline-start: 56px !important;
+  min-height: 36px !important;
+  font-size: 14px;
 }
 
 .member-content {

@@ -944,7 +944,7 @@ export async function recordNotices(roundId: string, body: Record<string, unknow
 /**
  * The rounds on a case as this viewer may see them. Everyone who can see the
  * case gets the counts (live while open). A roster member gets their own
- * ballot. Staff also get drafts and the named list: every roster member with
+ * ballot. The committee also gets drafts and the named list: every roster member with
  * what they voted, how and when (decision 2026-10-22 §3: names to the
  * committee only).
  */
@@ -957,7 +957,7 @@ export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
     JOIN organizations o ON o.id = pd.organization_id
     JOIN network_groups ng ON ng.id = r.group_id
     WHERE r.deal_id = ${dealId}
-      AND (${viewer.isStaff} OR r.status IN ('open', 'closed'))
+      AND (${viewer.isCommittee} OR r.status IN ('open', 'closed'))
     ORDER BY (r.status = 'open') DESC, r.created_at DESC
   `) as any[]
   return Promise.all(
@@ -973,7 +973,7 @@ export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
         tally = r.status === 'closed' && r.result_snapshot?.tally ? r.result_snapshot.tally : counted.tally
         const mine = current.find((b) => b.person_id === viewer.personId)
         if (mine) myBallot = { choice: mine.choice, castAt: mine.cast_at, method: mine.method }
-        if (viewer.isStaff) {
+        if (viewer.isCommittee) {
           named = counted.rows.map((x) => ({
             name: x.member.name,
             counted: x.counted,
@@ -1012,7 +1012,7 @@ export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
         me: me
           ? { onRoster: true, defaultVote: me.default_vote, conflict: me.conflict, ballot: myBallot }
           : { onRoster: false, defaultVote: null, conflict: false, ballot: null },
-        ...(viewer.isStaff
+        ...(viewer.isCommittee
           ? { named, canOpen: r.status === 'draft' && viewer.isCommittee, close: await closeInfo(r, viewer, tally) }
           : {}),
       }

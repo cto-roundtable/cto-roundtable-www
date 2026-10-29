@@ -8,7 +8,7 @@
  * dealRounds.ts), and from then on the member can only vote blank on that company.
  * The member can withdraw it until a round is open; the row is kept with
  * withdrawn_at, and declaring again clears it. Who declared is shown to the
- * committee and the board, never to other members.
+ * committee, never to other members (the board sees what a member sees).
  */
 
 export const MAX_CONFLICT_REASON = 500

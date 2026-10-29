@@ -1,7 +1,9 @@
 <template>
   <div class="case text-left">
-    <NuxtLink to="/member/caser" class="back-link mb-4 d-inline-flex align-center">
-      <v-icon size="16" class="mr-1">mdi-arrow-left</v-icon> {{ t('deals.case.allCases') }}
+    <DealsPreviewBar v-if="data?.preview && previewRoles" :roles="previewRoles" :current="data.preview.slug" />
+
+    <NuxtLink :to="{ path: '/member/caser', query: linkQuery }" class="back-link">
+      <v-icon size="16" class="mr-1" aria-hidden="true">mdi-arrow-left</v-icon> {{ t('deals.case.allCases') }}
     </NuxtLink>
 
     <div v-if="loading" class="d-flex justify-center py-10">
@@ -9,118 +11,135 @@
     </div>
 
     <template v-else-if="data">
-      <header class="mb-5">
-        <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">{{ data.deal.name }}</h1>
-        <DealsChips :status="data.deal.status" :round="latestRound" />
-        <p v-if="data.deal.blurb" class="blurb mt-3">{{ data.deal.blurb }}</p>
-        <p class="meta mt-2">
-          <span v-if="data.deal.owner">{{ t('deals.case.owner', { name: data.deal.owner.name }) }}</span>
-          <span v-if="data.deal.owner && data.deal.lastActivityAt"> · </span>
-          <span v-if="data.deal.lastActivityAt">
-            {{ t('deals.list.lastActivity', { date: formatDate(data.deal.lastActivityAt, 'short') }) }}
-          </span>
-        </p>
+      <header class="case-head">
+        <h1 class="case-title">{{ data.deal.name }}</h1>
+        <dl class="facts">
+          <div class="fact">
+            <dt>{{ t('deals.case.statusLabel') }}</dt>
+            <dd>
+              <span class="state" :class="`state-${tone}`"><span class="dot" aria-hidden="true" />{{ stateLabel }}</span>
+            </dd>
+          </div>
+          <div class="fact">
+            <dt>{{ t('deals.case.ownerLabel') }}</dt>
+            <dd>{{ data.deal.owner?.name ?? t('deals.case.noOwner') }}</dd>
+          </div>
+          <div class="fact">
+            <dt>{{ t('deals.case.lastActivityLabel') }}</dt>
+            <dd>{{ data.deal.lastActivityAt ? formatDate(data.deal.lastActivityAt, 'long') : t('deals.case.noActivity') }}</dd>
+          </div>
+        </dl>
+        <p v-if="data.deal.blurb" class="blurb">{{ data.deal.blurb }}</p>
       </header>
 
-      <section v-if="data.rounds.length" id="vote" class="panel mb-4">
-        <h2 class="panel-title mb-3">{{ t('deals.case.rounds') }}</h2>
-        <DealsBallot v-for="r in data.rounds" :key="r.id" :slug="slug" :round="r" @changed="reload" />
-      </section>
-
-      <section class="panel mb-4">
-        <h2 class="panel-title mb-1">{{ t('deals.case.material') }}</h2>
-        <p v-if="data.deal.materialShared" class="meta mb-3">{{ t('deals.case.materialIntro') }}</p>
-        <p v-if="!data.deal.materialShared" style="color: #aaa; font-size: 14px;">{{ t('deals.case.materialNotShared') }}</p>
-        <p v-else-if="!rawDocs.length && !memo" style="color: #aaa; font-size: 14px;">{{ t('deals.case.noDocuments') }}</p>
-        <a
-          v-for="d in rawDocs"
-          :key="d.id"
-          :href="docHref(d)"
-          target="_blank"
-          rel="noopener"
-          class="doc-row"
-          @click="trackOpen(d)"
-        >
-          <v-icon size="18" class="mr-3 doc-icon">{{ docIcon(d) }}</v-icon>
-          <span class="doc-text">
-            <span class="doc-title">{{ d.title }}</span>
-            <span class="doc-meta">{{ docMeta(d) }}</span>
-          </span>
-          <v-icon size="16" class="doc-open">mdi-open-in-new</v-icon>
+      <!-- Where to go on this page: every action a member has lives in its own section below. -->
+      <nav class="jump" :aria-label="t('deals.case.jumpAria')">
+        <a v-for="s in sections" :key="s.id" :href="`#${s.id}`" class="jump-link" @click.prevent="jump(s.id)">
+          {{ s.label }}<span v-if="s.count" class="jump-count">{{ s.count }}</span>
         </a>
-        <template v-if="memo">
-          <p class="memo-label mt-4 mb-2">{{ t('deals.case.memoLabel') }}</p>
-          <a :href="docHref(memo)" target="_blank" rel="noopener" class="doc-row" @click="trackOpen(memo)">
-            <v-icon size="18" class="mr-3 doc-icon">{{ docIcon(memo) }}</v-icon>
+      </nav>
+
+      <div :inert="Boolean(data.preview)" class="sections">
+        <section v-if="data.rounds.length" id="vote" class="panel">
+          <h2 class="panel-title mb-3">{{ t('deals.case.rounds') }}</h2>
+          <DealsBallot v-for="r in data.rounds" :key="r.id" :slug="slug" :round="r" @changed="reload" />
+        </section>
+
+        <section id="materiale" class="panel">
+          <h2 class="panel-title mb-1">{{ t('deals.case.material') }}</h2>
+          <p v-if="data.deal.materialShared" class="section-intro">{{ t('deals.case.materialIntro') }}</p>
+          <p v-if="!data.deal.materialShared" class="section-intro">{{ t('deals.case.materialNotShared') }}</p>
+          <p v-else-if="!rawDocs.length && !memo" class="section-intro">{{ t('deals.case.noDocuments') }}</p>
+          <a
+            v-for="d in rawDocs"
+            :key="d.id"
+            :href="docHref(d)"
+            target="_blank"
+            rel="noopener"
+            class="doc-row"
+            @click="trackOpen(d)"
+          >
+            <v-icon size="18" class="mr-3 doc-icon" aria-hidden="true">{{ docIcon(d) }}</v-icon>
             <span class="doc-text">
-              <span class="doc-title">{{ memo.title }}</span>
-              <span class="doc-meta">{{ docMeta(memo) }}</span>
+              <span class="doc-title">{{ d.title }}</span>
+              <span class="doc-meta">{{ docMeta(d) }}</span>
             </span>
-            <v-icon size="16" class="doc-open">mdi-open-in-new</v-icon>
+            <v-icon size="16" class="doc-open" aria-hidden="true">mdi-open-in-new</v-icon>
           </a>
-        </template>
-      </section>
+          <template v-if="memo">
+            <p class="memo-label">{{ t('deals.case.memoLabel') }}</p>
+            <a :href="docHref(memo)" target="_blank" rel="noopener" class="doc-row" @click="trackOpen(memo)">
+              <v-icon size="18" class="mr-3 doc-icon" aria-hidden="true">{{ docIcon(memo) }}</v-icon>
+              <span class="doc-text">
+                <span class="doc-title">{{ memo.title }}</span>
+                <span class="doc-meta">{{ docMeta(memo) }}</span>
+              </span>
+              <v-icon size="16" class="doc-open" aria-hidden="true">mdi-open-in-new</v-icon>
+            </a>
+          </template>
+        </section>
 
-      <DealsQuestions
-        id="qa"
-        class="mb-4"
-        :slug="slug"
-        :questions="data.questions"
-        :waiting="data.questionsWaiting"
-        :can-answer="data.canAnswer"
-        @changed="reload"
-      />
+        <DealsQuestions
+          id="qa"
+          :slug="slug"
+          :questions="data.questions"
+          :waiting="data.questionsWaiting"
+          :can-answer="data.canAnswer"
+          @changed="reload"
+        />
 
-      <!-- The agent's digest of the comments: the committee's for staff, "what we heard" for the SPV. -->
-      <section v-if="data.digests.committee" class="panel staff-panel mb-4">
-        <h2 class="panel-title mb-2">{{ t('deals.digest.titleCommittee') }}</h2>
-        <DealsDigest :digest="data.digests.committee" />
-      </section>
-      <section v-if="data.digests.spv" class="panel mb-4">
-        <h2 class="panel-title mb-2">{{ t('deals.digest.titleSpv') }}</h2>
-        <DealsDigest :digest="data.digests.spv" />
-      </section>
+        <DealsComments
+          id="innspill"
+          :slug="slug"
+          :comments="data.comments"
+          :is-committee="data.viewer.isCommittee"
+          @changed="reload"
+        >
+          <!-- The agent's digest of the comments: "what we heard" for the SPV, the committee's own for the committee. -->
+          <div v-if="data.digests.spv" class="digest-block">
+            <h3 class="sub-title">{{ t('deals.digest.titleSpv') }}</h3>
+            <DealsDigest :digest="data.digests.spv" />
+          </div>
+          <div v-if="data.digests.committee" class="digest-block">
+            <h3 class="sub-title">
+              {{ t('deals.digest.titleCommittee') }}
+              <span class="only-committee"><v-icon size="13" aria-hidden="true">mdi-lock-outline</v-icon>{{ t('deals.case.onlyCommittee') }}</span>
+            </h3>
+            <DealsDigest :digest="data.digests.committee" />
+          </div>
+        </DealsComments>
 
-      <DealsComments
-        id="innspill"
-        class="mb-4"
-        :slug="slug"
-        :comments="data.comments"
-        :is-staff="data.viewer.isStaff"
-        @changed="reload"
-      />
+        <DealsConflict
+          id="inhabil"
+          :slug="slug"
+          :conflict="data.conflict"
+          :conflicts="data.conflicts"
+          :open-round="data.rounds.some((r) => r.status === 'open')"
+          @changed="reload"
+        />
 
-      <DealsConflict
-        id="inhabil"
-        class="mb-4"
-        :slug="slug"
-        :conflict="data.conflict"
-        :conflicts="data.conflicts"
-        :open-round="data.rounds.some((r) => r.status === 'open')"
-        @changed="reload"
-      />
-
-      <!-- Committee only (dc-39): who earns the CTORI4 incentive. Re-reads when a vote closes. -->
-      <DealsHovedbok
-        v-if="data.viewer.isCommittee"
-        :key="data.rounds.map((r) => r.status).join()"
-        id="hovedbok"
-        class="mb-4"
-        :slug="slug"
-      />
-
-      <p v-if="data.viewer.isStaff" class="staff-note">
-        <v-icon size="14" class="mr-1">mdi-account-tie-outline</v-icon>{{ t('deals.case.staffNote') }}
-      </p>
+        <!-- Committee only (dc-39): who earns the CTORI4 incentive. Re-reads when a vote closes. -->
+        <DealsHovedbok
+          v-if="data.viewer.isCommittee"
+          :key="data.rounds.map((r) => r.status).join()"
+          id="hovedbok"
+          :slug="slug"
+        />
+      </div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
+// One case: where it stands (status, owner, last activity) on top, then calm sections
+// for the vote, the material, Q&A, input to the committee and "Jeg er inhabil". The
+// actions the old pipeline cards repeated on every row land here, in their section
+// (/member/caser/<slug>#qa, ?innspill=objection#innspill, #inhabil). A committee member
+// previewing a role (?som=) sees the page as that role, with every form inert.
 definePageMeta({ layout: 'member' })
 
-const { t, n } = useI18n()
-const { formatDate } = useLocaleDate()
+const { t, te, n } = useI18n()
+const { formatDate, format } = useLocaleDate()
 
 interface CaseDocument {
   id: string
@@ -132,16 +151,14 @@ interface CaseDocument {
   bytes: number
   uploadedAt: string
 }
-interface CaseRound {
-  id: string
-  group: { slug: string; name: string }
-  status: string
-  closesAt: string | null
-  result: string | null
-  [key: string]: any
+interface Role {
+  slug: string
+  name: string | null
+  phase: string | null
 }
 interface CaseResponse {
-  viewer: { isCommittee: boolean; isStaff: boolean }
+  viewer: { isCommittee: boolean }
+  preview: Role | null
   deal: {
     slug: string
     name: string
@@ -152,7 +169,8 @@ interface CaseResponse {
     materialShared: boolean
   }
   documents: CaseDocument[]
-  rounds: CaseRound[]
+  // The round view is typed where it is drawn (DealsBallot).
+  rounds: any[]
   questions: any[]
   questionsWaiting: number
   canAnswer: boolean
@@ -167,28 +185,49 @@ const slug = route.params.slug as string
 const { session, checked } = useAuthSession()
 const loading = ref(true)
 const data = ref<CaseResponse | null>(null)
+const previewRoles = ref<Role[] | null>(null)
 const { $posthog } = useNuxtApp()
 
-watchEffect(async () => {
-  if (checked.value && session.value.authenticated && loading.value) {
+const som = computed(() => (typeof route.query.som === 'string' ? route.query.som : ''))
+const linkQuery = computed(() => (som.value ? { som: som.value } : undefined))
+
+function fetchCase() {
+  return $fetch<CaseResponse>(`/api/member/deals/${slug}`, { query: som.value ? { som: som.value } : {} })
+}
+
+watch(
+  [() => checked.value && session.value.authenticated, som],
+  async ([ready]) => {
+    if (!ready) return
+    loading.value = true
     try {
-      data.value = await $fetch<CaseResponse>(`/api/member/deals/${slug}`)
-      $posthog?.capture?.('deal_case_viewed', { slug, documents: data.value.documents.length })
-      // A link from the "answered" mail lands on #q-<id>: scroll to it once rendered.
+      data.value = await fetchCase()
+      if (data.value.preview && !previewRoles.value) {
+        previewRoles.value = (
+          await $fetch<{ previewRoles: Role[] | null }>('/api/member/deals', { query: { som: som.value } })
+        ).previewRoles
+      }
+      $posthog?.capture?.('deal_case_viewed', {
+        slug,
+        documents: data.value.documents.length,
+        preview: data.value.preview?.slug ?? null,
+      })
+      // A link from a mail lands on #q-<id>, a link from elsewhere on a section: scroll once rendered.
       if (route.hash) nextTick(() => document.querySelector(route.hash)?.scrollIntoView())
     } catch {
-      // 404 (no such case, or not one this member may see): back to the list.
-      await navigateTo('/member/caser')
+      // 404 (no such case, or not one this member or previewed role may see): back to the list.
+      await navigateTo({ path: '/member/caser', query: linkQuery.value })
       return
     } finally {
       loading.value = false
     }
-  }
-})
+  },
+  { immediate: true },
+)
 
 /** Re-read the case after a question, an answer or a ballot, without the loading state. */
 async function reload() {
-  data.value = await $fetch<CaseResponse>(`/api/member/deals/${slug}`)
+  data.value = await fetchCase()
 }
 
 // The counts are live: re-read every 30 seconds while a vote is open on the case.
@@ -207,6 +246,52 @@ const latestRound = computed(() => {
   const rounds = data.value?.rounds ?? []
   return rounds.find((r) => r.status === 'open') ?? rounds[0] ?? null
 })
+
+const stateLabel = computed(() => {
+  const d = data.value
+  if (!d) return ''
+  const r = latestRound.value
+  if (r?.status === 'open' && r.closesAt) {
+    return t('deals.round.openUntil', {
+      when: format(r.closesAt, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+    })
+  }
+  const s = d.deal.status
+  const label = te(`deals.status.${s}`) ? t(`deals.status.${s}`) : s
+  // A closed vote says who decided it: "Vedtatt, venter på overføring · Invest 3".
+  return r?.status === 'closed' ? `${label} · ${r.group.name}` : label
+})
+
+const tone = computed(() => {
+  const s = data.value?.deal.status
+  if (latestRound.value?.status === 'open' || s === 'to_be_voted') return 'open'
+  if (s === 'pending_transfer' || s === 'invested') return 'done'
+  return 'neutral'
+})
+
+const sections = computed(() => {
+  const d = data.value
+  if (!d) return []
+  return [
+    ...(d.rounds.length ? [{ id: 'vote', label: t('deals.case.rounds'), count: 0 }] : []),
+    { id: 'materiale', label: t('deals.case.material'), count: d.documents.length },
+    { id: 'qa', label: t('deals.qa.title'), count: d.questions.length },
+    { id: 'innspill', label: t('deals.case.jumpInput'), count: 0 },
+    { id: 'inhabil', label: t('deals.case.jumpConflict'), count: 0 },
+  ]
+})
+
+function jump(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  history.replaceState(history.state, '', `#${id}`)
+}
+
 // Raw material first; the memo sits apart, after it (the server already orders them).
 const rawDocs = computed(() => (data.value?.documents ?? []).filter((d) => d.key !== 'memo'))
 const memo = computed(() => (data.value?.documents ?? []).find((d) => d.key === 'memo') ?? null)
@@ -242,49 +327,137 @@ function trackOpen(d: CaseDocument) {
 
 <style scoped>
 .back-link {
+  display: inline-flex;
+  align-items: center;
   color: #aaa;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 14px;
+  min-height: 32px;
+  margin-bottom: 12px;
 }
-.back-link:hover {
+.back-link:hover,
+.back-link:focus-visible {
   color: #fff;
+}
+.case-head {
+  margin-bottom: 20px;
+}
+.case-title {
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 18px;
+}
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, auto));
+  justify-content: start;
+  gap: 8px 40px;
+  margin: 0;
+}
+.fact dt {
+  color: #999;
+  font-size: 12.5px;
+  margin-bottom: 2px;
+}
+.fact dd {
+  color: #fff;
+  font-size: 15px;
+  margin: 0;
+}
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #777;
+  flex: none;
+}
+.state-open {
+  color: #ffb74d;
+}
+.state-open .dot {
+  background: #ff9800;
+}
+.state-done .dot {
+  background: #4caf50;
 }
 .blurb {
   color: #ddd;
-  font-size: 15px;
-  line-height: 1.55;
-  max-width: 680px;
+  font-size: 15.5px;
+  line-height: 1.6;
+  max-width: 66ch;
+  margin: 20px 0 0;
 }
-.meta {
-  color: #888;
-  font-size: 13px;
+.jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 24px 0 8px;
+}
+.jump-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  color: #ddd;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 6px 14px;
+  min-height: 36px;
+}
+.jump-link:hover,
+.jump-link:focus-visible {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+.jump-count {
+  color: #999;
+  font-size: 12.5px;
+}
+.sections > * {
+  scroll-margin-top: 72px;
+}
+.sections[inert] {
+  opacity: 0.85;
 }
 .panel {
-  background: #161616;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 32px 0 28px;
 }
 .panel-title {
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 650;
   color: #fff;
+}
+.section-intro {
+  color: #aaa;
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 66ch;
+  margin: 0 0 14px;
 }
 .doc-row {
   display: flex;
   align-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
   padding: 12px 14px;
   margin-bottom: 8px;
   color: #fff;
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.03);
-  min-height: 48px;
+  background: #161616;
+  min-height: 52px;
+  max-width: 680px;
 }
 .doc-row:hover,
 .doc-row:focus-visible {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.07);
 }
 .doc-icon,
 .doc-open {
@@ -298,24 +471,58 @@ function trackOpen(d: CaseDocument) {
   min-width: 0;
 }
 .doc-title {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 500;
 }
 .doc-meta {
-  color: #888;
-  font-size: 12px;
+  color: #999;
+  font-size: 12.5px;
 }
 .memo-label {
-  color: #888;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.staff-panel {
-  border-color: rgba(255, 183, 77, 0.45);
-}
-.staff-note {
-  color: #ffb74d;
+  color: #999;
   font-size: 13px;
+  margin: 18px 0 8px;
+}
+.digest-block {
+  margin-top: 28px;
+}
+.sub-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px;
+}
+.only-committee {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #aaa;
+  font-size: 12.5px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 1px 9px;
+}
+
+@media (max-width: 600px) {
+  .case-title {
+    font-size: 1.6rem;
+  }
+  .facts {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  .fact {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .fact dd {
+    text-align: right;
+  }
 }
 </style>

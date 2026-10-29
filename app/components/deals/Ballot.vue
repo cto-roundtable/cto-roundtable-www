@@ -126,7 +126,7 @@
       <v-icon size="16" class="mr-2">mdi-file-pdf-box</v-icon>{{ t('deals.ballot.protocol') }}
     </a>
 
-    <!-- Committee and board only: who voted what (decision 2026-10-22 §3). -->
+    <!-- Committee only: who voted what (decision 2026-10-22 §3; the board sees what a member sees). -->
     <div v-if="round.named && round.named.length" class="named mt-4">
       <p class="named-label mb-2">{{ t('deals.ballot.namedLabel') }}</p>
       <div v-for="(row, i) in round.named" :key="i" class="named-row">
@@ -437,11 +437,11 @@ async function open() {
   background: rgba(255, 255, 255, 0.08);
 }
 .named {
-  border-left: 2px solid rgba(255, 183, 77, 0.6);
-  padding-left: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 12px;
 }
 .named-label {
-  color: #ffb74d;
+  color: #aaa;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.05em;

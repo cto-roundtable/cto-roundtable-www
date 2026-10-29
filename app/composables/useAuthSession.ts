@@ -8,6 +8,7 @@ interface Session {
   isBoard?: boolean
   isInvestor?: boolean
   canSeeCases?: boolean
+  isCommittee?: boolean
   // Chapter codes (`no`, `se`) the member belongs to (server/utils/chapter.ts). They pick
   // the nav (the Swedish area for a Swedish-only member) and the default language.
   chapters?: ('no' | 'se')[]

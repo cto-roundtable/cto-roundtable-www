@@ -45,7 +45,7 @@
 <script setup lang="ts">
 // "Jeg er inhabil" (mandate §9, dc-33 H3): the member's own conflict on the company.
 // It freezes into the roster when a vote opens, and then only blank is possible
-// (server/utils/dealConflicts.ts). The committee and board see who declared.
+// (server/utils/dealConflicts.ts). The committee sees who declared.
 interface Conflict {
   declaredAt: string
   reason: string | null
@@ -94,14 +94,12 @@ async function withdraw() {
 
 <style scoped>
 .panel {
-  background: #161616;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 32px 0 28px;
 }
 .panel-title {
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 650;
   color: #fff;
 }
 .meta {
