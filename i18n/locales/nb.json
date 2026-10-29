@@ -546,7 +546,7 @@
       "declined": "Sagt nei til",
       "declinedIntro": "Selskaper komiteen har vurdert og sagt nei til, og avstemninger som ikke endte med investering.",
       "declinedEmpty": "Ingen å vise.",
-      "investedIntro": "Selskapene SPV-ene dine har investert i. Memo og presentasjon ligger på casen når komiteen har delt dem.",
+      "investedIntro": "Memo og presentasjon ligger på casen når komiteen har delt dem.",
       "spvFilter": "Vis etter SPV",
       "allSpvs": "Alle",
       "sortLabel": "Sorter",
@@ -554,7 +554,8 @@
         "invested": "Sist investert",
         "activity": "Sist aktivitet",
         "name": "Navn"
-      }
+      },
+      "investedMany": "Investert av SPV-ene dine"
     },
     "status": {
       "incoming": "Ny",

@@ -546,7 +546,7 @@
       "declined": "Sagt nej till",
       "declinedIntro": "Bolag kommittén har utvärderat och sagt nej till, och omröstningar som inte slutade i en investering.",
       "declinedEmpty": "Inget att visa.",
-      "investedIntro": "Bolagen dina SPV:er har investerat i. Memo och presentation finns på caset när kommittén har delat dem.",
+      "investedIntro": "Memo och presentation finns på caset när kommittén har delat dem.",
       "spvFilter": "Filtrera efter SPV",
       "allSpvs": "Alla",
       "sortLabel": "Sortera",
@@ -554,7 +554,8 @@
         "invested": "Senast investerat",
         "activity": "Senaste aktivitet",
         "name": "Namn"
-      }
+      },
+      "investedMany": "Investerat av dina SPV:er"
     },
     "status": {
       "incoming": "Ny",

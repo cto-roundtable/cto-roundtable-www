@@ -102,8 +102,8 @@
 
 <script setup lang="ts">
 // Q&A on a case. Members ask and read answers; who asked is shown to the committee
-// only (server/utils/dealQuestions.ts decides what each viewer gets). The deal
-// owner, the committee and the board answer, confirm an agent's answer, or close.
+// only (server/utils/dealQuestions.ts decides what each viewer gets). The deal's
+// ansvarlig (lead or co-lead) or the committee answers, confirms an agent's answer, or closes.
 interface Answer {
   id: string
   bodyMd: string

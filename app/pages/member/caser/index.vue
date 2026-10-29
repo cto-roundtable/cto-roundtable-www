@@ -49,7 +49,7 @@
       </details>
 
       <section v-if="data.invested.length" class="group">
-        <h2 class="group-title">{{ t('deals.overview.invested') }} <span class="count">{{ investedShown.length }}</span></h2>
+        <h2 class="group-title">{{ t(spvs.length > 1 ? 'deals.overview.investedMany' : 'deals.overview.invested') }} <span class="count">{{ investedShown.length }}</span></h2>
         <p class="group-intro">{{ t('deals.overview.investedIntro') }}</p>
         <div class="invested-tools">
           <!-- More than one SPV: filter by it (every row carries its SPV tags either way). -->

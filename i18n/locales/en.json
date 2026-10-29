@@ -546,7 +546,7 @@
       "declined": "Said no to",
       "declinedIntro": "Companies the committee reviewed and said no to, and votes that did not end in an investment.",
       "declinedEmpty": "Nothing to show.",
-      "investedIntro": "The companies your SPVs invested in. The memo and the pitch deck are on the case once the committee has shared them.",
+      "investedIntro": "The memo and the pitch deck are on the case once the committee has shared them.",
       "spvFilter": "Filter by SPV",
       "allSpvs": "All",
       "sortLabel": "Sort",
@@ -554,7 +554,8 @@
         "invested": "Latest invested",
         "activity": "Latest activity",
         "name": "Name"
-      }
+      },
+      "investedMany": "Invested by your SPVs"
     },
     "status": {
       "incoming": "New",
