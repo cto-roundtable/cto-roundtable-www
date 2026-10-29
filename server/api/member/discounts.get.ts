@@ -1,21 +1,14 @@
 // GET /api/member/discounts
 // Member product discount package. Visibility by status:
 //   active/testing -> all signed-in members
-//   pending        -> board only (braintrust group)
+//   pending        -> board only (isBoardMember, the styret group)
 // Discount codes are only exposed for active offers. Testing offers carry a
 // demand signal (request_count / has_requested) instead of a code.
 export default defineEventHandler(async (event) => {
   const session = event.context.session
   const sql = useDatabase()
 
-  const board = await sql`
-    SELECT 1
-    FROM memberships m
-    JOIN network_groups ng ON ng.id = m.group_id
-    WHERE m.person_id = ${session.personId} AND ng.slug = 'braintrust'
-    LIMIT 1
-  `
-  const isBoard = board.length > 0
+  const isBoard = await isBoardMember(session.personId)
 
   const visibleStatuses = isBoard ? ['active', 'testing', 'pending'] : ['active', 'testing']
 

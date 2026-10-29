@@ -1,5 +1,5 @@
 // GET /api/member/board/meetings
-// Board-only (braintrust) list of styremøter, newest first.
+// Board-only (styret) list of styremøter, newest first.
 //
 // Metadata only — agenda and referat bodies are fetched per meeting so the list
 // stays small and a body never leaks into a response the caller cannot open.

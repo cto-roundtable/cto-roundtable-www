@@ -2,7 +2,7 @@
 // Per-member activity detail. Powers both the board drawer (any member) and the
 // member's own "Min aktivitet" page (self only).
 //
-// Access: you can always read your OWN detail; the board (braintrust) can read
+// Access: you can always read your OWN detail; the board (styret) can read
 // anyone's. A non-board member requesting someone else gets 403.
 //
 // The dormant/low/active STATUS flag is a board triage tool, not a self scorecard,

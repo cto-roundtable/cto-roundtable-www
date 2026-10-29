@@ -1,7 +1,7 @@
 // GET /api/member/onboarding
 // Personalized AI-onboarding bootstrap for the signed-in member. Derives a
-// role from network group memberships (same convention as discounts:
-// braintrust = board) and returns the toolset plus a copy-pasteable prompt
+// role from network group memberships (board = the styret group, via
+// BOARD_GROUP in server/utils/board.ts) and returns the toolset plus a copy-pasteable prompt
 // that boots a fresh Claude Code install into the CTO Roundtable workspace.
 //
 // Every role bootstraps into ~/code/ctoroundtable/personal-hq, the default
@@ -136,7 +136,7 @@ export default defineEventHandler(async (event) => {
   const slugs = new Set(memberships.map((m: any) => m.slug))
 
   let role = 'member'
-  if (slugs.has('braintrust')) role = 'board'
+  if (slugs.has(BOARD_GROUP)) role = 'board'
   else if (slugs.has('current-komite')) role = 'invest-committee'
   else if ([...slugs].some((s) => s.startsWith('invest-'))) role = 'investor'
 
