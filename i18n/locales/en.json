@@ -361,7 +361,8 @@
         "decided": "This request has already been handled.",
         "generic": "Something went wrong. Try again.",
         "passkey": "Confirming with a passkey did not work. Try again, or sign out and sign in again."
-      }
+      },
+      "committeeOnly": "This request asks to read cases, questions or input. Only a board member who is also on the committee can approve it."
     },
     "surveys": {
       "title": "Surveys",

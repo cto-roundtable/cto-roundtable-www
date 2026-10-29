@@ -20,6 +20,9 @@ import type { AuditEntry } from './audit'
  *   - its owner is an active person in `styret`. Leaving the board disables
  *     every token you answer for, the same way the session gate re-checks the
  *     cookie holder on every /api/member/ request.
+ *   - for a COMMITTEE_SCOPES scope, its owner is also in `current-komite` (403
+ *     otherwise): those read every case, named ballot and comment across the SPVs
+ *     (Snorre, dc-61 H2 2026-10-30). Leaving the committee disables them the same way.
  *
  * Every /api/admin/ request goes through defineAdminRoute, which writes one
  * api_audit_log row with the final status, refusals included.
@@ -40,6 +43,13 @@ export const API_SCOPES = [
   'qa:write',
 ] as const
 export type ApiScope = (typeof API_SCOPES)[number]
+
+/** Scopes only a token owned by a committee member (`current-komite`) can use or be granted (dc-61 H2). */
+export const COMMITTEE_SCOPES: readonly ApiScope[] = ['deals:read', 'comments:read', 'qa:read']
+
+export function needsCommittee(scopes: readonly string[]): boolean {
+  return scopes.some((s) => (COMMITTEE_SCOPES as readonly string[]).includes(s))
+}
 
 const TOKEN_RE = /^ctr_[A-Za-z0-9_-]{43}$/
 
@@ -92,7 +102,13 @@ export async function requireApiToken(event: H3Event, scope: ApiScope | null, au
              FROM memberships m
              JOIN network_groups ng ON ng.id = m.group_id
              WHERE m.person_id = t.owner_person_id AND ng.slug = ${BOARD_GROUP}
-           ) AS owner_on_board
+           ) AS owner_on_board,
+           EXISTS (
+             SELECT 1
+             FROM memberships m
+             JOIN network_groups ng ON ng.id = m.group_id
+             WHERE m.person_id = t.owner_person_id AND ng.slug = ${COMMITTEE_GROUP}
+           ) AS owner_on_committee
     FROM api_tokens t
     JOIN persons p ON p.id = t.owner_person_id
     WHERE t.token_hash = ${hashApiToken(token)}
@@ -110,6 +126,10 @@ export async function requireApiToken(event: H3Event, scope: ApiScope | null, au
   if (scope && !scopes.includes(scope)) {
     audit.summary.reason = 'missing_scope'
     throw createError({ statusCode: 403, message: `Token lacks scope ${scope}` })
+  }
+  if (scope && needsCommittee([scope]) && !r.owner_on_committee) {
+    audit.summary.reason = 'owner_not_committee'
+    throw createError({ statusCode: 403, message: `Scope ${scope} needs a token owner on the committee` })
   }
 
   await sql`UPDATE api_tokens SET last_used_at = NOW() WHERE id = ${r.id}`

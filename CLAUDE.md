@@ -168,7 +168,12 @@ deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digest
 - **The gate** is `requireApiToken` in `server/utils/apiTokens.ts`, checked on every
   request: not revoked, not expired, the owner an active `styret` member right now
   (leaving the board disables every token you answer for), and the route's scope.
-  Any token problem is the same 401 `Unauthorized`; a missing scope is a 403.
+  `deals:read`, `comments:read` and `qa:read` (`COMMITTEE_SCOPES`) also need the owner
+  in `current-komite` (dc-61 H2, 2026-10-30): they read every case, named ballot and
+  comment across the SPVs. The device approval and the mint script refuse them for an
+  approver or owner who is not on the committee.
+  Any token problem is the same 401 `Unauthorized`; a missing scope is a 403, and so is
+  a committee scope on a token whose owner is not on the committee.
 - **Every route uses `defineAdminRoute({ GET: { scope, handler }, ... })`**. Route files
   have no method suffix, so a wrong method is an authenticated, logged 405 rather than
   a silent fall-through. `server/api/admin/[...].ts` logs and 404s everything else.
