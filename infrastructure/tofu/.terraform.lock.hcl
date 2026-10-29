@@ -5,7 +5,16 @@ provider "registry.opentofu.org/hashicorp/google" {
   version     = "5.45.2"
   constraints = "~> 5.0"
   hashes = [
+    "h1:0RjrEaRJMIWbgQ4sBfjjLOy9tZiaKaq4r5J1iVz085E=",
+    "h1:0ehpLaWItePTA1Ne3WXjtRjI4uzPkdPiNwe+M2NI5Kc=",
+    "h1:9HblaFutcY1nCoKewYVq8aRKC5wyzLIYyLeMMVuzO9M=",
+    "h1:9jeOJWcgA9fNRuBzPStcI3/N3NZ6BNoSxqS6O9dEmIE=",
+    "h1:Dm34S6/Q+8uAtrmX+tWkQZCkrvVveU6lHbk4NBkgGBc=",
+    "h1:RYRrPC1vvSyNu4aYq5MFkRpTyCx84YMan5cNP01XUUk=",
     "h1:YEQOp7Ou1+GtpcKyCX6Cr/mAGqKIogpi85MX51GuG4s=",
+    "h1:fwPyxJ8zBHeuEyv87dn8YkRHAqXGbJ9AqLN1I8loPr8=",
+    "h1:lg2ogfA9WQfN1nKFQzWpZEqX+0+/J5yz2hvw6Mea/qk=",
+    "h1:qYSz8K/mE6U1q05/GBky/xOPaUJ4BZn4f4kyDvxcugo=",
     "zh:0931f08e81f220ae3132169cfa4ed8e9d8d2045f29ca914afd8ee9e3e9cf56e0",
     "zh:31afa45a4c8a0fd4abff564ecff8b69a97ac1813ead61c12f5f0bf5d33cec7f1",
     "zh:536979e437aad59ba41465c9398d8e3d7d3702bfe2a51d80571862d48c817959",
