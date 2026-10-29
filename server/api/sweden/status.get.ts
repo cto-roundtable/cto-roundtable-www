@@ -5,11 +5,10 @@
 const SWEDEN_GROUP_SLUG = 'roundtable-sweden'
 const NORWAY_GROUP_SLUG = 'cto-roundtable'
 
-// Around ten names sets the first meeting; the founding room is 10 to 15,
-// picked from the pool for the mix. Same numbers as the connector kit.
+// Around ten names sets the first meeting. The first round is 10 seats,
+// picked from the pool for the mix; more rounds follow, so the pool stays open.
 const SWEDEN_GATE = 10
-const SWEDEN_ROOM_MIN = 10
-const SWEDEN_ROOM_MAX = 15
+const SWEDEN_FIRST_ROUND = 10
 
 export default defineCachedEventHandler(
   async () => {
@@ -36,8 +35,7 @@ export default defineCachedEventHandler(
       signups: sweden?.signups ?? 0,
       recent: sweden?.recent ?? 0,
       gate: SWEDEN_GATE,
-      roomMin: SWEDEN_ROOM_MIN,
-      roomMax: SWEDEN_ROOM_MAX,
+      firstRound: SWEDEN_FIRST_ROUND,
       norwayMembers: norway?.members ?? 0,
     }
   },
