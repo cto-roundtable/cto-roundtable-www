@@ -538,7 +538,8 @@ export interface CaseRow {
   round: CaseRound | null
   /** an SPV this viewer is in invested in it */
   ours: boolean
-  /** the case page opens for this viewer (always, except some declined rows) */
+  /** the case page opens for this viewer (always, except some declined rows, which
+   *  then carry no blurb, owner or round) */
   canOpen: boolean
 }
 
@@ -558,16 +559,20 @@ function caseRowColumns(sql: ReturnType<typeof useDatabase>, viewer: CaseViewer)
 }
 
 function caseRowOut(r: any): CaseRow {
+  // A declined company this viewer may not open is listed by name, stage and date
+  // only: the owner, the blurb (shared once any round opened, whichever SPV it was
+  // for) and that round would tell more than the case page itself, which is a 404.
+  const canOpen = r.can_open ?? true
   return {
     slug: r.slug,
     name: r.name,
     status: r.status,
-    blurb: r.investor_blurb,
-    owner: r.owner_name,
+    blurb: canOpen ? r.investor_blurb : null,
+    owner: canOpen ? r.owner_name : null,
     lastActivityAt: r.last_activity_at,
-    round: r.round,
+    round: canOpen ? r.round : null,
     ours: r.ours,
-    canOpen: r.can_open ?? true,
+    canOpen,
   }
 }
 

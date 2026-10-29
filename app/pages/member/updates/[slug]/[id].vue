@@ -116,7 +116,7 @@ watchEffect(async () => {
       data.value = await $fetch<SingleUpdate>(`/api/member/updates/${slug}/${id}`)
       $posthog?.capture?.('investor_update_viewed', { slug, update_id: id })
     } catch (_e) {
-      // 403 (not in a funding cohort) or 404 → bounce to the company view.
+      // 404 (not in a funding cohort, or no such update) → bounce to the company view.
       await navigateTo(`/member/updates/${slug}`)
       return
     } finally {

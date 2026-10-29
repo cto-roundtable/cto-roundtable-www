@@ -19,8 +19,8 @@ export default defineEventHandler(async (event) => {
   if (rows.length === 0) throw createError({ statusCode: 404, message: 'Attachment not found' })
   const att = rows[0]!
 
-  // RBAC: same gate as the update it belongs to.
-  await requireDealAccess(session.personId, att.deal_id)
+  // RBAC: same gate as the update it belongs to, and the same 404.
+  await requireDealAccess(session.personId, att.deal_id, 'Attachment not found')
 
   const obj = await readInvestorUpdateObject(att.object_key)
 
