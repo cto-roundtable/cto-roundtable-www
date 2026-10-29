@@ -19,8 +19,8 @@ export default defineEventHandler(async (event) => {
   if (deal.length === 0) throw createError({ statusCode: 404, message: 'Company not found' })
   const dealId = deal[0]!.deal_id
 
-  // RBAC: caller must belong to a cohort that funded this deal.
-  await requireDealAccess(session.personId, dealId)
+  // RBAC: caller must belong to a cohort that funded this deal; else the same 404.
+  await requireDealAccess(session.personId, dealId, 'Company not found')
 
   const updates = await sql`
     SELECT id, kind, update_date, title, headline, body_md, summary_md

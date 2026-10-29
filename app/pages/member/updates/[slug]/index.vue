@@ -99,7 +99,7 @@ watchEffect(async () => {
         update_count: data.value.updates.length,
       })
     } catch (e: any) {
-      // 403 (not in a funding cohort) or 404 → bounce to the list.
+      // 404 (not in a funding cohort, or no such company) → bounce to the list.
       await navigateTo('/member/updates')
       return
     } finally {

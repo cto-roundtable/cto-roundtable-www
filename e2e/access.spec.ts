@@ -12,6 +12,9 @@ import { cookieHeader, has, isCommittee, isInvestor, overviewSlugs, personas, RU
 // for the report, so a change in who sees what is visible even where no rule
 // says it is wrong.
 
+// Each persona walks every case and every company's updates one request at a time.
+test.describe.configure({ timeout: 180_000 })
+
 const PROBES = [
   '/api/member/info',
   '/api/member/chapter',
@@ -72,7 +75,14 @@ async function dataTruth() {
     FROM investments i JOIN pipeline_deals pd ON pd.id = i.deal_id JOIN network_groups g ON g.id = i.group_id
     WHERE pd.slug IS NOT NULL
   `) as { slug: string; grp: string }[]
-  return { allCases: allCases.map((r) => r.slug), funded }
+  // The newest update of each company that has one, to ask for it by id.
+  const updateIds = (await sql`
+    SELECT DISTINCT ON (pd.slug) pd.slug, u.id
+    FROM investor_updates u JOIN pipeline_deals pd ON pd.id = u.deal_id
+    WHERE pd.slug IS NOT NULL
+    ORDER BY pd.slug, u.update_date DESC
+  `) as { slug: string; id: string }[]
+  return { allCases: allCases.map((r) => r.slug), funded, updateIds }
 }
 
 let truth: Awaited<ReturnType<typeof dataTruth>>
@@ -123,14 +133,32 @@ for (const spec of PERSONAS) {
       probes: {} as Record<string, Probe>,
       cases: {} as Record<string, number>,
       updates: {} as Record<string, number>,
+      updateById: {} as Record<string, number>,
+      answersWithheldSources: 0,
     }
     for (const path of PROBES) row.probes[path] = await probe(api, path)
 
     // Every case the branch has, by slug: what the detail route says to this persona.
     for (const slug of truth.allCases) row.cases[slug] = (await probe(api, `/api/member/deals/${slug}`)).status
-    // Investor updates, per funded company.
-    for (const slug of new Set(truth.funded.map((f) => f.slug)))
+    // Investor updates, for every case slug (funded or not, leads included) and one that does not exist.
+    for (const slug of [...truth.allCases, 'no-such-company-e2e'])
       row.updates[slug] = (await probe(api, `/api/member/updates/${slug}`)).status
+    for (const u of truth.updateIds)
+      row.updateById[u.slug] = (await probe(api, `/api/member/updates/${u.slug}/${u.id}`)).status
+    // Q&A on a case whose material is not shared with this viewer: the answers come
+    // without their sources (quotes from the investor pack).
+    for (const [slug, status] of Object.entries(row.cases)) {
+      if (status !== 200) continue
+      const c = await (await api.get(`/api/member/deals/${slug}`)).json()
+      if (c.deal.materialShared) continue
+      for (const q of c.questions ?? []) {
+        if (!q.answer) continue
+        row.answersWithheldSources++
+        expect
+          .soft(q.answer.sources, `${p.key} case ${slug}: answer sources while the material is not shared`)
+          .toEqual([])
+      }
+    }
     await api.dispose()
     mkdirSync(`${RUN_DIR}/access`, { recursive: true })
     writeFileSync(`${RUN_DIR}/access/${p.key}.json`, JSON.stringify({ persona: p, staffCases, ...row }, null, 2))
@@ -172,8 +200,16 @@ for (const spec of PERSONAS) {
     const listed = new Set<string>()
     if (s('/api/member/deals?declined=1') === 200) {
       const api2 = await apiFor(p)
-      for (const slug of overviewSlugs(await (await api2.get('/api/member/deals?declined=1')).json())) listed.add(slug)
+      const overview = await (await api2.get('/api/member/deals?declined=1')).json()
+      for (const slug of overviewSlugs(overview)) listed.add(slug)
       await api2.dispose()
+      // A declined company the viewer may not open: name, stage and date, nothing more.
+      for (const c of (overview.declined ?? []) as Record<string, unknown>[]) {
+        if (c.canOpen !== false) continue
+        expect
+          .soft({ blurb: c.blurb, owner: c.owner, round: c.round }, `${p.key} declined ${c.slug} it may not open`)
+          .toEqual({ blurb: null, owner: null, round: null })
+      }
     }
     for (const [slug, status] of Object.entries(row.cases)) {
       if (!isCommittee(p))
@@ -190,10 +226,16 @@ for (const spec of PERSONAS) {
       expect.soft(row.probes['/api/member/updates'].count ?? 0, `${p.key} sees investor updates`).toBe(0)
     }
 
-    // Investor updates: readable exactly when one of the persona's groups funded the company.
-    for (const [slug, status] of Object.entries(row.updates)) {
-      const funded = truth.funded.some((f) => f.slug === slug && p.groups.includes(f.grp))
-      expect.soft(status === 200, `${p.key} update ${slug}: funded by own group=${funded}, got ${status}`).toBe(funded)
-    }
+    // Investor updates: readable exactly when one of the persona's groups funded the company,
+    // and otherwise the same 404 as a company that does not exist (a lead cannot be probed).
+    const fundedByOwn = (slug: string) => truth.funded.some((f) => f.slug === slug && p.groups.includes(f.grp))
+    for (const [slug, status] of Object.entries(row.updates))
+      expect
+        .soft(status, `${p.key} updates for ${slug}: funded by own group=${fundedByOwn(slug)}`)
+        .toBe(fundedByOwn(slug) ? 200 : 404)
+    for (const [slug, status] of Object.entries(row.updateById))
+      expect
+        .soft(status, `${p.key} an update of ${slug}: funded by own group=${fundedByOwn(slug)}`)
+        .toBe(fundedByOwn(slug) ? 200 : 404)
   })
 }

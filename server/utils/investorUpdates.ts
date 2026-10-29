@@ -24,10 +24,13 @@ export async function isInvestorMember(personId: string): Promise<boolean> {
 }
 
 /**
- * Guard: throw 403 unless `personId` may see updates for `dealId` (i.e. a cohort
- * they belong to funded that deal). Returns silently when allowed.
+ * Guard: throw 404 unless `personId` may see updates for `dealId` (i.e. a cohort
+ * they belong to funded that deal). Returns silently when allowed. The 404 carries
+ * the caller's own not-found message, so a company (or update, or attachment) the
+ * member may not read answers exactly like one that does not exist, and a slug
+ * cannot be probed for whether a deal or lead exists (the same rule as cases).
  */
-export async function requireDealAccess(personId: string, dealId: string): Promise<void> {
+export async function requireDealAccess(personId: string, dealId: string, notFound: string): Promise<void> {
   const sql = useDatabase()
   const rows = await sql`
     SELECT 1
@@ -37,6 +40,6 @@ export async function requireDealAccess(personId: string, dealId: string): Promi
     LIMIT 1
   `
   if (rows.length === 0) {
-    throw createError({ statusCode: 403, message: 'Not in a cohort that funded this company' })
+    throw createError({ statusCode: 404, message: notFound })
   }
 }

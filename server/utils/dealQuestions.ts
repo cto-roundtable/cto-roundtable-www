@@ -59,10 +59,16 @@ export interface CaseQuestion {
  * The Q&A on a case as this viewer may see it, oldest first. Members get the
  * answered questions and their own; staff get every question with names.
  * `waiting` counts other members' unanswered questions (a number, nothing more).
+ *
+ * `materialShared` is the case's materialSharedSql (always true for the committee).
+ * While it is false a member does not get the blurb or the documents, so an answer
+ * comes without its `sources`: those quote the investor pack (up to 500 characters
+ * each) and would hand out the material a quote at a time. The answer text stays.
  */
 export async function listCaseQuestions(
   viewer: CaseViewer,
   dealId: string,
+  materialShared: boolean,
 ): Promise<{ questions: CaseQuestion[]; waiting: number }> {
   const sql = useDatabase()
   const rows = await sql`
@@ -97,7 +103,7 @@ export async function listCaseQuestions(
       ? {
           id: r.a_id,
           bodyMd: r.body_md,
-          sources: Array.isArray(r.sources) ? r.sources : [],
+          sources: materialShared && Array.isArray(r.sources) ? r.sources : [],
           byKind: r.by_kind,
           confirmed: r.confirmed_at !== null,
           createdAt: r.a_created_at,

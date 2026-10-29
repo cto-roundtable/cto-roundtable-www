@@ -23,8 +23,8 @@ export default defineEventHandler(async (event) => {
   if (rows.length === 0) throw createError({ statusCode: 404, message: 'Update not found' })
   const u = (rows as any[])[0]
 
-  // RBAC: caller must belong to a cohort that funded this deal.
-  await requireDealAccess(session.personId, u.deal_id)
+  // RBAC: caller must belong to a cohort that funded this deal; else the same 404.
+  await requireDealAccess(session.personId, u.deal_id, 'Update not found')
 
   const attachments = await sql`
     SELECT id, filename, mime, size_bytes
