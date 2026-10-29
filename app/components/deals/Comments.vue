@@ -1,17 +1,17 @@
 <template>
   <section class="panel">
-    <h2 class="panel-title mb-1">{{ isCommittee ? c('titleStaff') : c('title') }}</h2>
-    <p class="meta mb-4">{{ isCommittee ? c('introStaff') : c('intro') }}</p>
+    <h2 class="panel-title mb-1">{{ isCommittee ? copy('titleStaff') : copy('title') }}</h2>
+    <p class="meta mb-4">{{ isCommittee ? copy('introStaff') : copy('intro') }}</p>
 
     <form class="mb-5" @submit.prevent="send">
       <v-chip-group v-model="kind" mandatory selected-class="kind-on" class="mb-2" column>
         <v-chip v-for="k in kinds" :key="k" :value="k" variant="outlined" size="small" class="kind">
-          {{ c(`kind.${k}`) }}
+          {{ copy(`kind.${k}`) }}
         </v-chip>
       </v-chip-group>
       <v-textarea
         v-model="draft"
-        :label="c(`placeholder.${kind}`)"
+        :label="copy(`placeholder.${kind}`)"
         rows="3"
         auto-grow
         variant="outlined"
@@ -26,7 +26,7 @@
           :disabled="!draft.trim()"
           style="background-color: white; color: #111;"
         >
-          {{ c('submit') }}
+          {{ copy('submit') }}
         </v-btn>
         <span v-if="sent" class="ok-note">{{ t('deals.comments.sent') }}</span>
       </div>
@@ -37,7 +37,7 @@
       <p class="list-label mb-2">{{ isCommittee ? t('deals.comments.allLabel', comments.length) : t('deals.comments.mineLabel') }}</p>
       <article v-for="c in comments" :key="c.id" class="comment" :class="{ withdrawn: c.withdrawnAt }">
         <div class="d-flex align-center flex-wrap mb-1" style="gap: 8px;">
-          <span class="kind-tag" :class="`kind-${c.kind}`">{{ c(`kind.${c.kind}`) }}</span>
+          <span class="kind-tag" :class="`kind-${c.kind}`">{{ copy(`kind.${c.kind}`) }}</span>
           <span class="meta">{{ byline(c) }}</span>
         </div>
         <p class="c-body">{{ c.body }}</p>
@@ -80,7 +80,7 @@ const emit = defineEmits<{ changed: [] }>()
 
 const { t, te } = useI18n()
 /** The copy for this mode: deals.comments.followUp.* on an invested company, where it exists. */
-function c(key: string) {
+function copy(key: string) {
   return props.followUp && te(`deals.comments.followUp.${key}`)
     ? t(`deals.comments.followUp.${key}`)
     : t(`deals.comments.${key}`)

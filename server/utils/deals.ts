@@ -8,9 +8,9 @@ import { createHash } from 'node:crypto'
  * Who sees a case is derived on every request, never stored
  * (decision 2026-10-22 on the vote model, project ctori-4):
  *   - the committee (`current-komite`): every case that is in active work,
- *     investor-visible or has a round, drafts included. The board (`styret`) is NOT
- *     staff here: for cases a board member is a member like any other (Snorre,
- *     2026-10-29: "They are separate entities");
+ *     investor-visible, has a round or was invested in, drafts included. The board
+ *     (`styret`) is NOT staff here: for cases a board member is a member like any
+ *     other (Snorre, 2026-10-29: "They are separate entities");
  *   - a member of the ACTIVE invest group (the SPV deploying now,
  *     network_groups.invest_phase = 'deploying'): every case in active work
  *     (ACTIVE_STATUSES) or marked investor-visible that no SPV has invested in yet
@@ -98,8 +98,11 @@ export function isDealDriver(deal: { owner: Person | null; coLeads: Person[] }, 
  */
 function caseVisibleSql(sql: ReturnType<typeof useDatabase>, viewer: CaseViewer) {
   if (viewer.isCommittee) {
+    // Everything a member could open, and more: active work, visible, any round, and
+    // every invested company (members of the investing SPV open those, 2026-10-30).
     return sql`(pd.investor_visible OR pd.status = ANY(${ACTIVE_STATUSES})
-                OR EXISTS (SELECT 1 FROM deal_rounds r0 WHERE r0.deal_id = pd.id))`
+                OR EXISTS (SELECT 1 FROM deal_rounds r0 WHERE r0.deal_id = pd.id)
+                OR EXISTS (SELECT 1 FROM investments i0 WHERE i0.deal_id = pd.id))`
   }
   const groups = viewer.groupIds
   return sql`(

@@ -249,7 +249,7 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   condition (`caseVisibleSql`), shared by the list, the page and the document
   download, re-checked on every request:
   - committee (`current-komite`, `server/utils/committee.ts`): every case in active
-    work, investor-visible or with a round, drafts included;
+    work, investor-visible, with a round or invested in, drafts included;
   - members of the ACTIVE SPV (`network_groups.invest_phase = 'deploying'`): every
     deal in active work (`ACTIVE_STATUSES`: reviewing, waiting, to_be_voted,
     pending_transfer) or marked investor-visible that no SPV has invested in yet
