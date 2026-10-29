@@ -4,7 +4,7 @@
       <v-col class="top-spacing" cols="12" md="8">
         <div class="privacy-content">
           <h1 class="font-weight-bold mb-4">Privacy Policy</h1>
-          <p class="text-muted mb-6"><strong>Last updated:</strong> 2025-11-01</p>
+          <p class="text-muted mb-6"><strong>Last updated:</strong> 2026-10-29</p>
 
           <section class="mb-6">
             <h2 class="font-weight-bold mb-3">1) Who we are</h2>
@@ -16,7 +16,7 @@
 
           <section class="mb-6">
             <h2 class="font-weight-bold mb-3">2) Scope</h2>
-            <p>This policy covers how we process personal data when you visit our website or contact us. We operate in <strong>Norway/EEA</strong>.</p>
+            <p>This policy covers how we process personal data when you visit our website, sign in to the member portal, or contact us. We operate in <strong>Norway/EEA</strong>.</p>
           </section>
 
           <section class="mb-6">
@@ -24,14 +24,17 @@
             <ul class="text-left">
               <li><strong>Technical/server logs:</strong> IP address, date/time, URL, referrer, and basic browser/device info for security and troubleshooting.</li>
               <li><strong>Contact information (if you email us):</strong> Your email address and any details you include.</li>
+              <li><strong>Usage analytics:</strong> Which pages you visit and what you click, plus browser, device and approximate location derived from your IP address. We use <strong>PostHog</strong> (EU cloud) for this.</li>
+              <li><strong>Member portal:</strong> When you sign in, the analytics above are linked to your member profile (name and email), so we can see which parts of the portal members use.</li>
             </ul>
-            <p class="mt-3">We do <strong>not</strong> use non-essential cookies or advertising trackers on our site.</p>
+            <p class="mt-3">We do <strong>not</strong> use advertising or retargeting trackers on our site.</p>
           </section>
 
           <section class="mb-6">
             <h2 class="font-weight-bold mb-3">4) Why we process data & legal bases (GDPR)</h2>
             <ul class="text-left">
               <li><strong>Operate and secure the website</strong> (fraud prevention, diagnostics). <em>Legal basis:</em> <strong>Legitimate interests</strong> (Art. 6(1)(f)).</li>
+              <li><strong>Understand and improve the website and member portal</strong> (usage analytics). <em>Legal basis:</em> <strong>Legitimate interests</strong> (Art. 6(1)(f)).</li>
               <li><strong>Respond to inquiries</strong> you send us. <em>Legal basis:</em> <strong>Legitimate interests</strong> (Art. 6(1)(f)) or <strong>Contract</strong> (Art. 6(1)(b)) where applicable.</li>
               <li><strong>Legal compliance</strong> (e.g., fulfilling lawful requests). <em>Legal basis:</em> <strong>Legal obligation</strong> (Art. 6(1)(c)).</li>
             </ul>
@@ -39,12 +42,23 @@
 
           <section class="mb-6">
             <h2 class="font-weight-bold mb-3">5) Cookies</h2>
-            <p>We only use <strong>strictly necessary</strong> cookies (if any) required for basic site operation. We do <strong>not</strong> run analytics, advertising, or retargeting cookies.</p>
+            <ul class="text-left">
+              <li><strong>Sign-in cookies</strong> (member portal only): keep you signed in. Strictly necessary.</li>
+              <li><strong>Analytics</strong>: PostHog stores an identifier in a cookie and in your browser's local storage, so visits from the same browser can be counted together.</li>
+            </ul>
+            <p class="mt-3">We do <strong>not</strong> use advertising or retargeting cookies.</p>
           </section>
 
           <section class="mb-6">
             <h2 class="font-weight-bold mb-3">6) Sharing & processors</h2>
-            <p>We may use a hosting provider to run the website. Providers act under contract and process data on our instructions. We do <strong>not</strong> sell personal data.</p>
+            <p>We use these providers, who act under contract and process data on our instructions:</p>
+            <ul class="text-left">
+              <li><strong>Google Cloud</strong>: hosting (Finland, europe-north1).</li>
+              <li><strong>Neon</strong>: member database (Frankfurt, EU).</li>
+              <li><strong>PostHog</strong>: usage analytics (EU cloud).</li>
+              <li><strong>Resend</strong>: sends sign-in emails for the member portal.</li>
+            </ul>
+            <p class="mt-3">We do <strong>not</strong> sell personal data.</p>
           </section>
 
           <section class="mb-6">
@@ -56,6 +70,7 @@
             <h2 class="font-weight-bold mb-3">8) Retention</h2>
             <ul class="text-left">
               <li><strong>Server logs:</strong> kept for up to <strong>90 days</strong> unless longer is needed to investigate security incidents.</li>
+              <li><strong>Analytics events:</strong> kept in PostHog according to our account's retention setting. You can ask us to delete yours at any time.</li>
               <li><strong>Contact emails:</strong> kept as long as needed to handle your request and for routine business archiving.</li>
             </ul>
           </section>
