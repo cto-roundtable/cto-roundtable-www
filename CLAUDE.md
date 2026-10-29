@@ -183,10 +183,11 @@ deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digest
   close/reopen only), `surveys/:id/results` (names and free text only with
   `?texts=1`), `surveys/sweep` (`sweepPastEventSurveys`, `?dryRun=1`). The survey
   routes call the helpers in `server/utils/surveys.ts` and have no SQL of their own.
-- **CLI**: `cli/ctr.mjs`, zero deps, `--json` everywhere. Env `CTR_API_TOKEN` and
-  `CTR_API_URL`. Docs: `cli/README.md`. The daily tick on the cto-roundtable box is
+- **CLI**: `ctr`, in Rust, in its own repo (cto-roundtable/ctr-cli), `--json` everywhere.
+  `ctr login` (device flow below) or env `CTR_API_TOKEN`; `CTR_API_URL`. The daily job
+  on the cto-roundtable box (`members-portal-daily`, 06:00) is
   `ctr events import-luma && ctr surveys sweep` (import first: surveys go only to
-  attendees).
+  attendees). The old Node `cli/ctr.mjs` is gone.
 - **Getting a token: the device flow** (RFC 8628 shape, `server/utils/deviceAuth.ts`,
   table `device_authorizations`, hq migration 029). The agent calls
   `POST /api/auth/device/code` with `{client_name, scopes}` and prints the `user_code`
@@ -198,7 +199,8 @@ deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digest
   plaintext never sits anywhere in between. Codes live 10 minutes, at most 5 pending
   per IP. Only sha256(device_code) is stored, and every step (code, view, approve,
   deny, every poll) is an `api_audit_log` row.
-- **Break-glass**: `scripts/mint-api-token.mjs mint|list|revoke` with `DATABASE_URL`.
+- **Break-glass only**: `scripts/mint-api-token.mjs mint|list|revoke` with `DATABASE_URL`,
+  for when the device flow is unavailable. Normal agents use `ctr login`.
   The token is printed once and revoked, never deleted. Revoking is still done here.
 
 ### Styreprotokoll (board minutes as signed PDF)
