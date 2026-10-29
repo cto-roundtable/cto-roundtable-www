@@ -22,7 +22,8 @@
     "deals": "Caser",
     "dealsMember": "Som medlem",
     "dealsCommittee": "Komiteen",
-    "dealsPreview": "Se som …"
+    "dealsPreview": "Se som …",
+    "invest": "CTORI 4"
   },
   "layout": {
     "signedInAs": "Innlogget som",
@@ -806,6 +807,76 @@
       "noSnapshot": "Ingen avstemning er avsluttet ennå. Hovedboka lagres når en CTORI 4-avstemning avsluttes.",
       "period": "{from} til {to}",
       "notPassed": "Ikke vedtatt, så det er ingen gevinst å dele."
+    }
+  },
+  "invest": {
+    "intro": "Ikke bindende. Si om du er med og omtrent hvor mye. Den bindende tegningen kommer senere, her i portalen, med det vi allerede vet om deg fylt inn.",
+    "preview": "Forhåndsvisning: bare styret ser denne siden til den åpnes for medlemmene.",
+    "notFound": "Fant ikke denne siden. Den er kanskje ikke åpnet ennå.",
+    "facts": {
+      "heading": "Kort fortalt",
+      "minimum": "{name} blir startet hvis vi henter inn minst {amount}.",
+      "notBinding": "Svaret ditt er ikke bindende, og du kan endre det så lenge interessefasen er åpen.",
+      "closes": "Interessefasen stenger {date}."
+    },
+    "lastTime": {
+      "viaHolding": "Sist var du med i {offering} med {amount} via {holding}.",
+      "personal": "Sist var du med i {offering} med {amount}, personlig."
+    },
+    "aggregate": "Så langt: {yes} har sagt ja (til sammen {amount}), {maybe} kanskje.",
+    "documents": {
+      "openDeck": "Se presentasjonen",
+      "open": "Åpne",
+      "updated": "Oppdatert {date}",
+      "back": "Tilbake",
+      "loading": "Laster…",
+      "fullScreen": "Åpne i ny fane",
+      "missing": "Fant ikke dokumentet."
+    },
+    "form": {
+      "heading": "Er du med?",
+      "answerLabel": "Ditt svar",
+      "answer": {
+        "yes": "Ja, jeg er med",
+        "maybe": "Kanskje, vil vite mer",
+        "no": "Nei takk"
+      },
+      "amountLabel": "Omtrent hvor mye?",
+      "amountLabelMaybe": "Hvis du blir med, omtrent hvor mye? (valgfritt)",
+      "otherAmount": "Annet beløp",
+      "otherAmountLabel": "Beløp",
+      "otherAmountHint": "Minst {min}, i hele {step}.",
+      "vehicleLabel": "Hvordan investerer du?",
+      "vehicle": {
+        "holding": "Gjennom holdingselskap",
+        "holdingNamed": "Gjennom {holding}",
+        "personal": "Personlig",
+        "unsure": "Vet ikke ennå"
+      },
+      "wantsInfo": "Jeg vil gjerne vite mer før tegningen",
+      "wantsToHelp": "Vil du bidra? (valgfritt)",
+      "wantsToHelpPlaceholder": "For eksempel komitéarbeid, vurdere caser, skaffe dealflow",
+      "notes": "Noe vi bør vite? (valgfritt)",
+      "submit": "Send svar",
+      "update": "Oppdater svaret",
+      "saved": "Svaret er lagret {date}. Du kan endre det så lenge interessefasen er åpen.",
+      "locked": "Du har gått videre til tegningen. Endringer gjør du der.",
+      "closed": "Interessefasen er stengt."
+    },
+    "banner": {
+      "title": "{name}: er du med?",
+      "titlePreview": "{name} (forhåndsvisning for styret)",
+      "body": "Se presentasjonen og si om du er med. Ikke bindende.",
+      "cta": "Svar"
+    },
+    "errors": {
+      "answer": "Velg ja, kanskje eller nei.",
+      "amountRequired": "Velg et beløp.",
+      "amount": "Det beløpet går ikke. Velg et av beløpene, eller et rundt beløp som oppfyller regelen under feltet.",
+      "vehicle": "Ugyldig valg av investeringsform.",
+      "closed": "Interessefasen er stengt.",
+      "alreadyCommitted": "Du har gått videre til tegningen. Endringer gjør du der.",
+      "unknown": "Noe gikk galt. Prøv igjen."
     }
   }
 }

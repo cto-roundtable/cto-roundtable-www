@@ -273,6 +273,15 @@ const navItems = computed(() => {
       children: casesChildren.value,
     })
   }
+  // CTORI signup: the open offering, for every member in either chapter (D6).
+  if (session.value.investOffering) {
+    items.push({
+      to: `/member/invest/${session.value.investOffering.slug}`,
+      key: 'nav.invest',
+      icon: 'mdi-hand-coin-outline',
+      exact: false,
+    })
+  }
   // Investor-updates: any member of an investment cohort (invest-*).
   if (session.value.isInvestor) {
     items.push({ to: '/member/updates', key: 'nav.investorUpdates', icon: 'mdi-finance', exact: false })

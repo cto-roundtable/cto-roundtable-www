@@ -22,7 +22,8 @@
     "deals": "Case",
     "dealsMember": "Som medlem",
     "dealsCommittee": "Kommittén",
-    "dealsPreview": "Se som …"
+    "dealsPreview": "Se som …",
+    "invest": "CTORI 4"
   },
   "layout": {
     "signedInAs": "Inloggad som",
@@ -806,6 +807,76 @@
       "noSnapshot": "Ingen omröstning har avslutats ännu. Huvudboken sparas när en CTORI 4-omröstning avslutas.",
       "period": "{from} till {to}",
       "notPassed": "Inte antaget, så det finns ingen vinst att dela."
+    }
+  },
+  "invest": {
+    "intro": "Inte bindande. Säg om du är med och ungefär hur mycket. Den bindande teckningen kommer senare, här i portalen, med det vi redan vet om dig ifyllt.",
+    "preview": "Förhandsvisning: bara styrelsen ser den här sidan tills den öppnas för medlemmarna.",
+    "notFound": "Sidan hittades inte. Den är kanske inte öppnad än.",
+    "facts": {
+      "heading": "Kort sagt",
+      "minimum": "{name} startas om vi tar in minst {amount}.",
+      "notBinding": "Ditt svar är inte bindande, och du kan ändra det så länge intressefasen är öppen.",
+      "closes": "Intressefasen stänger {date}."
+    },
+    "lastTime": {
+      "viaHolding": "Förra gången var du med i {offering} med {amount} via {holding}.",
+      "personal": "Förra gången var du med i {offering} med {amount}, personligen."
+    },
+    "aggregate": "Hittills: {yes} har sagt ja (sammanlagt {amount}), {maybe} kanske.",
+    "documents": {
+      "openDeck": "Se presentationen",
+      "open": "Öppna",
+      "updated": "Uppdaterad {date}",
+      "back": "Tillbaka",
+      "loading": "Laddar…",
+      "fullScreen": "Öppna i ny flik",
+      "missing": "Dokumentet hittades inte."
+    },
+    "form": {
+      "heading": "Är du med?",
+      "answerLabel": "Ditt svar",
+      "answer": {
+        "yes": "Ja, jag är med",
+        "maybe": "Kanske, vill veta mer",
+        "no": "Nej tack"
+      },
+      "amountLabel": "Ungefär hur mycket?",
+      "amountLabelMaybe": "Om du är med, ungefär hur mycket? (valfritt)",
+      "otherAmount": "Annat belopp",
+      "otherAmountLabel": "Belopp",
+      "otherAmountHint": "Minst {min}, i hela {step}.",
+      "vehicleLabel": "Hur investerar du?",
+      "vehicle": {
+        "holding": "Genom ett holdingbolag",
+        "holdingNamed": "Genom {holding}",
+        "personal": "Personligen",
+        "unsure": "Vet inte än"
+      },
+      "wantsInfo": "Jag vill gärna veta mer före teckningen",
+      "wantsToHelp": "Vill du bidra? (valfritt)",
+      "wantsToHelpPlaceholder": "Till exempel kommittéarbete, bedöma case, ta in dealflow",
+      "notes": "Något vi bör veta? (valfritt)",
+      "submit": "Skicka svar",
+      "update": "Uppdatera svaret",
+      "saved": "Svaret sparades {date}. Du kan ändra det så länge intressefasen är öppen.",
+      "locked": "Du har gått vidare till teckningen. Ändringar gör du där.",
+      "closed": "Intressefasen är stängd."
+    },
+    "banner": {
+      "title": "{name}: är du med?",
+      "titlePreview": "{name} (förhandsvisning för styrelsen)",
+      "body": "Se presentationen och säg om du är med. Inte bindande.",
+      "cta": "Svara"
+    },
+    "errors": {
+      "answer": "Välj ja, kanske eller nej.",
+      "amountRequired": "Välj ett belopp.",
+      "amount": "Det beloppet går inte. Välj ett av beloppen, eller ett jämnt belopp som uppfyller regeln under fältet.",
+      "vehicle": "Ogiltigt val av investeringsform.",
+      "closed": "Intressefasen är stängd.",
+      "alreadyCommitted": "Du har gått vidare till teckningen. Ändringar gör du där.",
+      "unknown": "Något gick fel. Försök igen."
     }
   }
 }

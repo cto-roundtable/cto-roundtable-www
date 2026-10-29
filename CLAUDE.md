@@ -393,6 +393,42 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   it lists.
 - i18n keys live under `deals.*` (and `nav.deals`).
 
+### CTORI signup (`/member/invest/<slug>`)
+
+A CTORI cohort is an **offering** (`invest_offerings`: `ctori-1` … `ctori-4`) and a
+member's answer to it is one `invest_subscriptions` row per offering and person, moving
+interest → committed → signed → paid (or declined). Schema: hq migrations 031 and 041.
+Design and plan: `research/portal-signup-mapping.md` in the ctori-4 project (huddle).
+Built so far: step 3, the **interest** phase ("er du med, og omtrent hvor mye"), which
+binds nobody.
+
+- **All SQL is in `server/utils/invest.ts`.** Who sees an offering: every portal member
+  in either chapter (decision D6) while it is `interest` or `committing`; only the board
+  while it is a `draft` (a preview, labelled as one). Anything else is a 404.
+- **Amounts are data**: `amount_options` (50/100/200/300k for ctori-4, dc-32), plus
+  `amount_min` / `amount_step` for "annet beløp" (ctori-4: at least 50 000, in whole
+  10 000s). `parseInterestInput` validates every write against the offering; nothing is
+  hard-coded. "Kanskje" is interest with `interest_level = 'maybe'` and always asks for
+  information; "Nei takk" is phase `declined`.
+- **Prefill** comes from the CTORI1-3 import (hq `backfill/import-ctori-subscribers.mjs`):
+  "last time" (offering, amount, holding name) and the holdings the member owns. A
+  holding is linked to the answer only when they own exactly one. Names only: no org
+  number, address, phone or national ID is read here.
+- **Totals** shown to members are anonymous and hidden below 3 yes/maybe answers.
+- **Documents** (the deck now; vedtekter, aksjonæravtale, mandat at tegning) are
+  `invest_offering_documents`: versioned rows with the bytes in Postgres (an HTML deck
+  is ~25 KB), never edited. Served by `/api/member/invest/:slug/documents/:key` with a
+  `sandbox` CSP (no scripts, opaque origin, framed only by the portal), shown in an
+  iframe on `/member/invest/:slug/dokument/:key`. The invitation links there, not to
+  share links.
+- **Entry points**: `InvestOfferingBanner` on `/member` and `/member/sweden` until the
+  member has answered, and a nav item from `session.investOffering`. A magic-link
+  sign-in lands on `/member`, not on the deep link; the banner is what bridges that.
+- **Operating it from a box** until the board view exists (step 4):
+  `scripts/invest-offering.mjs show|publish|status` with `DATABASE_URL`. `publish`
+  writes a new document version (same bytes write nothing). `status <slug> interest`
+  is the launch, so it changes nothing without `--confirm`.
+
 ### Data sources
 - **Members**: Neon Postgres (`persons`, `memberships`, `organizations` tables)
 - **Portfolio companies**: Coda API (migration pending)

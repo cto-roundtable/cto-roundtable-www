@@ -7,6 +7,9 @@
       </p>
     </header>
 
+    <!-- The open CTORI offering, until the member has answered (/member/invest) -->
+    <InvestOfferingBanner />
+
     <!-- Open deal votes the member has not voted in yet (/member/caser) -->
     <DealsOpenVoteBanner />
 
