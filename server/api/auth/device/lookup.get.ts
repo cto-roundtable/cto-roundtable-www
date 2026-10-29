@@ -25,5 +25,8 @@ export default defineDeviceRoute(async (event, audit) => {
     createdAt: request.created_at,
     expiresAt: request.expires_at,
     recentSignIn: approver!.recent,
+    // Scopes that need an owner on the committee, and whether this approver is one (dc-61 H2).
+    needsCommittee: needsCommittee(request.scopes),
+    approverOnCommittee: await isCommitteeMember(approver!.personId),
   }
 })

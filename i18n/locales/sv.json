@@ -353,7 +353,8 @@
         "decided": "Den här begäran är redan hanterad.",
         "generic": "Något gick fel. Försök igen.",
         "passkey": "Bekräftelsen med passkey gick inte. Försök igen, eller logga ut och in igen."
-      }
+      },
+      "committeeOnly": "Den här begäran vill läsa case, frågor eller synpunkter. Bara en styrelseledamot som också sitter i kommittén kan godkänna den."
     },
     "surveys": {
       "title": "Enkäter",

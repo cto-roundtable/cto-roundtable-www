@@ -353,7 +353,8 @@
         "decided": "Denne forespørselen er allerede behandlet.",
         "generic": "Noe gikk galt. Prøv igjen.",
         "passkey": "Bekreftelsen med passkey gikk ikke. Prøv igjen, eller logg ut og inn igjen."
-      }
+      },
+      "committeeOnly": "Denne forespørselen ber om å lese caser, spørsmål eller innspill. Det kan bare et styremedlem som også sitter i komiteen godkjenne."
     },
     "surveys": {
       "title": "Undersøkelser",

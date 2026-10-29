@@ -79,9 +79,17 @@
                 </v-btn>
               </div>
             </v-alert>
+            <v-alert
+              v-if="request.needsCommittee && !request.approverOnCommittee"
+              type="warning"
+              variant="outlined"
+              class="text-left mb-4"
+            >
+              {{ t('member.device.committeeOnly') }}
+            </v-alert>
             <div class="d-flex ga-3 flex-wrap">
               <v-btn
-                :disabled="!request.recentSignIn"
+                :disabled="!request.recentSignIn || (request.needsCommittee && !request.approverOnCommittee)"
                 :loading="busy === 'approve'"
                 size="large"
                 style="background-color: white; color: #111;"
@@ -136,6 +144,9 @@ interface DeviceRequest {
   createdAt: string
   expiresAt: string
   recentSignIn: boolean
+  /** a scope only a committee member may grant (deals:read, comments:read, qa:read) */
+  needsCommittee: boolean
+  approverOnCommittee: boolean
 }
 
 /** DEVICE_TOKEN_TTL_DAYS in server/utils/deviceAuth.ts. */
@@ -174,6 +185,7 @@ function errorText(err: any): string {
   if (status === 410 || reason === 'expired') return t('member.device.errors.expired')
   if (status === 409) return t('member.device.errors.decided')
   if (reason === 'reauth') return t('member.device.reauth')
+  if (reason === 'committee') return t('member.device.committeeOnly')
   return t('member.device.errors.generic')
 }
 

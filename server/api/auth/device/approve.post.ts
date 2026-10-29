@@ -3,6 +3,9 @@
 // token itself is created when the agent picks it up (token.post.ts), owned by
 // this approver. 403 { code: 'reauth' } on an older sign-in, 404 unknown,
 // 410 { code: 'expired' }, 409 { code: 'decided', status } if already decided.
+// A request for a COMMITTEE_SCOPES scope (deals:read, comments:read, qa:read) needs
+// an approver on the committee too, since the token is theirs (dc-61 H2):
+// 403 { code: 'committee' } otherwise.
 
 export default defineDeviceRoute(async (event, audit) => {
   audit.summary.step = 'approve'
@@ -12,6 +15,14 @@ export default defineDeviceRoute(async (event, audit) => {
 
   const approver = await requireApprover(event, audit, true)
   if (!approver) return { code: 'reauth' }
+
+  const request = await findDeviceRequest(userCode)
+  if (request && needsCommittee(request.scopes) && !(await isCommitteeMember(approver.personId))) {
+    audit.targetId = request.id
+    audit.summary.reason = 'not_committee'
+    setResponseStatus(event, 403)
+    return { code: 'committee' }
+  }
 
   const sql = useDatabase()
   const rows = await sql`

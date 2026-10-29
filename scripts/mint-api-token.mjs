@@ -18,7 +18,9 @@
  *
  * The owner is the person who answers for what the agent does. They must be an
  * active member of `styret` now, and stay one: the portal checks that on every
- * request, so leaving the board disables the token without a revoke.
+ * request, so leaving the board disables the token without a revoke. A token with
+ * deals:read, comments:read or qa:read also needs an owner in `current-komite`
+ * (dc-61 H2, COMMITTEE_SCOPES in server/utils/apiTokens.ts).
  *
  * Tokens are revoked, never deleted: api_audit_log names them. See
  * ctoroundtable-hq/infrastructure/db/migrations/026_api_tokens_and_audit.sql.
@@ -42,6 +44,9 @@ const SCOPES = [
   'qa:write',
 ]
 const BOARD_GROUP = 'styret'
+const COMMITTEE_GROUP = 'current-komite'
+/** COMMITTEE_SCOPES in server/utils/apiTokens.ts: these need an owner on the committee. */
+const COMMITTEE_SCOPES = ['deals:read', 'comments:read', 'qa:read']
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const log = (...a) => console.error(...a)
@@ -110,6 +115,17 @@ async function mint() {
   if (!Number.isInteger(days) || days < 1 || days > 730) fail('--expires-days must be 1 to 730')
 
   const owner = await findOwner(values.owner)
+  const committeeScopes = scopes.filter((s) => COMMITTEE_SCOPES.includes(s))
+  if (committeeScopes.length) {
+    const onCommittee = await sql`
+      SELECT 1 FROM memberships m JOIN network_groups ng ON ng.id = m.group_id
+      WHERE m.person_id = ${owner.id} AND ng.slug = ${COMMITTEE_GROUP} LIMIT 1
+    `
+    if (onCommittee.length === 0) {
+      fail(`${owner.name} is not in ${COMMITTEE_GROUP}; ${committeeScopes.join(', ')} need an owner on the committee`)
+    }
+    log(`  ok    owner is in ${COMMITTEE_GROUP} (needed for ${committeeScopes.join(', ')})`)
+  }
   const expiresAt = new Date(Date.now() + days * 86400_000).toISOString()
   log(`  ok    owner ${owner.name} (${owner.id}) is an active ${BOARD_GROUP} member`)
   log(`  ok    name ${name}, scopes ${scopes.join(', ')}, expires ${expiresAt.slice(0, 10)}`)
