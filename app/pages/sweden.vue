@@ -22,16 +22,16 @@
             <span class="stat-l">first meeting, an evening hosted by Endform</span>
           </div>
           <div class="stat">
-            <span class="stat-n">{{ status.roomMin }} to {{ status.roomMax }}</span>
-            <span class="stat-l">seats in the founding room, picked for the mix</span>
+            <span class="stat-n">{{ status.firstRound }}</span>
+            <span class="stat-l">seats in the first round, with more rounds to follow</span>
           </div>
           <p class="numbers-note">
             <strong>The first date is set.</strong>
             <template v-if="status.recent > 0">
               {{ status.recent }} of the {{ status.signups }} came in the last 30 days.
             </template>
-            The room is picked from the pool for the mix, not filled in order. The pool stays
-            open, and a second round follows the first.
+            The first round is picked from the pool for the mix, not filled in order. The pool
+            stays open, and more rounds follow.
           </p>
         </section>
 
@@ -88,14 +88,15 @@
           <h2>What happens next</h2>
           <p>
             The first meeting is Tuesday 17 November, in the evening, hosted by Endform in
-            Stockholm. Snorre comes over from Oslo to run it. The founding room is 10 to 15 CTOs,
+            Stockholm. Snorre comes over from Oslo to run it. The first round is 10 CTOs,
             picked from the pool for the mix: stage, sector, the problems people are carrying. So
             signing up puts you in the pool, not in the room, and we say that plainly because the
             room is small on purpose.
           </p>
           <p>
             Invites go out from Snorre personally, not from a mailing list, and you hear from him
-            either way. If the first room fills up, the pool stays open for the next one. So: leave
+            either way. The first round is not the last: more rounds follow, and the pool stays
+            open for them. So: leave
             your details below if you want in. That is the whole ask.
           </p>
           <p>
