@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { expect, test } from '@playwright/test'
 import { PERSONAS } from './support/personas'
-import { cookiesFor, personas, RUN_DIR } from './support/run'
+import { cookiesFor, overviewSlugs, personas, RUN_DIR } from './support/run'
 
 // What each persona SEES: one walk through the portal per persona, a
 // full-page screenshot of every stop and a video of the whole walk. Nothing is
@@ -16,7 +16,6 @@ const PAGES = (
   [
     '/member',
     '/member/caser',
-    '/member/pipeline',
     '/member/updates',
     '/member/komite',
     '/member/board',
@@ -44,8 +43,8 @@ for (const key of keys) {
     const extra: string[] = []
     const deals = await page.request.get(`${baseURL}/api/member/deals`, { failOnStatusCode: false })
     if (deals.ok()) {
-      const first = ((await deals.json()).cases ?? [])[0]
-      if (first) extra.push(`/member/caser/${first.slug}`)
+      const first = overviewSlugs(await deals.json())[0]
+      if (first) extra.push(`/member/caser/${first}`)
     }
     const updates = await page.request.get(`${baseURL}/api/member/updates`, { failOnStatusCode: false })
     if (updates.ok()) {

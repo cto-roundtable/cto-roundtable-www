@@ -48,8 +48,10 @@ add `invest-4`; if nobody is in it yet, make it synthetic.
 - `access.spec.ts`: every persona against every member GET route, every case
   slug and every funded company's investor updates. Hard rules asserted: a
   non-member gets 401 everywhere; board routes only for `styret`; the committee
-  overview only for staff; onboarding only for Norway; the case list and the
-  case page agree; nobody sees a case staff cannot; a member in no SPV sees no
+  overview and the "Se som" preview (`?som=`) only for the committee (the board
+  sees cases as a member, #74); onboarding only for Norway; for a member, what the
+  case overview offers to open is exactly what the case page opens; nobody opens
+  a case the committee cannot; a member in no SPV and not on the committee sees no
   cases and no updates; investor updates exactly for the groups that funded the
   company. Path tricks without a cookie (`//api/member/...`, encoded) never 200.
 - `views.spec.ts`: a walk through the member pages per persona (plus the first
