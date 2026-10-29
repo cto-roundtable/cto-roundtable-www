@@ -49,16 +49,24 @@ export function useAuthSession() {
    * signed in, false when the member cancelled or another ceremony took over
    * (e.g. the button aborting the autofill one); throws when the server says no.
    * With useBrowserAutofill the browser offers passkeys in the email field's
-   * autofill (conditional UI) instead of opening a dialog.
+   * autofill (conditional UI) instead of opening a dialog. That request starts on
+   * page load, not on anything the member did, so until the browser hands back a
+   * passkey the member picked, a failure (options request, a browser that refuses
+   * the request) resolves false and is only logged: it must not greet a visitor
+   * with an error. Only the verify step after a pick throws.
    */
   async function loginWithPasskey(useBrowserAutofill = false): Promise<boolean> {
-    const optionsJSON = await $fetch<any>('/api/auth/passkey/login/options', { method: 'POST' })
     let response: Awaited<ReturnType<typeof startAuthentication>>
     try {
+      const optionsJSON = await $fetch<any>('/api/auth/passkey/login/options', { method: 'POST' })
       response = await startAuthentication({ optionsJSON, useBrowserAutofill })
     } catch (err: any) {
       const name = err?.cause?.name || err?.name
       if (name === 'NotAllowedError' || name === 'AbortError' || err?.code === 'ERROR_CEREMONY_ABORTED') return false
+      if (useBrowserAutofill) {
+        console.warn('Passkey autofill not offered:', err)
+        return false
+      }
       throw err
     }
     await $fetch('/api/auth/passkey/login/verify', { method: 'POST', body: { response } })

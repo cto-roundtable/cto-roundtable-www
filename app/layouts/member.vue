@@ -359,7 +359,8 @@ async function signInWithPasskey() {
 
 /**
  * Conditional UI: the browser offers saved passkeys in the email field's autofill.
- * Its challenge lives 5 minutes, but the request can wait much longer for the
+ * It starts on load, so only a failure after the member picked a passkey shows
+ * the error (loginWithPasskey swallows the rest). Its challenge lives 5 minutes, but the request can wait much longer for the
  * member to pick a passkey, so: a 401 (most likely an expired challenge) restarts
  * it once with a fresh challenge before showing an error, and coming back to a
  * tab whose request is older than 4 minutes refreshes it.
