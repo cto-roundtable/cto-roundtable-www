@@ -1,10 +1,11 @@
 // GET /api/member/committee/overview
 // The committee's overview of every case: the vote, questions waiting for the
 // owner, agent answers not yet confirmed, comments since the last digest, and
-// the newest digest; and pipeline digest drafts to approve. Committee and board only.
+// the newest digest; and pipeline digest drafts to approve. Committee only: the board sees
+// what a member sees (Snorre, 2026-10-29).
 export default defineEventHandler(async (event) => {
   const viewer = await caseViewer(event.context.session.personId)
-  if (!viewer.isStaff) throw createError({ statusCode: 403, message: 'Committee only' })
+  if (!viewer.isCommittee) throw createError({ statusCode: 403, message: 'Committee only' })
   const [cases, drafts, recent] = await Promise.all([
     committeeOverview(),
     listPipelineDigests({ status: 'draft', group: undefined, limit: 10 }),

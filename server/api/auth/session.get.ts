@@ -27,6 +27,8 @@ export default defineEventHandler(async (event) => {
     isInvestor: await isInvestorMember(session.personId),
     // Whether any case (/member/caser) is visible to them: an SPV member or the committee.
     canSeeCases: await canSeeCases(session.personId),
+    // The committee gets the Komiteen view and the role preview under Caser. The board does not.
+    isCommittee: await isCommitteeMember(session.personId),
     // Chapters (`no`, `se`) pick the nav and the default language.
     chapters,
   }

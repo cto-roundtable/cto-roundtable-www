@@ -239,8 +239,9 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
 - **All case SQL is in `server/utils/deals.ts`.** Who sees a case is one SQL
   condition (`caseVisibleSql`), shared by the list, the page and the document
   download, re-checked on every request:
-  - committee (`current-komite`, `server/utils/committee.ts`) and board: every case
-    in active work, investor-visible or with a round, drafts included;
+  - committee (`current-komite`, `server/utils/committee.ts`): every case in active
+    work, investor-visible or with a round, drafts included. The board (`styret`) gets
+    nothing extra on cases: a board member is a member here (Snorre, 2026-10-29);
   - members of the ACTIVE SPV (`network_groups.invest_phase = 'deploying'`): every
     deal in active work (`ACTIVE_STATUSES`: reviewing, waiting, to_be_voted,
     pending_transfer) or marked investor-visible that no SPV has invested in yet
@@ -248,7 +249,9 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   - members of a round's group: that case once the round is open;
   - members of an SPV that invested: that company. A completed SPV sees its own
     companies and nothing else.
-  A case you may not see is the same 404 as one that does not exist. Seeing a case
+  The membership rules read `viewer.groupIds` (the person's network groups), never
+  `memberships` by person, so a role preview can swap them. A case you may not see is
+  the same 404 as one that does not exist. Seeing a case
   is not seeing its material: the blurb and the documents are shared only once the
   committee marks it investor-visible or a round has opened (`materialSharedSql`);
   before that a member sees name, stage, owner and date, and can ask and give input.
@@ -271,13 +274,13 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   (`PATCH /api/admin/questions/:id` `agent_working`, a compare-and-set), answers from
   the deal's investor pack with sources, or routes it to the deal owner
   (`driver_person_id`), who answers on the case page. The ANSWER is shown to everyone
-  who can see the case; WHO ASKED only to the committee and board, never in the admin
+  who can see the case; WHO ASKED only to the committee, never in the admin
   API. An agent answer is labelled as unchecked until the owner or a committee member
   confirms it; a correction supersedes it. The asker gets a mail when it is answered
   and the owner when a question is routed to them (`server/utils/mail.ts`).
 - **Comments** (`server/utils/dealComments.ts`, `deal_comments`): input that does not
   count as a vote (comment, objection, suggestion, question for the founder, "I know
-  them"). Named to the committee and the board, hidden from every other member: a
+  them"). Named to the committee, hidden from every other member (the board included): a
   member sees only their own and can withdraw it (the row is kept). Nothing is sealed
   in the database (decision 2026-10-22 §5, which replaced the plan's anonymous
   comments). The digest agent reads them with names.
@@ -286,9 +289,25 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   themes, new information and questions for the founder
   (`POST /api/admin/deals/:slug/digests`). The committee's digest shows on the case
   page for staff; an `spv` digest ("what we heard") shows to everyone who can see the
-  case. `/member/komite` (committee and board) lists every case with what waits for
-  the committee: routed questions, agent answers to confirm, new comments since the
-  last digest, the vote, and the newest digest.
+  case. `/member/komite` (committee only) lists every case in active work with what
+  waits for the committee: questions with the owner, agent answers to confirm, new
+  comments since the last digest, questions still with the agent (zeros shown), the
+  vote, and the newest digest, grouped like the overview.
+- **The overview** (`/member/caser`, `listCaseOverview`) is the one list of cases, and
+  it is always the MEMBER view, the committee's own memberships included (the
+  committee's view is `/member/komite`). Sections: decided, being carried out
+  (`pending_transfer`); under review now (an open vote, `to_be_voted`, or
+  reviewing/waiting with activity in the last `INACTIVE_AFTER_DAYS` = 56 days, on
+  `last_activity_at`, else `updated_at`); inactive (folded); what the member's SPVs
+  invested in; the declined ones on request. `/member/pipeline` redirects here. The
+  actions (ask, object, "I know them", "Jeg er inhabil") live on the case page, in
+  their sections, never on the list.
+- **Nav and role preview**: "Caser" always opens the member view. The committee gets
+  sub-items: "Som medlem", "Komiteen" and "Se som ...". The preview is `?som=<invest
+  group slug | ingen | aktiv>` on `/api/member/deals` and `/api/member/deals/:slug`
+  (`viewerForRequest`): committee only, it answers as a member of exactly that SPV who
+  owns nothing (nil person id), and the page makes every form inert. Write routes never
+  read `?som=`.
 - **Pipeline feed** (`/member/pipeline`, `listPipeline` in `server/utils/deals.ts`,
   decision 2026-10-22 §6): the same rows as the case rule (`caseVisibleSql`), split into
   "working" (not invested by any SPV; open vote first, then `to_be_voted`, `reviewing`,

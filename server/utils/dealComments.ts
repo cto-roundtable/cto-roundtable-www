@@ -4,7 +4,7 @@
  * (ctoroundtable-hq migration 032). All comment SQL lives here.
  *
  * Who sees what (decision 2026-10-22 on the vote model, project ctori-4, §5):
- *   - the committee and the board see every comment WITH the author's name;
+ *   - the committee sees every comment WITH the author's name;
  *   - a member sees only their own comments, never anyone else's, so nobody is
  *     steered by what others are putting in;
  *   - the digest agent reads them, names included, through GET /api/admin/comments.
@@ -38,7 +38,7 @@ export async function listCaseComments(viewer: CaseViewer, dealId: string): Prom
     FROM deal_comments c
     JOIN persons p ON p.id = c.author_person_id
     WHERE c.deal_id = ${dealId}
-      AND (${viewer.isStaff} OR c.author_person_id = ${viewer.personId})
+      AND (${viewer.isCommittee} OR c.author_person_id = ${viewer.personId})
     ORDER BY c.created_at DESC
   `
   return (rows as any[]).map((r) => ({
@@ -48,7 +48,7 @@ export async function listCaseComments(viewer: CaseViewer, dealId: string): Prom
     createdAt: r.created_at,
     withdrawnAt: r.withdrawn_at,
     mine: r.author_person_id === viewer.personId,
-    ...(viewer.isStaff ? { author: { id: r.author_person_id, name: r.author_name } } : {}),
+    ...(viewer.isCommittee ? { author: { id: r.author_person_id, name: r.author_name } } : {}),
   }))
 }
 

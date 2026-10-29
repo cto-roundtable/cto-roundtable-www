@@ -1,66 +1,106 @@
 <template>
   <div class="committee text-left">
-    <NuxtLink to="/member/caser" class="back-link mb-4 d-inline-flex align-center">
-      <v-icon size="16" class="mr-1">mdi-arrow-left</v-icon> {{ t('deals.case.allCases') }}
-    </NuxtLink>
-    <header class="mb-6">
-      <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">{{ t('deals.committee.title') }}</h1>
-      <p style="color: #aaa; font-size: 14px; max-width: 640px;">{{ t('deals.committee.intro') }}</p>
+    <header class="page-head">
+      <h1 class="page-title">{{ t('deals.committee.title') }}</h1>
+      <p class="intro">{{ t('deals.committee.intro') }}</p>
     </header>
 
     <div v-if="loading" class="d-flex justify-center py-10">
       <v-progress-circular indeterminate color="white" />
     </div>
-    <p v-else-if="forbidden" style="color: #aaa;">{{ t('deals.committee.forbidden') }}</p>
+    <p v-else-if="forbidden" class="empty">{{ t('deals.committee.forbidden') }}</p>
 
-    <section v-if="!loading && drafts.length" class="mb-6">
-      <h2 class="section-title mb-3">{{ t('deals.pipelineDigest.toApprove') }}</h2>
-      <DealsPipelineDigestReview v-for="d in drafts" :key="d.id" :digest="d" class="mb-3" @changed="reload" />
-    </section>
-    <p v-else-if="!cases.length" style="color: #aaa;">{{ t('deals.list.empty') }}</p>
+    <template v-else>
+      <section v-if="drafts.length" class="group">
+        <h2 class="group-title">{{ t('deals.pipelineDigest.toApprove') }} <span class="count">{{ drafts.length }}</span></h2>
+        <DealsPipelineDigestReview v-for="d in drafts" :key="d.id" :digest="d" class="mb-3" @changed="reload" />
+      </section>
 
-    <section v-else class="feed">
-      <article v-for="c in cases" :key="c.slug" class="case-card">
-        <div class="d-flex align-center flex-wrap mb-2" style="gap: 10px;">
-          <NuxtLink :to="`/member/caser/${c.slug}`" class="company-name">{{ c.name }}</NuxtLink>
-          <DealsChips :status="c.status" :round="c.round ? { ...c.round, group: { slug: '', name: c.round.group } } : null" />
+      <!-- What waits, summed over every case: zero is said plainly, never left out. -->
+      <dl class="totals" :aria-label="t('deals.committee.totalsAria')">
+        <div v-for="k in COUNTS" :key="k" class="total" :class="{ hot: totals[k] > 0 }">
+          <dt>{{ t(`deals.committee.count.${k}`) }}</dt>
+          <dd>{{ totals[k] }}</dd>
         </div>
-        <div class="waits mb-2">
-          <NuxtLink v-if="c.questionsRouted" :to="`/member/caser/${c.slug}`" class="wait wait-hot">
-            {{ t('deals.committee.routed', c.questionsRouted) }}
-          </NuxtLink>
-          <NuxtLink v-if="c.answersUnconfirmed" :to="`/member/caser/${c.slug}`" class="wait">
-            {{ t('deals.committee.unconfirmed', c.answersUnconfirmed) }}
-          </NuxtLink>
-          <span v-if="c.questionsOpen" class="wait">{{ t('deals.committee.withAgent', c.questionsOpen) }}</span>
-          <span class="wait">{{ t('deals.committee.comments', { all: c.comments, fresh: c.commentsSinceDigest }) }}</span>
-        </div>
-        <details v-if="c.digest" class="digest-box">
-          <summary>{{ t('deals.committee.digest', { date: formatDate(c.digest.createdAt, 'short') }) }}</summary>
-          <DealsDigest :digest="c.digest" class="mt-3" />
-        </details>
-        <p v-else class="meta">{{ t('deals.committee.noDigest') }}</p>
-      </article>
-    </section>
+      </dl>
+
+      <p v-if="!cases.length" class="empty">{{ t('deals.committee.empty') }}</p>
+
+      <template v-for="g in groups" :key="g.key">
+        <component :is="g.key === 'inactive' ? 'details' : 'section'" v-if="g.rows.length" class="group" :class="{ 'group-fold': g.key === 'inactive' }">
+          <component :is="g.key === 'inactive' ? 'summary' : 'h2'" class="group-title">
+            <v-icon v-if="g.key === 'inactive'" size="20" class="fold-icon" aria-hidden="true">mdi-chevron-right</v-icon>
+            {{ t(`deals.overview.${g.key}`) }} <span class="count">{{ g.rows.length }}</span>
+          </component>
+          <table class="waits-table">
+            <thead>
+              <tr>
+                <th scope="col">{{ t('deals.committee.caseCol') }}</th>
+                <th v-for="k in COUNTS" :key="k" scope="col" class="num">{{ t(`deals.committee.count.${k}`) }}</th>
+                <th scope="col" class="num">{{ t('deals.committee.lastCol') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="c in g.rows" :key="c.slug" :class="{ waiting: c.waiting > 0 }">
+                <th scope="row" class="case-cell">
+                  <NuxtLink :to="`/member/caser/${c.slug}`" class="case-name">{{ c.name }}</NuxtLink>
+                  <span class="case-state">{{ stateLine(c) }}</span>
+                  <details v-if="c.digest" class="digest">
+                    <summary>{{ t('deals.committee.digest', { date: formatDate(c.digest.createdAt, 'short') }) }}</summary>
+                    <DealsDigest :digest="c.digest" class="mt-2" />
+                  </details>
+                </th>
+                <td v-for="k in COUNTS" :key="k" class="num" :class="{ hot: c[k] > 0 }" :data-label="t(`deals.committee.count.${k}`)">
+                  {{ c[k] }}
+                </td>
+                <td class="num last" :data-label="t('deals.committee.lastCol')">
+                  {{ c.lastActivityAt ? formatDate(c.lastActivityAt, 'short') : '' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </component>
+      </template>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-// The committee's overview across cases: what waits for it (questions routed to
-// an owner, agent answers to confirm, new comments) and the newest digest of each.
-// Committee and board only (server/api/member/committee/overview.get.ts).
+// The committee's overview across cases: every case in active work with what waits
+// for the committee (questions routed to the owner, agent answers to confirm, new
+// comments since the last digest, questions still with the agent), zero counts shown,
+// grouped like the member overview. Committee only (the board sees what a member
+// sees): server/api/member/committee/overview.get.ts.
 definePageMeta({ layout: 'member' })
 
-const { t } = useI18n()
+const COUNTS = ['questionsRouted', 'answersUnconfirmed', 'commentsSinceDigest', 'questionsOpen'] as const
+type CountKey = (typeof COUNTS)[number]
+
+interface CommitteeCase extends Record<CountKey, number> {
+  slug: string
+  name: string
+  status: string
+  owner: string | null
+  lastActivityAt: string | null
+  comments: number
+  round: { status: string; result: string | null; closesAt: string | null; group: { name: string } } | null
+  digest: any | null
+  section: 'decided' | 'active' | 'inactive'
+  waiting: number
+}
+
+const { t, te } = useI18n()
 const { formatDate } = useLocaleDate()
 const { session, checked } = useAuthSession()
 const loading = ref(true)
 const forbidden = ref(false)
-const cases = ref<any[]>([])
+const cases = ref<CommitteeCase[]>([])
 const drafts = ref<any[]>([])
 
 async function reload() {
-  const data = await $fetch<{ cases: any[]; pipelineDigests: { drafts: any[] } }>('/api/member/committee/overview')
+  const data = await $fetch<{ cases: CommitteeCase[]; pipelineDigests: { drafts: any[] } }>(
+    '/api/member/committee/overview',
+  )
   cases.value = data.cases
   drafts.value = data.pipelineDigests.drafts
 }
@@ -76,69 +116,234 @@ watchEffect(async () => {
     }
   }
 })
+
+const totals = computed(
+  () =>
+    Object.fromEntries(COUNTS.map((k) => [k, cases.value.reduce((sum, c) => sum + c[k], 0)])) as Record<
+      CountKey,
+      number
+    >,
+)
+
+const groups = computed(() =>
+  (['active', 'decided', 'inactive'] as const).map((key) => ({
+    key,
+    rows: cases.value.filter((c) => c.section === key),
+  })),
+)
+
+function stateLine(c: CommitteeCase) {
+  const parts = []
+  if (c.round?.status === 'open') parts.push(t('deals.round.status.open'))
+  else if (c.round?.status === 'draft') parts.push(t('deals.committee.draftRound'))
+  else parts.push(te(`deals.status.${c.status}`) ? t(`deals.status.${c.status}`) : c.status)
+  if (c.owner) parts.push(c.owner)
+  return parts.join(' · ')
+}
 </script>
 
 <style scoped>
-.section-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #fff;
+.page-head {
+  margin-bottom: 28px;
 }
-.back-link {
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 10px;
+}
+.intro {
+  color: #bbb;
+  font-size: 15px;
+  line-height: 1.55;
+  max-width: 62ch;
+  margin: 0;
+}
+.empty {
   color: #aaa;
-  text-decoration: none;
-  font-size: 13px;
+  font-size: 14px;
 }
-.back-link:hover {
-  color: #fff;
+.totals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 0 0 40px;
 }
-.feed {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.case-card {
+.total {
   background: #161616;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  padding: 18px;
+  padding: 12px 16px;
 }
-.company-name {
-  font-size: 1.1rem;
-  font-weight: 700;
+.total dt {
+  color: #aaa;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.total dd {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #888;
+  margin: 2px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.total.hot dd {
   color: #fff;
+}
+.group {
+  margin-bottom: 40px;
+}
+.group-title {
+  font-size: 1.15rem;
+  font-weight: 650;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.count {
+  font-size: 13px;
+  font-weight: 500;
+  color: #aaa;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 1px 9px;
+}
+.group-fold > summary {
+  cursor: pointer;
+  list-style: none;
+  min-height: 40px;
+}
+.group-fold > summary::-webkit-details-marker {
+  display: none;
+}
+.fold-icon {
+  color: #aaa;
+  margin-left: -4px;
+  transition: transform 0.15s ease;
+}
+.group-fold[open] .fold-icon {
+  transform: rotate(90deg);
+}
+.waits-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 14px;
+}
+.waits-table thead th {
+  color: #999;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  vertical-align: bottom;
+}
+.waits-table tbody th,
+.waits-table tbody td {
+  padding: 12px 14px;
+  vertical-align: top;
+  text-align: left;
+  font-weight: 400;
+}
+.waits-table tbody tr + tr > * {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.waits-table .num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  width: 1%;
+}
+.waits-table thead .num {
+  white-space: normal;
+  min-width: 84px;
+}
+td.num {
+  color: #777;
+}
+td.num.hot {
+  color: #ffb74d;
+  font-weight: 700;
+}
+td.last {
+  color: #999;
+}
+.case-name {
+  color: #fff;
+  font-weight: 600;
   text-decoration: none;
 }
-.company-name:hover {
+.case-name:hover,
+.case-name:focus-visible {
   text-decoration: underline;
 }
-.waits {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.wait {
-  font-size: 12.5px;
-  color: #ccc;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  padding: 3px 8px;
-  text-decoration: none;
-}
-.wait-hot {
-  color: #111;
-  background: #ffb74d;
-  border-color: #ffb74d;
-  font-weight: 600;
-}
-.digest-box summary {
-  cursor: pointer;
-  color: #ddd;
-  font-size: 14px;
-  min-height: 32px;
-}
-.meta {
-  color: #888;
+.case-state {
+  display: block;
+  color: #999;
   font-size: 13px;
+  margin-top: 2px;
+}
+.digest {
+  margin-top: 6px;
+}
+.digest summary {
+  cursor: pointer;
+  color: #ccc;
+  font-size: 13px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 700px) {
+  .totals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .waits-table thead {
+    display: none;
+  }
+  .waits-table,
+  .waits-table tbody,
+  .waits-table tr {
+    display: block;
+  }
+  .waits-table tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    padding: 12px 14px;
+  }
+  .waits-table tbody tr + tr {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .waits-table tbody tr + tr > * {
+    border-top: none;
+  }
+  .waits-table tbody th,
+  .waits-table tbody td {
+    padding: 0;
+  }
+  .waits-table tbody th {
+    flex: 1 0 100%;
+  }
+  .waits-table .num {
+    width: auto;
+    text-align: left;
+    font-size: 13px;
+  }
+  .waits-table td.num::before {
+    content: attr(data-label) ' ';
+    color: #999;
+    font-weight: 400;
+  }
 }
 </style>

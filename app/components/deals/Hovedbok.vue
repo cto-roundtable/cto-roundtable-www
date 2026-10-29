@@ -204,7 +204,7 @@ async function handOver() {
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #ffb74d;
+  color: #aaa;
   margin-bottom: 4px;
 }
 .block + .block {
@@ -247,7 +247,7 @@ async function handOver() {
   margin-bottom: 2px;
 }
 .part-pct {
-  color: #ffb74d;
+  color: #ddd;
 }
 .share {
   display: flex;

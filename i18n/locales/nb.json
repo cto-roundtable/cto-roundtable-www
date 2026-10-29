@@ -19,7 +19,10 @@
     "boardMeetings": "Styremøter",
     "boardActivity": "Aktivitet (styret)",
     "sweden": "Sverige",
-    "deals": "Caser"
+    "deals": "Caser",
+    "dealsMember": "Som medlem",
+    "dealsCommittee": "Komiteen",
+    "dealsPreview": "Se som …"
   },
   "layout": {
     "signedInAs": "Innlogget som",
@@ -512,12 +515,38 @@
   "deals": {
     "list": {
       "title": "Caser",
-      "intro": "Selskapene komiteen vurderer for SPV-en din, og avstemningene om dem. Her ligger råmaterialet (deck, notater fra samtalene med gründerne, tall) med memoet ved siden av.",
-      "staffNote": "Du ser dette som komité eller styre: også utkast og alle SPV-er.",
-      "empty": "Ingen caser å vise akkurat nå.",
-      "lastActivity": "Sist endret {date}",
-      "committeeLink": "Komiteens oversikt",
-      "pipelineLink": "Se hele pipelinen"
+      "lastActivity": "Sist aktivitet {date}"
+    },
+    "overview": {
+      "intro": "Selskapene komiteen jobber med for SPV-en som investerer nå. Klikk deg inn på en case for å lese materialet, spørre eller gi innspill til komiteen.",
+      "introInvested": "Selskapene SPV-en din har investert i. Casene som vurderes nå er for SPV-en som investerer nå.",
+      "introNone": "Ingen caser å vise for deg akkurat nå. Casene som vurderes er for SPV-en som investerer nå.",
+      "audience": "Dette ser medlemmene i {groups} og komiteen.",
+      "decided": "Vedtatt, under gjennomføring",
+      "decidedIntro": "SPV-en har sagt ja. Nå gjenstår papirer og overføring, og komiteen følger opp.",
+      "active": "Under vurdering nå",
+      "activeIntro": "Her er innspill mest verdt. Spør, si fra om innvendinger, eller si at du kjenner dem, lenge før det blir avstemning.",
+      "activeEmpty": "Ingen caser er under vurdering akkurat nå.",
+      "inactive": "Inaktive",
+      "inactiveIntro": "Fortsatt under vurdering, men uten aktivitet på over {weeks} uker.",
+      "invested": "Investert av SPV-en din",
+      "showDeclined": "Vis de vi har sagt nei til",
+      "declined": "Sagt nei til",
+      "declinedIntro": "Selskaper komiteen har vurdert og sagt nei til, og avstemninger som ikke endte med investering.",
+      "declinedEmpty": "Ingen å vise."
+    },
+    "preview": {
+      "showing": "Du ser siden slik et medlem ser den",
+      "hint": "Styret ser det samme som et vanlig medlem. Skjemaene er låst så lenge du ser som en annen.",
+      "choose": "Se som",
+      "exit": "Tilbake til min visning",
+      "role": {
+        "deploying": "Medlem i {group} (investerer nå)",
+        "completed": "Medlem i {group} (ferdig investert)",
+        "raising": "Medlem i {group} (henter kapital)",
+        "other": "Medlem i {group}",
+        "none": "Medlem uten SPV"
+      }
     },
     "status": {
       "incoming": "Ny",
@@ -549,7 +578,7 @@
       }
     },
     "case": {
-      "allCases": "Alle caser",
+      "allCases": "Caser",
       "owner": "Ansvarlig: {name}",
       "rounds": "Avstemning",
       "material": "Materialet",
@@ -558,7 +587,15 @@
       "materialNotShared": "Komiteen har ikke delt materiale om dette selskapet ennå. Du kan likevel spørre og gi innspill.",
       "memoLabel": "Komiteens memo",
       "docMeta": "Versjon {version} · {date} · {size}",
-      "staffNote": "Du ser denne casen som komité eller styre."
+      "statusLabel": "Status",
+      "ownerLabel": "Ansvarlig",
+      "noOwner": "Ingen ennå",
+      "lastActivityLabel": "Sist aktivitet",
+      "noActivity": "Ikke registrert",
+      "jumpAria": "Deler av casen",
+      "jumpInput": "Innspill",
+      "jumpConflict": "Jeg er inhabil",
+      "onlyCommittee": "Bare komiteen"
     },
     "qa": {
       "title": "Spørsmål og svar",
@@ -652,7 +689,7 @@
       "turnout": "Oppslutning {pct} av {n} stemmeberettigede.",
       "secret": "Du ser antall stemmer, ikke hvem som stemte hva. Komiteen ser navnene. Forslaget vedtas med minst 2/3 ja av ja- og nei-stemmene.",
       "protocol": "Protokollen (PDF)",
-      "namedLabel": "Navngitte stemmer (bare komiteen og styret)",
+      "namedLabel": "Navngitte stemmer (bare komiteen)",
       "counted": {
         "yes": "Ja",
         "no": "Nei",
@@ -691,32 +728,20 @@
     },
     "committee": {
       "title": "Komiteens oversikt",
-      "intro": "Alle caser med det som venter på komiteen: spørsmål sendt til den som eier casen, agentsvar som ikke er bekreftet, og nye innspill siden siste oppsummering.",
-      "forbidden": "Bare for komiteen og styret.",
-      "routed": "1 spørsmål venter på eieren | {count} spørsmål venter på eieren",
-      "unconfirmed": "1 agentsvar å bekrefte | {count} agentsvar å bekrefte",
-      "withAgent": "1 spørsmål hos agenten | {count} spørsmål hos agenten",
-      "comments": "{all} innspill, {fresh} nye",
+      "intro": "Alle aktive caser og det som venter på komiteen. Står det 0, venter ingenting.",
+      "forbidden": "Bare for komiteen.",
       "digest": "Oppsummering {date}",
-      "noDigest": "Ingen oppsummering ennå."
-    },
-    "pipeline": {
-      "title": "Pipelinen",
-      "intro": "Det komiteen jobber med nå, til avstemning og under vurdering først. Spør, si fra om innvendinger, eller si at du kjenner dem, lenge før det blir avstemning. Komiteen ser hvem som skrev, de andre medlemmene gjør ikke det.",
-      "introInvested": "Selskapene SPV-en din har investert i. Pipelinen som jobbes med nå er for SPV-en som investerer nå.",
-      "working": "Under arbeid",
-      "workingEmpty": "Ingen selskaper å vise akkurat nå.",
-      "invested": "Selskaper SPV-en din har investert i",
-      "voteOpen": "Åpen avstemning",
-      "ask": "Jeg har et spørsmål",
-      "object": "Jeg har innvendinger",
-      "knowThem": "Jeg kjenner dem",
-      "audience": "Dette ser bare medlemmene i {groups} og komiteen.",
-      "showDeclined": "Vis de vi har sagt nei til",
-      "declined": "Sagt nei til",
-      "declinedIntro": "Selskaper komiteen har vurdert og sagt nei til.",
-      "declinedEmpty": "Ingen å vise.",
-      "conflict": "Jeg er inhabil"
+      "totalsAria": "Det som venter på komiteen, alle caser til sammen",
+      "count": {
+        "questionsRouted": "Spørsmål hos eieren",
+        "answersUnconfirmed": "Agentsvar å bekrefte",
+        "commentsSinceDigest": "Nye innspill",
+        "questionsOpen": "Hos agenten"
+      },
+      "empty": "Ingen aktive caser.",
+      "caseCol": "Case",
+      "lastCol": "Sist aktivitet",
+      "draftRound": "Utkast til avstemning"
     },
     "conflict": {
       "title": "Inhabil?",

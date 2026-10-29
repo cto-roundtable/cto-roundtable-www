@@ -250,14 +250,12 @@ function labelClass(a: Answer) {
 
 <style scoped>
 .panel {
-  background: #161616;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 32px 0 28px;
 }
 .panel-title {
-  font-size: 1.05rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 650;
   color: #fff;
 }
 .meta {
