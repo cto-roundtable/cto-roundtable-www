@@ -811,7 +811,7 @@
   },
   "invest": {
     "intro": "Not binding. Tell us whether you are in and roughly how much. The binding subscription comes later, here in the portal, with what we already know about you filled in.",
-    "preview": "Preview: only the board sees this page until it opens to members.",
+    "preview": "Preview: only the committee sees this page until it opens to members.",
     "notFound": "This page was not found. It may not be open yet.",
     "facts": {
       "heading": "In short",
@@ -865,7 +865,7 @@
     },
     "banner": {
       "title": "{name}: are you in?",
-      "titlePreview": "{name} (board preview)",
+      "titlePreview": "{name} (committee preview)",
       "body": "See the presentation and tell us whether you are in. Not binding.",
       "cta": "Answer"
     },

@@ -811,7 +811,7 @@
   },
   "invest": {
     "intro": "Inte bindande. Säg om du är med och ungefär hur mycket. Den bindande teckningen kommer senare, här i portalen, med det vi redan vet om dig ifyllt.",
-    "preview": "Förhandsvisning: bara styrelsen ser den här sidan tills den öppnas för medlemmarna.",
+    "preview": "Förhandsvisning: bara kommittén ser den här sidan tills den öppnas för medlemmarna.",
     "notFound": "Sidan hittades inte. Den är kanske inte öppnad än.",
     "facts": {
       "heading": "Kort sagt",
@@ -865,7 +865,7 @@
     },
     "banner": {
       "title": "{name}: är du med?",
-      "titlePreview": "{name} (förhandsvisning för styrelsen)",
+      "titlePreview": "{name} (förhandsvisning för kommittén)",
       "body": "Se presentationen och säg om du är med. Inte bindande.",
       "cta": "Svara"
     },

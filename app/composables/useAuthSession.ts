@@ -9,7 +9,7 @@ interface Session {
   isInvestor?: boolean
   canSeeCases?: boolean
   isCommittee?: boolean
-  // The CTORI offering open for interest or tegning (a draft for the board), or null.
+  // The CTORI offering open for interest or tegning (a draft for the committee), or null.
   investOffering?: { slug: string; name: string } | null
   // Chapter codes (`no`, `se`) the member belongs to (server/utils/chapter.ts). They pick
   // the nav (the Swedish area for a Swedish-only member) and the default language.
