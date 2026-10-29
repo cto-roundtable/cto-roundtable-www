@@ -1,5 +1,5 @@
 // GET /api/member/board/activity?days=365&chapter=no|se
-// Board-only (braintrust) member-activity picture over a rolling window.
+// Board-only (styret) member-activity picture over a rolling window.
 // Feeds the styret's "flag inactive members" work. Reads the activity_events
 // signal layer (Slack messages/reactions + Luma attendance/hosting).
 //

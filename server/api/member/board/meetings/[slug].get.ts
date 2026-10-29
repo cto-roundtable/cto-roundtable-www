@@ -1,5 +1,5 @@
 // GET /api/member/board/meetings/:slug
-// Board-only (braintrust) single styremøte with its agenda and referat bodies.
+// Board-only (styret) single styremøte with its agenda and referat bodies.
 export default defineEventHandler(async (event) => {
   await requireBoard(event)
   const sql = useDatabase()
