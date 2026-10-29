@@ -28,5 +28,20 @@ export function cookieHeader(p: Persona) {
 }
 
 export const has = (p: Persona, slug: string) => p.groups.includes(slug)
-export const isStaff = (p: Persona) => has(p, 'styret') || has(p, 'current-komite')
+// Since #74 the committee is the only role with extra case access; the board sees cases as a member.
+export const isCommittee = (p: Persona) => has(p, 'current-komite')
+
+/**
+ * The case slugs a GET /api/member/deals overview offers to OPEN, across its sections. A
+ * declined company the viewer may not open is listed with canOpen: false and no link.
+ */
+export function overviewSlugs(body: Record<string, unknown>): string[] {
+  const sections = ['decided', 'active', 'inactive', 'invested', 'declined']
+  return sections.flatMap((k) =>
+    ((body[k] as { slug: string; canOpen?: boolean }[] | null) ?? [])
+      .filter((c) => c.canOpen !== false)
+      .map((c) => c.slug),
+  )
+}
+
 export const isInvestor = (p: Persona) => p.groups.some((g) => g.startsWith('invest-'))

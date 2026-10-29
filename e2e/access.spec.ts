@@ -4,7 +4,7 @@ import { neon } from '@neondatabase/serverless'
 import { type APIRequestContext, expect, request, test } from '@playwright/test'
 import { e2eEnv } from './support/guard'
 import { PERSONAS, type Persona } from './support/personas'
-import { cookieHeader, has, isInvestor, isStaff, personas, RUN_DIR } from './support/run'
+import { cookieHeader, has, isCommittee, isInvestor, overviewSlugs, personas, RUN_DIR } from './support/run'
 
 // Who can read what, asked of the API (the real gate: pages fetch client-side,
 // so a hidden nav item protects nothing). Each persona gets every probe; the
@@ -17,8 +17,8 @@ const PROBES = [
   '/api/member/chapter',
   '/api/member/deals',
   '/api/member/deals/open-votes',
-  '/api/member/pipeline',
-  '/api/member/pipeline?declined=1',
+  '/api/member/deals?declined=1',
+  '/api/member/deals?som=invest-3',
   '/api/member/updates',
   '/api/member/discounts',
   '/api/member/surveys',
@@ -76,14 +76,16 @@ async function dataTruth() {
 }
 
 let truth: Awaited<ReturnType<typeof dataTruth>>
-let staffCases: string[] = []
+const staffCases: string[] = []
 
 test.beforeAll(async () => {
   truth = await dataTruth()
-  // The staff list is the widest legitimate view; every other persona's is a subset of it.
-  const staff = personas().find((p) => p.key === 'committee-board')!
-  const api = await apiFor(staff)
-  staffCases = ((await (await api.get('/api/member/deals')).json()).cases as { slug: string }[]).map((c) => c.slug)
+  // The committee opens every case it works on, which is the widest legitimate view; every
+  // other persona's is a subset of it. Its LIST is the member view (#74), so ask the case page.
+  const committee = personas().find((p) => p.key === 'committee-board')!
+  const api = await apiFor(committee)
+  for (const slug of truth.allCases)
+    if ((await probe(api, `/api/member/deals/${slug}`)).status === 200) staffCases.push(slug)
   await api.dispose()
 })
 
@@ -153,8 +155,10 @@ for (const spec of PERSONAS) {
     ]) {
       expect.soft(s(path), `${p.key} ${path}`).toBe(has(p, 'styret') ? 200 : 403)
     }
-    // Committee or board.
-    expect.soft(s('/api/member/committee/overview'), `${p.key} committee overview`).toBe(isStaff(p) ? 200 : 403)
+    // Committee only (#74: the board sees cases as a member does).
+    expect.soft(s('/api/member/committee/overview'), `${p.key} committee overview`).toBe(isCommittee(p) ? 200 : 403)
+    // "Se som" (?som=): only the committee may look as another role.
+    expect.soft(s('/api/member/deals?som=invest-3'), `${p.key} ?som=invest-3`).toBe(isCommittee(p) ? 200 : 403)
     // Investors or board.
     expect
       .soft(s('/api/member/open-to-work/list'), `${p.key} open-to-work list`)
@@ -162,22 +166,27 @@ for (const spec of PERSONAS) {
     // Norway-only.
     expect.soft(s('/api/member/onboarding'), `${p.key} onboarding`).toBe(has(p, 'cto-roundtable') ? 200 : 403)
 
-    // Cases: the list and the detail route agree, and nobody sees more than staff.
+    // Cases: for a member the overview (declined included) and the case page agree, and
+    // nobody opens a case the committee cannot. The committee's own list is the member
+    // view by design, while its case page opens everything, so it is left out of the first rule.
     const listed = new Set<string>()
-    if (s('/api/member/deals') === 200) {
+    if (s('/api/member/deals?declined=1') === 200) {
       const api2 = await apiFor(p)
-      for (const c of (await (await api2.get('/api/member/deals')).json()).cases as { slug: string }[])
-        listed.add(c.slug)
+      for (const slug of overviewSlugs(await (await api2.get('/api/member/deals?declined=1')).json())) listed.add(slug)
       await api2.dispose()
     }
     for (const [slug, status] of Object.entries(row.cases)) {
-      expect
-        .soft(status === 200, `${p.key} case ${slug}: list says ${listed.has(slug)}, detail says ${status}`)
-        .toBe(listed.has(slug))
-      if (status === 200) expect.soft(staffCases, `${p.key} sees ${slug}, staff does not`).toContain(slug)
+      if (!isCommittee(p))
+        expect
+          .soft(
+            status === 200,
+            `${p.key} case ${slug}: the list offers it to open: ${listed.has(slug)}, the case page says ${status}`,
+          )
+          .toBe(listed.has(slug))
+      if (status === 200) expect.soft(staffCases, `${p.key} opens ${slug}, the committee cannot`).toContain(slug)
     }
-    if (!isInvestor(p) && !isStaff(p)) {
-      expect.soft([...listed], `${p.key} is in no SPV and not staff, yet sees cases`).toEqual([])
+    if (!isInvestor(p) && !isCommittee(p)) {
+      expect.soft([...listed], `${p.key} is in no SPV and not on the committee, yet sees cases`).toEqual([])
       expect.soft(row.probes['/api/member/updates'].count ?? 0, `${p.key} sees investor updates`).toBe(0)
     }
 
