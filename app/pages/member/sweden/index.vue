@@ -5,6 +5,9 @@
       <p style="color: #aaa; font-size: 14px;">{{ t('member.sweden.intro') }}</p>
     </header>
 
+    <!-- The open CTORI offering, until the member has answered (CTORI4 includes Sweden) -->
+    <InvestOfferingBanner />
+
     <!-- Open Swedish surveys the member has not answered yet -->
     <NuxtLink
       v-for="s in pendingSurveys"

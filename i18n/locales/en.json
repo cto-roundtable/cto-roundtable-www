@@ -22,7 +22,8 @@
     "deals": "Cases",
     "dealsMember": "As a member",
     "dealsCommittee": "The committee",
-    "dealsPreview": "See as …"
+    "dealsPreview": "See as …",
+    "invest": "CTORI 4"
   },
   "layout": {
     "signedInAs": "Signed in as",
@@ -806,6 +807,76 @@
       "noSnapshot": "No vote has closed yet. The ledger is saved when a CTORI 4 vote closes.",
       "period": "{from} to {to}",
       "notPassed": "Not passed, so there is no gain to share."
+    }
+  },
+  "invest": {
+    "intro": "Not binding. Tell us whether you are in and roughly how much. The binding subscription comes later, here in the portal, with what we already know about you filled in.",
+    "preview": "Preview: only the board sees this page until it opens to members.",
+    "notFound": "This page was not found. It may not be open yet.",
+    "facts": {
+      "heading": "In short",
+      "minimum": "{name} goes ahead if we raise at least {amount}.",
+      "notBinding": "Your answer is not binding, and you can change it while the interest phase is open.",
+      "closes": "The interest phase closes on {date}."
+    },
+    "lastTime": {
+      "viaHolding": "Last time you joined {offering} with {amount} through {holding}.",
+      "personal": "Last time you joined {offering} with {amount}, personally."
+    },
+    "aggregate": "So far: {yes} have said yes (together {amount}), {maybe} maybe.",
+    "documents": {
+      "openDeck": "View the presentation",
+      "open": "Open",
+      "updated": "Updated {date}",
+      "back": "Back",
+      "loading": "Loading…",
+      "fullScreen": "Open in a new tab",
+      "missing": "The document was not found."
+    },
+    "form": {
+      "heading": "Are you in?",
+      "answerLabel": "Your answer",
+      "answer": {
+        "yes": "Yes, I am in",
+        "maybe": "Maybe, tell me more",
+        "no": "No thanks"
+      },
+      "amountLabel": "Roughly how much?",
+      "amountLabelMaybe": "If you join, roughly how much? (optional)",
+      "otherAmount": "Other amount",
+      "otherAmountLabel": "Amount",
+      "otherAmountHint": "At least {min}, in whole {step}.",
+      "vehicleLabel": "How do you invest?",
+      "vehicle": {
+        "holding": "Through a holding company",
+        "holdingNamed": "Through {holding}",
+        "personal": "Personally",
+        "unsure": "Not sure yet"
+      },
+      "wantsInfo": "I would like to know more before subscribing",
+      "wantsToHelp": "Would you like to help? (optional)",
+      "wantsToHelpPlaceholder": "For example committee work, assessing cases, bringing dealflow",
+      "notes": "Anything we should know? (optional)",
+      "submit": "Send answer",
+      "update": "Update your answer",
+      "saved": "Your answer was saved on {date}. You can change it while the interest phase is open.",
+      "locked": "You have moved on to the subscription. Make changes there.",
+      "closed": "The interest phase is closed."
+    },
+    "banner": {
+      "title": "{name}: are you in?",
+      "titlePreview": "{name} (board preview)",
+      "body": "See the presentation and tell us whether you are in. Not binding.",
+      "cta": "Answer"
+    },
+    "errors": {
+      "answer": "Choose yes, maybe or no.",
+      "amountRequired": "Choose an amount.",
+      "amount": "That amount does not work. Pick one of the amounts, or a round amount that meets the rule under the field.",
+      "vehicle": "Invalid choice of how you invest.",
+      "closed": "The interest phase is closed.",
+      "alreadyCommitted": "You have moved on to the subscription. Make changes there.",
+      "unknown": "Something went wrong. Please try again."
     }
   }
 }

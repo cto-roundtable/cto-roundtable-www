@@ -29,6 +29,8 @@ export default defineEventHandler(async (event) => {
     canSeeCases: await canSeeCases(session.personId),
     // The committee gets the Komiteen view and the role preview under Caser. The board does not.
     isCommittee: await isCommitteeMember(session.personId),
+    // The CTORI offering to point at (/member/invest/<slug>), or null. Any chapter.
+    investOffering: await currentInvestOffering(session.personId),
     // Chapters (`no`, `se`) pick the nav and the default language.
     chapters,
   }
