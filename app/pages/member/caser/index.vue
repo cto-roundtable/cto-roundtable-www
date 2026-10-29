@@ -1,7 +1,5 @@
 <template>
   <div class="cases text-left">
-    <DealsPreviewBar v-if="data?.preview && data.previewRoles" :roles="data.previewRoles" :current="data.preview.slug" />
-
     <header class="page-head">
       <h1 class="page-title">{{ t('deals.list.title') }}</h1>
       <p class="intro">{{ intro }}</p>
@@ -26,7 +24,7 @@
         <h2 class="group-title">{{ t('deals.overview.decided') }} <span class="count">{{ data.decided.length }}</span></h2>
         <p class="group-intro">{{ t('deals.overview.decidedIntro') }}</p>
         <div class="rows">
-          <DealsCaseRow v-for="c in data.decided" :key="c.slug" :c="c" :query="linkQuery" />
+          <DealsCaseRow v-for="c in data.decided" :key="c.slug" :c="c" />
         </div>
       </section>
 
@@ -34,7 +32,7 @@
         <h2 class="group-title">{{ t('deals.overview.active') }} <span class="count">{{ data.active.length }}</span></h2>
         <p class="group-intro">{{ t('deals.overview.activeIntro') }}</p>
         <div v-if="data.active.length" class="rows">
-          <DealsCaseRow v-for="c in data.active" :key="c.slug" :c="c" :query="linkQuery" />
+          <DealsCaseRow v-for="c in data.active" :key="c.slug" :c="c" />
         </div>
         <p v-else class="empty">{{ t('deals.overview.activeEmpty') }}</p>
       </section>
@@ -46,14 +44,36 @@
         </summary>
         <p class="group-intro">{{ t('deals.overview.inactiveIntro', { weeks: Math.round(data.inactiveAfterDays / 7) }) }}</p>
         <div class="rows">
-          <DealsCaseRow v-for="c in data.inactive" :key="c.slug" :c="c" :query="linkQuery" quiet />
+          <DealsCaseRow v-for="c in data.inactive" :key="c.slug" :c="c" quiet />
         </div>
       </details>
 
       <section v-if="data.invested.length" class="group">
-        <h2 class="group-title">{{ t('deals.overview.invested') }} <span class="count">{{ data.invested.length }}</span></h2>
+        <h2 class="group-title">{{ t('deals.overview.invested') }} <span class="count">{{ investedShown.length }}</span></h2>
+        <p class="group-intro">{{ t('deals.overview.investedIntro') }}</p>
+        <div class="invested-tools">
+          <!-- More than one SPV: filter by it (every row carries its SPV tags either way). -->
+          <div v-if="spvs.length > 1" class="spv-filter" role="group" :aria-label="t('deals.overview.spvFilter')">
+            <button
+              v-for="f in [{ slug: '', name: t('deals.overview.allSpvs') }, ...spvs]"
+              :key="f.slug"
+              type="button"
+              class="spv-chip"
+              :aria-pressed="spvFilter === f.slug"
+              @click="spvFilter = f.slug"
+            >
+              {{ f.name }}
+            </button>
+          </div>
+          <label class="sort">
+            <span>{{ t('deals.overview.sortLabel') }}</span>
+            <select v-model="investedSort" class="sort-select">
+              <option v-for="o in SORTS" :key="o" :value="o">{{ t(`deals.overview.sort.${o}`) }}</option>
+            </select>
+          </label>
+        </div>
         <div class="rows">
-          <DealsCaseRow v-for="c in data.invested" :key="c.slug" :c="c" :query="linkQuery" />
+          <DealsCaseRow v-for="c in investedShown" :key="c.slug" :c="c" invested />
         </div>
       </section>
 
@@ -66,7 +86,7 @@
           <h2 class="group-title">{{ t('deals.overview.declined') }} <span class="count">{{ declined.length }}</span></h2>
           <p class="group-intro">{{ t('deals.overview.declinedIntro') }}</p>
           <div v-if="declined.length" class="rows">
-            <DealsCaseRow v-for="c in declined" :key="c.slug" :c="c" :query="linkQuery" quiet />
+            <DealsCaseRow v-for="c in declined" :key="c.slug" :c="c" quiet />
           </div>
           <p v-else class="empty">{{ t('deals.overview.declinedEmpty') }}</p>
         </template>
@@ -78,8 +98,8 @@
 <script setup lang="ts">
 // The one cases overview, always the MEMBER view (Snorre, 2026-10-29): decided cases
 // on top, then what is under review now, the quiet ones folded away, and what the
-// member's SPV invested in. The committee's view is /member/komite; a committee member
-// can look at this page as any role through "Se som ..." (?som=).
+// member's own SPVs invested in, each tagged with its SPV. The committee's view is
+// /member/komite. Nobody can look at it as another role (Snorre, 2026-10-30).
 definePageMeta({ layout: 'member' })
 
 interface Row {
@@ -97,17 +117,13 @@ interface Row {
     group: { slug: string; name: string }
   } | null
   ours: boolean
+  spvs: { slug: string; name: string }[]
+  investedAt: string | null
+  coLeads: string[]
   canOpen: boolean
-}
-interface Role {
-  slug: string
-  name: string | null
-  phase: string | null
 }
 interface Overview {
   viewer: { isCommittee: boolean }
-  preview: Role | null
-  previewRoles: Role[] | null
   audience: string[]
   decided: Row[]
   active: Row[]
@@ -120,7 +136,6 @@ interface Overview {
 
 const { t } = useI18n()
 const { formatDate } = useLocaleDate()
-const route = useRoute()
 const { session, checked } = useAuthSession()
 const { $posthog } = useNuxtApp()
 const loading = ref(true)
@@ -128,31 +143,45 @@ const data = ref<Overview | null>(null)
 const declined = ref<Row[] | null>(null)
 const loadingDeclined = ref(false)
 
-const som = computed(() => (typeof route.query.som === 'string' ? route.query.som : ''))
-const linkQuery = computed(() => (som.value ? { som: som.value } : undefined))
-
 watch(
-  [() => checked.value && session.value.authenticated, som],
-  async ([ready]) => {
+  () => checked.value && session.value.authenticated,
+  async (ready) => {
     if (!ready) return
     loading.value = true
-    declined.value = null
     try {
-      data.value = await $fetch<Overview>('/api/member/deals', { query: som.value ? { som: som.value } : {} })
+      data.value = await $fetch<Overview>('/api/member/deals')
       $posthog?.capture?.('deal_cases_viewed', {
         active: data.value.active.length,
         decided: data.value.decided.length,
-        preview: data.value.preview?.slug ?? null,
+        invested: data.value.invested.length,
       })
-    } catch {
-      // A role preview for someone who is not on the committee: back to their own view.
-      if (som.value) await navigateTo('/member/caser', { replace: true })
     } finally {
       loading.value = false
     }
   },
   { immediate: true },
 )
+
+// The SPVs behind the invested list, for the filter (one tag per SPV per company).
+const spvs = computed(() => {
+  const all = new Map<string, string>()
+  for (const c of data.value?.invested ?? []) for (const g of c.spvs) all.set(g.slug, g.name)
+  return [...all].map(([slug, name]) => ({ slug, name })).sort((a, b) => a.slug.localeCompare(b.slug))
+})
+const spvFilter = ref('')
+// The server sends the newest investment first; the other orders are client-side.
+const SORTS = ['invested', 'activity', 'name'] as const
+const investedSort = ref<(typeof SORTS)[number]>('invested')
+const time = (d: string | null) => (d ? new Date(d).getTime() : Number.NEGATIVE_INFINITY)
+const investedShown = computed(() => {
+  const rows = (data.value?.invested ?? []).filter(
+    (c) => !spvFilter.value || c.spvs.some((g) => g.slug === spvFilter.value),
+  )
+  if (investedSort.value === 'activity')
+    return [...rows].sort((a, b) => time(b.lastActivityAt) - time(a.lastActivityAt) || a.name.localeCompare(b.name))
+  if (investedSort.value === 'name') return [...rows].sort((a, b) => a.name.localeCompare(b.name))
+  return rows
+})
 
 // The working pipeline is for the SPV investing now; a completed SPV sees its own companies.
 const working = computed(() => Boolean(data.value?.audience.length))
@@ -167,7 +196,7 @@ const intro = computed(() => {
 async function loadDeclined() {
   loadingDeclined.value = true
   try {
-    const res = await $fetch<Overview>('/api/member/deals', { query: { declined: '1', ...(linkQuery.value ?? {}) } })
+    const res = await $fetch<Overview>('/api/member/deals', { query: { declined: '1' } })
     declined.value = res.declined ?? []
     $posthog?.capture?.('deal_pipeline_declined_viewed', { declined: declined.value.length })
   } finally {
@@ -270,6 +299,62 @@ async function loadDeclined() {
 .more:hover,
 .more:focus-visible {
   background: rgba(255, 255, 255, 0.08);
+}
+.invested-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin: 0 0 12px;
+}
+.spv-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #aaa;
+  font-size: 13px;
+  margin-left: auto;
+}
+.sort-select {
+  color: #fff;
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 5px 28px 5px 10px;
+  min-height: 32px;
+  font-size: 13px;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #aaa 50%), linear-gradient(135deg, #aaa 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+.sort-select:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 2px;
+}
+.spv-chip {
+  font-size: 13px;
+  color: #ccc;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 4px 12px;
+  min-height: 32px;
+}
+.spv-chip:hover,
+.spv-chip:focus-visible {
+  background: rgba(255, 255, 255, 0.08);
+}
+.spv-chip[aria-pressed='true'] {
+  background: #fff;
+  border-color: #fff;
+  color: #111;
 }
 .digest-box {
   background: #161616;

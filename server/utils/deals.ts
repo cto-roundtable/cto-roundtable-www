@@ -1,5 +1,4 @@
 import { createHash } from 'node:crypto'
-import type { H3Event } from 'h3'
 
 /**
  * Cases ("caser"): a deal as the SPV members see it before and during a vote.
@@ -16,15 +15,23 @@ import type { H3Event } from 'h3'
  *     network_groups.invest_phase = 'deploying'): every case in active work
  *     (ACTIVE_STATUSES) or marked investor-visible that no SPV has invested in yet
  *     (the working pipeline, dc-33 H1 2026-10-23: all active work, no unreviewed leads);
- *   - a member of a round's group: that case, once the round is open;
+ *   - a member of the active SPV that a round was held for: that case, once the
+ *     round is open;
  *   - a member of an invest group that invested in the company (investments):
- *     that case. A completed SPV sees its own companies and nothing else.
- * A deal without a slug is never a case.
+ *     that case, always (Snorre, dc-59 H1 2026-10-30). A completed SPV (Invest 1, 2)
+ *     sees the companies it invested in and nothing of the working pipeline.
+ * Visibility comes from the person's own memberships only: the board (`styret`) and
+ * every other group add nothing (Snorre, 2026-10-30). A deal without a slug is never
+ * a case.
  *
  * Seeing a case is not seeing its material: the blurb and the documents are shared
  * only once the committee marks it investor-visible or a round has opened
- * (materialSharedSql). Before that a member sees the name, stage, owner and date,
+ * (materialSharedSql). Before that a member sees the name, stage, ansvarlig and date,
  * and can ask and give input.
+ *
+ * "Ansvarlig" is the deal's CURRENT lead and co-leads in deal_people (valid_to IS
+ * NULL), read through dealOwnerJoin, never pipeline_deals.driver_person_id or a file
+ * (Snorre, 2026-10-30).
  */
 
 /** Active work (deal_statuses): what the active SPV sees. Leads ('incoming') are not. */
@@ -38,8 +45,6 @@ export interface CaseViewer {
   groupIds: string[]
   /** current-komite: sees drafts, names, and every case in active work */
   isCommittee: boolean
-  /** a committee member looking at the page as a role sees it (?som=); read-only */
-  preview: PreviewRole | null
 }
 
 export async function caseViewer(personId: string): Promise<CaseViewer> {
@@ -48,57 +53,7 @@ export async function caseViewer(personId: string): Promise<CaseViewer> {
     isCommitteeMember(personId),
     sql`SELECT group_id FROM memberships WHERE person_id = ${personId}` as Promise<any[]>,
   ])
-  return { personId, groupIds: groups.map((g) => g.group_id), isCommittee, preview: null }
-}
-
-// --- Role preview ("Se som ...") ------------------------------------------------------
-
-/** No person: a preview viewer owns no question, comment, ballot or conflict. */
-const NOBODY = '00000000-0000-0000-0000-000000000000'
-/** `?som=ingen`: a portal member in no investing SPV. */
-export const PREVIEW_NO_SPV = 'ingen'
-
-export interface PreviewRole {
-  /** an invest group slug, or PREVIEW_NO_SPV */
-  slug: string
-  name: string | null
-  phase: string | null
-}
-
-/** The roles a committee member can preview: one per invest group, then "no SPV". */
-export async function previewRoles(): Promise<PreviewRole[]> {
-  const sql = useDatabase()
-  const rows = (await sql`
-    SELECT slug, name, invest_phase FROM network_groups
-    WHERE invest_phase IS NOT NULL
-    ORDER BY (invest_phase = 'deploying') DESC, slug
-  `) as any[]
-  return [
-    ...rows.map((r) => ({ slug: r.slug, name: r.name, phase: r.invest_phase })),
-    { slug: PREVIEW_NO_SPV, name: null, phase: null },
-  ]
-}
-
-/**
- * The viewer a role preview stands in for: a member of exactly that SPV (or of
- * none), not on the committee, owning nothing. Only the committee may preview, and a
- * preview can only see less than the real viewer, since the committee sees every case.
- * Every write route reads the real session, never `?som=`, so a preview cannot act.
- */
-export async function viewerForRequest(event: H3Event): Promise<CaseViewer> {
-  const viewer = await caseViewer(event.context.session.personId)
-  const som = getQuery(event).som
-  if (typeof som !== 'string' || !som) return viewer
-  if (!viewer.isCommittee) throw createError({ statusCode: 403, message: 'Committee only' })
-  // `aktiv` (the nav's "Se som ..."): the SPV investing now, else the first role.
-  const roles = await previewRoles()
-  const role =
-    som === 'aktiv' ? (roles.find((r) => r.phase === 'deploying') ?? roles[0]) : roles.find((r) => r.slug === som)
-  if (!role) throw createError({ statusCode: 400, message: 'Unknown role' })
-  const sql = useDatabase()
-  const group =
-    role.slug === PREVIEW_NO_SPV ? [] : ((await sql`SELECT id FROM network_groups WHERE slug = ${role.slug}`) as any[])
-  return { personId: NOBODY, groupIds: group.map((g) => g.id), isCommittee: false, preview: role }
+  return { personId, groupIds: groups.map((g) => g.group_id), isCommittee }
 }
 
 /** Documents are listed raw inputs first and the memo last (plan §7a: the members
@@ -108,6 +63,33 @@ const DOCUMENT_ORDER = ['deck', 'cto-call-notes', 'company-data', 'qa-log', 'num
 function documentRank(key: string): number {
   const i = DOCUMENT_ORDER.indexOf(key)
   return i === -1 ? DOCUMENT_ORDER.length - 1 : i
+}
+
+/**
+ * The deal's ansvarlig as a join named `owner` over `pd`: the CURRENT lead in
+ * deal_people (owner.id, owner.name) and the current co-leads (owner.co_leads,
+ * [{id, name}], oldest first). The one source for every "Ansvarlig" the portal shows
+ * (Snorre, 2026-10-30): never pipeline_deals.driver_person_id, never a file.
+ */
+export function dealOwnerJoin(sql: ReturnType<typeof useDatabase>) {
+  return sql`LEFT JOIN LATERAL (
+    SELECT (array_agg(p.id) FILTER (WHERE dp.role = 'lead'))[1] AS id,
+           (array_agg(p.name) FILTER (WHERE dp.role = 'lead'))[1] AS name,
+           COALESCE(json_agg(json_build_object('id', p.id, 'name', p.name) ORDER BY dp.valid_from)
+                    FILTER (WHERE dp.role = 'co_lead'), '[]'::json) AS co_leads
+    FROM deal_people dp JOIN persons p ON p.id = dp.person_id
+    WHERE dp.deal_id = pd.id AND dp.valid_to IS NULL AND dp.role IN ('lead', 'co_lead')
+  ) owner ON true`
+}
+
+export interface Person {
+  id: string
+  name: string
+}
+
+/** Whether this person is the deal's lead or one of its co-leads (deal_people). */
+export function isDealDriver(deal: { owner: Person | null; coLeads: Person[] }, personId: string): boolean {
+  return deal.owner?.id === personId || deal.coLeads.some((p) => p.id === personId)
 }
 
 /**
@@ -127,12 +109,12 @@ function caseVisibleSql(sql: ReturnType<typeof useDatabase>, viewer: CaseViewer)
         SELECT 1 FROM network_groups g
         WHERE g.id = ANY(${groups}::uuid[]) AND g.invest_phase = 'deploying'))
     OR EXISTS (
-      SELECT 1 FROM deal_rounds r0
-      WHERE r0.deal_id = pd.id AND r0.status IN ('open', 'closed') AND r0.group_id = ANY(${groups}::uuid[]))
-    OR ((pd.investor_visible OR EXISTS (SELECT 1 FROM deal_rounds r1 WHERE r1.deal_id = pd.id AND r1.status <> 'draft'))
-        AND EXISTS (
-          SELECT 1 FROM investments i
-          WHERE i.deal_id = pd.id AND i.group_id = ANY(${groups}::uuid[])))
+      SELECT 1 FROM deal_rounds r0 JOIN network_groups g0 ON g0.id = r0.group_id
+      WHERE r0.deal_id = pd.id AND r0.status IN ('open', 'closed')
+        AND r0.group_id = ANY(${groups}::uuid[]) AND g0.invest_phase = 'deploying')
+    OR EXISTS (
+      SELECT 1 FROM investments i
+      WHERE i.deal_id = pd.id AND i.group_id = ANY(${groups}::uuid[]))
   )`
 }
 
@@ -168,10 +150,17 @@ export interface CaseDeal {
   name: string
   status: string
   blurb: string | null
-  owner: { id: string; name: string } | null
+  /** the current lead (deal_people) */
+  owner: Person | null
+  /** the current co-leads (deal_people), oldest first */
+  coLeads: Person[]
   lastActivityAt: string | null
   /** blurb and documents are shared with this viewer (materialSharedSql) */
   materialShared: boolean
+  /** invested (status, or an investments row): the page follows up, it no longer reviews */
+  followUp: boolean
+  /** an SPV this viewer is in invested: the company's investor updates open for them */
+  ours: boolean
 }
 
 /**
@@ -182,10 +171,12 @@ export async function requireCase(viewer: CaseViewer, slug: string): Promise<Cas
   const sql = useDatabase()
   const rows = await sql`
     SELECT pd.id, pd.slug, o.name, pd.status, pd.investor_blurb, pd.last_activity_at,
-           owner.id AS owner_id, owner.name AS owner_name, ${materialSharedSql(sql, viewer)} AS material_shared
+           owner.id AS owner_id, owner.name AS owner_name, owner.co_leads, ${materialSharedSql(sql, viewer)} AS material_shared,
+           EXISTS (SELECT 1 FROM investments i WHERE i.deal_id = pd.id) AS invested,
+           EXISTS (SELECT 1 FROM investments i WHERE i.deal_id = pd.id AND i.group_id = ANY(${viewer.groupIds}::uuid[])) AS ours
     FROM pipeline_deals pd
     JOIN organizations o ON o.id = pd.organization_id
-    LEFT JOIN persons owner ON owner.id = pd.driver_person_id
+    ${dealOwnerJoin(sql)}
     WHERE pd.slug = ${slug} AND ${caseVisibleSql(sql, viewer)}
     LIMIT 1
   `
@@ -198,8 +189,12 @@ export async function requireCase(viewer: CaseViewer, slug: string): Promise<Cas
     status: r.status,
     blurb: r.material_shared ? r.investor_blurb : null,
     owner: r.owner_id ? { id: r.owner_id, name: r.owner_name } : null,
+    coLeads: r.co_leads ?? [],
     lastActivityAt: r.last_activity_at,
     materialShared: r.material_shared,
+    // Snorre, 2026-10-30: once the money has gone the case page is a follow-up page.
+    followUp: r.status === 'invested' || r.invested,
+    ours: r.ours,
   }
 }
 
@@ -263,7 +258,9 @@ export interface AdminDeal {
   status: string
   investorVisible: boolean
   investorBlurb: string | null
-  owner: { id: string; name: string } | null
+  /** the current lead and co-leads (deal_people) */
+  owner: Person | null
+  coLeads: Person[]
   lastActivityAt: string | null
 }
 
@@ -275,6 +272,7 @@ function adminDeal(r: any): AdminDeal {
     investorVisible: r.investor_visible,
     investorBlurb: r.investor_blurb,
     owner: r.owner_id ? { id: r.owner_id, name: r.owner_name } : null,
+    coLeads: r.co_leads ?? [],
     lastActivityAt: r.last_activity_at,
   }
 }
@@ -283,7 +281,7 @@ export async function adminListDeals(opts: { visibleOnly: boolean; status: strin
   const sql = useDatabase()
   const rows = await sql`
     SELECT pd.id, pd.slug, o.name, pd.status, pd.investor_visible, pd.investor_blurb, pd.last_activity_at,
-           owner.id AS owner_id, owner.name AS owner_name,
+           owner.id AS owner_id, owner.name AS owner_name, owner.co_leads,
            COALESCE((
              SELECT json_agg(json_build_object('id', r.id, 'group', ng.slug, 'status', r.status, 'closesAt', r.closes_at)
                              ORDER BY r.created_at DESC)
@@ -292,7 +290,7 @@ export async function adminListDeals(opts: { visibleOnly: boolean; status: strin
            ), '[]'::json) AS rounds
     FROM pipeline_deals pd
     JOIN organizations o ON o.id = pd.organization_id
-    LEFT JOIN persons owner ON owner.id = pd.driver_person_id
+    ${dealOwnerJoin(sql)}
     WHERE pd.slug IS NOT NULL
       AND (NOT ${opts.visibleOnly} OR pd.investor_visible)
       AND (${opts.status}::text IS NULL OR pd.status = ${opts.status})
@@ -311,10 +309,10 @@ async function adminFindDeal(slug: string): Promise<(AdminDeal & { id: string })
   const sql = useDatabase()
   const rows = await sql`
     SELECT pd.id, pd.slug, o.name, pd.status, pd.investor_visible, pd.investor_blurb, pd.last_activity_at,
-           owner.id AS owner_id, owner.name AS owner_name
+           owner.id AS owner_id, owner.name AS owner_name, owner.co_leads
     FROM pipeline_deals pd
     JOIN organizations o ON o.id = pd.organization_id
-    LEFT JOIN persons owner ON owner.id = pd.driver_person_id
+    ${dealOwnerJoin(sql)}
     WHERE pd.slug = ${slug}
     LIMIT 1
   `
@@ -531,13 +529,19 @@ export interface CaseRow {
   status: string
   /** only when the material is shared (materialSharedSql) */
   blurb: string | null
+  /** ansvarlig: the current lead, then the co-leads (deal_people) */
   owner: string | null
+  coLeads: string[]
   /** last_activity_at, else updated_at */
   lastActivityAt: string | null
   /** the open round, else the newest this viewer may see */
   round: CaseRound | null
   /** an SPV this viewer is in invested in it */
   ours: boolean
+  /** the viewer's own SPVs that invested in it, each once (Invest 1, Invest 2, ...) */
+  spvs: { slug: string; name: string }[]
+  /** when the latest of those SPVs invested (investments.invested_at; null if unknown) */
+  investedAt: string | null
   /** the case page opens for this viewer (always, except some declined rows, which
    *  then carry no blurb, owner or round) */
   canOpen: boolean
@@ -547,10 +551,15 @@ export interface CaseRow {
 function caseRowColumns(sql: ReturnType<typeof useDatabase>, viewer: CaseViewer) {
   return sql`
     pd.slug, o.name, pd.status, COALESCE(pd.last_activity_at, pd.updated_at) AS last_activity_at,
-    owner.name AS owner_name,
+    owner.name AS owner_name, owner.co_leads,
     CASE WHEN ${materialSharedSql(sql, viewer)} THEN pd.investor_blurb END AS investor_blurb,
     EXISTS (SELECT 1 FROM investments i WHERE i.deal_id = pd.id AND i.group_id = ANY(${viewer.groupIds}::uuid[])) AS ours,
     EXISTS (SELECT 1 FROM investments i WHERE i.deal_id = pd.id) AS invested,
+    (SELECT json_agg(json_build_object('slug', s.slug, 'name', s.name) ORDER BY s.slug)
+     FROM (SELECT DISTINCT ng.slug, ng.name FROM investments i JOIN network_groups ng ON ng.id = i.group_id
+           WHERE i.deal_id = pd.id AND i.group_id = ANY(${viewer.groupIds}::uuid[])) s) AS spvs,
+    (SELECT MAX(i.invested_at) FROM investments i
+     WHERE i.deal_id = pd.id AND i.group_id = ANY(${viewer.groupIds}::uuid[])) AS invested_at,
     (SELECT json_build_object('status', r.status, 'result', r.result, 'closesAt', r.closes_at, 'closedAt', r.closed_at,
                               'group', json_build_object('slug', ng.slug, 'name', ng.name))
      FROM deal_rounds r JOIN network_groups ng ON ng.id = r.group_id
@@ -569,9 +578,12 @@ function caseRowOut(r: any): CaseRow {
     status: r.status,
     blurb: canOpen ? r.investor_blurb : null,
     owner: canOpen ? r.owner_name : null,
+    coLeads: canOpen ? (r.co_leads ?? []).map((p: Person) => p.name) : [],
     lastActivityAt: r.last_activity_at,
     round: canOpen ? r.round : null,
     ours: r.ours,
+    spvs: r.spvs ?? [],
+    investedAt: r.invested_at,
     canOpen,
   }
 }
@@ -627,7 +639,7 @@ export async function listCaseOverview(
       SELECT ${caseRowColumns(sql, viewer)}
       FROM pipeline_deals pd
       JOIN organizations o ON o.id = pd.organization_id
-      LEFT JOIN persons owner ON owner.id = pd.driver_person_id
+      ${dealOwnerJoin(sql)}
       WHERE pd.slug IS NOT NULL AND ${caseVisibleSql(sql, viewer)}
     ` as Promise<any[]>,
     opts.declined && activeGroups.length
@@ -635,7 +647,7 @@ export async function listCaseOverview(
           SELECT ${caseRowColumns(sql, viewer)}, ${caseVisibleSql(sql, viewer)} AS can_open
           FROM pipeline_deals pd
           JOIN organizations o ON o.id = pd.organization_id
-          LEFT JOIN persons owner ON owner.id = pd.driver_person_id
+          ${dealOwnerJoin(sql)}
           WHERE pd.slug IS NOT NULL AND pd.status = ANY(${DECLINED_STATUSES})
             AND NOT EXISTS (SELECT 1 FROM investments i0 WHERE i0.deal_id = pd.id)
           ORDER BY pd.last_activity_at DESC NULLS LAST, o.name
@@ -657,14 +669,22 @@ export async function listCaseOverview(
   for (const r of rows) {
     const row = caseRowOut(r)
     if (r.invested) {
-      if (r.ours || viewer.isCommittee) out.invested.push(row)
+      // Only through the viewer's own SPVs (investments x memberships), never the
+      // visible flag, a round or activity (Snorre, 2026-10-30).
+      if (r.ours) out.invested.push(row)
       continue
     }
     const section = caseSection(row)
     if (section) out[section].push(row)
     else ended.push(row)
   }
-  for (const list of [out.decided, out.active, out.inactive, out.invested]) list.sort(byUrgency)
+  for (const list of [out.decided, out.active, out.inactive]) list.sort(byUrgency)
+  // Newest investment first (Snorre, 2026-10-30); an unknown date last, never guessed.
+  out.invested.sort(
+    (a, b) =>
+      (b.investedAt ? new Date(b.investedAt).getTime() : -Infinity) -
+        (a.investedAt ? new Date(a.investedAt).getTime() : -Infinity) || a.name.localeCompare(b.name, 'nb'),
+  )
   if (declinedRows) {
     const seen = new Set(declinedRows.map((r) => r.slug))
     out.declined = [...declinedRows.map(caseRowOut), ...ended.filter((r) => !seen.has(r.slug))]

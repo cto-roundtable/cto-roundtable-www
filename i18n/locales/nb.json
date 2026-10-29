@@ -22,8 +22,9 @@
     "deals": "Caser",
     "dealsMember": "Som medlem",
     "dealsCommittee": "Komiteen",
-    "dealsPreview": "Se som …",
-    "invest": "CTORI 4"
+    "invest": "CTORI 4",
+    "expand": "Vis undermenyen for {item}",
+    "collapse": "Skjul undermenyen for {item}"
   },
   "layout": {
     "signedInAs": "Innlogget som",
@@ -72,7 +73,14 @@
         "role": "Rolle",
         "memberSince": "Medlem siden"
       },
-      "roleFallback": "medlem"
+      "roleFallback": "medlem",
+      "defaultVote": {
+        "heading": "Når du ikke stemmer",
+        "intro": "Avstemninger i SPV-en skjer i portalen og står åpne i 48 timer. Rekker du ikke å stemme, kan du regnes som blank. Blank teller verken som ja eller nei. Du kan alltid stemme selv, og da er det stemmen din som gjelder.",
+        "label": "Hvis jeg ikke stemmer, regn meg som blank",
+        "note": "En endring gjelder fra neste avstemning som åpner. Ja kan aldri være standard.",
+        "error": "Klarte ikke å lagre. Prøv igjen."
+      }
     },
     "discounts": {
       "title": "Fordeler",
@@ -516,7 +524,10 @@
   "deals": {
     "list": {
       "title": "Caser",
-      "lastActivity": "Sist aktivitet {date}"
+      "lastActivity": "Sist aktivitet {date}",
+      "investedAt": "Investert {date}",
+      "updates": "Oppdateringer",
+      "updatesAria": "Investoroppdateringer fra {name}"
     },
     "overview": {
       "intro": "Selskapene komiteen jobber med for SPV-en som investerer nå. Klikk deg inn på en case for å lese materialet, spørre eller gi innspill til komiteen.",
@@ -534,19 +545,15 @@
       "showDeclined": "Vis de vi har sagt nei til",
       "declined": "Sagt nei til",
       "declinedIntro": "Selskaper komiteen har vurdert og sagt nei til, og avstemninger som ikke endte med investering.",
-      "declinedEmpty": "Ingen å vise."
-    },
-    "preview": {
-      "showing": "Du ser siden slik et medlem ser den",
-      "hint": "Styret ser det samme som et vanlig medlem. Skjemaene er låst så lenge du ser som en annen.",
-      "choose": "Se som",
-      "exit": "Tilbake til min visning",
-      "role": {
-        "deploying": "Medlem i {group} (investerer nå)",
-        "completed": "Medlem i {group} (ferdig investert)",
-        "raising": "Medlem i {group} (henter kapital)",
-        "other": "Medlem i {group}",
-        "none": "Medlem uten SPV"
+      "declinedEmpty": "Ingen å vise.",
+      "investedIntro": "Selskapene SPV-ene dine har investert i. Memo og presentasjon ligger på casen når komiteen har delt dem.",
+      "spvFilter": "Vis etter SPV",
+      "allSpvs": "Alle",
+      "sortLabel": "Sorter",
+      "sort": {
+        "invested": "Sist investert",
+        "activity": "Sist aktivitet",
+        "name": "Navn"
       }
     },
     "status": {
@@ -596,7 +603,13 @@
       "jumpAria": "Deler av casen",
       "jumpInput": "Innspill",
       "jumpConflict": "Jeg er inhabil",
-      "onlyCommittee": "Bare komiteen"
+      "onlyCommittee": "Bare komiteen",
+      "coLeadLabel": "Medansvarlig",
+      "followUp": {
+        "updates": "Investoroppdateringer fra {name}",
+        "qaTitle": "Spørsmål om status",
+        "inputTitle": "Oppfølging"
+      }
     },
     "qa": {
       "title": "Spørsmål og svar",
@@ -634,6 +647,11 @@
         "owner": "Svar fra komiteen",
         "ownerNamed": "Svar fra {name}",
         "founder": "Svar fra gründeren, via komiteen"
+      },
+      "followUp": {
+        "title": "Spørsmål om status",
+        "intro": "Lurer du på hvordan det går med selskapet? Spør her. En agent svarer fra det vi har, og ellers går spørsmålet til den som er ansvarlig. Svaret vises for alle i SPV-en. Hvem som spurte ser bare komiteen.",
+        "askLabel": "Hva lurer du på om selskapet nå?"
       }
     },
     "comments": {
@@ -661,7 +679,24 @@
       "mineLabel": "Dine innspill",
       "by": "{name}, {date}",
       "withdraw": "Trekk tilbake",
-      "withdrawnOn": "Trukket tilbake {date}"
+      "withdrawnOn": "Trukket tilbake {date}",
+      "followUp": {
+        "title": "Oppfølging",
+        "titleStaff": "Oppfølging fra medlemmene",
+        "intro": "Har du en idé til oppfølgingen, eller kan du hjelpe selskapet med noe? Skriv det her. Komiteen ser det med navnet ditt. De andre medlemmene ser det ikke.",
+        "introStaff": "Det medlemmene har skrevet om oppfølgingen, med navn. Hvert medlem ser bare sine egne.",
+        "kind": {
+          "suggestion": "Idé til oppfølging",
+          "signal": "Jeg kan hjelpe",
+          "comment": "Annet"
+        },
+        "placeholder": {
+          "suggestion": "Hva bør vi følge opp, eller gjøre annerledes?",
+          "signal": "Hva kan du hjelpe med, og hvordan?",
+          "comment": "Det du vil si"
+        },
+        "submit": "Send"
+      }
     },
     "ballot": {
       "proposal": "Forslag: {amount}, {instrument}{cap}",
@@ -710,7 +745,11 @@
       "closeLead": "Ansvarlig (drev casen)",
       "closeOwner": "Oppfølgingsansvarlig",
       "closeHovedbok": "Hovedboka for CTORI 4 lagres når du avslutter: komiteen slik den er nå, lead og oppfølgingsansvarlig.",
-      "close": "Avslutt avstemningen"
+      "close": "Avslutt avstemningen",
+      "defaultBlank": "Hvis ikke stemt: blank",
+      "defaultNone": "Hvis ikke stemt: teller ikke",
+      "defaultChangedBlank": "slått på etter åpning, gjelder fra neste avstemning",
+      "defaultChangedNone": "slått av etter åpning, gjelder fra neste avstemning"
     },
     "banner": {
       "title": "Åpen avstemning: {name}",

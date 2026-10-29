@@ -22,8 +22,9 @@
     "deals": "Case",
     "dealsMember": "Som medlem",
     "dealsCommittee": "Kommittén",
-    "dealsPreview": "Se som …",
-    "invest": "CTORI 4"
+    "invest": "CTORI 4",
+    "expand": "Visa undermenyn för {item}",
+    "collapse": "Dölj undermenyn för {item}"
   },
   "layout": {
     "signedInAs": "Inloggad som",
@@ -72,7 +73,14 @@
         "role": "Roll",
         "memberSince": "Medlem sedan"
       },
-      "roleFallback": "medlem"
+      "roleFallback": "medlem",
+      "defaultVote": {
+        "heading": "När du inte röstar",
+        "intro": "Omröstningar i SPV:n sker i portalen och är öppna i 48 timmar. Hinner du inte rösta kan du räknas som blank. Blank räknas varken som ja eller nej. Du kan alltid rösta själv, och då är det din röst som gäller.",
+        "label": "Om jag inte röstar, räkna mig som blank",
+        "note": "En ändring gäller från nästa omröstning som öppnar. Ja kan aldrig vara standard.",
+        "error": "Kunde inte spara. Försök igen."
+      }
     },
     "discounts": {
       "title": "Erbjudanden",
@@ -516,7 +524,10 @@
   "deals": {
     "list": {
       "title": "Case",
-      "lastActivity": "Senaste aktivitet {date}"
+      "lastActivity": "Senaste aktivitet {date}",
+      "investedAt": "Investerat {date}",
+      "updates": "Uppdateringar",
+      "updatesAria": "Investeraruppdateringar från {name}"
     },
     "overview": {
       "intro": "Bolagen kommittén arbetar med för det SPV som investerar nu. Öppna ett case för att läsa materialet, fråga eller ge kommittén dina synpunkter.",
@@ -534,19 +545,15 @@
       "showDeclined": "Visa de vi har sagt nej till",
       "declined": "Sagt nej till",
       "declinedIntro": "Bolag kommittén har utvärderat och sagt nej till, och omröstningar som inte slutade i en investering.",
-      "declinedEmpty": "Inget att visa."
-    },
-    "preview": {
-      "showing": "Du ser sidan som en medlem ser den",
-      "hint": "Styrelsen ser samma sak som en vanlig medlem. Formulären är låsta så länge du ser som någon annan.",
-      "choose": "Se som",
-      "exit": "Tillbaka till min vy",
-      "role": {
-        "deploying": "Medlem i {group} (investerar nu)",
-        "completed": "Medlem i {group} (färdiginvesterat)",
-        "raising": "Medlem i {group} (tar in kapital)",
-        "other": "Medlem i {group}",
-        "none": "Medlem utan SPV"
+      "declinedEmpty": "Inget att visa.",
+      "investedIntro": "Bolagen dina SPV:er har investerat i. Memo och presentation finns på caset när kommittén har delat dem.",
+      "spvFilter": "Filtrera efter SPV",
+      "allSpvs": "Alla",
+      "sortLabel": "Sortera",
+      "sort": {
+        "invested": "Senast investerat",
+        "activity": "Senaste aktivitet",
+        "name": "Namn"
       }
     },
     "status": {
@@ -596,7 +603,13 @@
       "jumpAria": "Delar av caset",
       "jumpInput": "Synpunkter",
       "jumpConflict": "Jag är jävig",
-      "onlyCommittee": "Bara kommittén"
+      "onlyCommittee": "Bara kommittén",
+      "coLeadLabel": "Medansvarig",
+      "followUp": {
+        "updates": "Investeraruppdateringar från {name}",
+        "qaTitle": "Frågor om status",
+        "inputTitle": "Uppföljning"
+      }
     },
     "qa": {
       "title": "Frågor och svar",
@@ -634,6 +647,11 @@
         "owner": "Svar från kommittén",
         "ownerNamed": "Svar från {name}",
         "founder": "Svar från grundaren, via kommittén"
+      },
+      "followUp": {
+        "title": "Frågor om status",
+        "intro": "Undrar du hur det går för bolaget? Fråga här. En agent svarar utifrån det vi har, och annars går frågan till den ansvariga. Svaret visas för alla i SPV:n. Bara kommittén ser vem som frågade.",
+        "askLabel": "Vad undrar du om bolaget nu?"
       }
     },
     "comments": {
@@ -661,7 +679,24 @@
       "mineLabel": "Dina synpunkter",
       "by": "{name}, {date}",
       "withdraw": "Dra tillbaka",
-      "withdrawnOn": "Tillbakadragen {date}"
+      "withdrawnOn": "Tillbakadragen {date}",
+      "followUp": {
+        "title": "Uppföljning",
+        "titleStaff": "Uppföljning från medlemmarna",
+        "intro": "Har du en idé till uppföljningen, eller kan du hjälpa bolaget med något? Skriv det här. Kommittén ser det med ditt namn. Andra medlemmar ser det inte.",
+        "introStaff": "Det medlemmarna har skrivit om uppföljningen, med namn. Varje medlem ser bara sina egna.",
+        "kind": {
+          "suggestion": "Idé till uppföljning",
+          "signal": "Jag kan hjälpa till",
+          "comment": "Annat"
+        },
+        "placeholder": {
+          "suggestion": "Vad bör vi följa upp, eller göra annorlunda?",
+          "signal": "Vad kan du hjälpa till med, och hur?",
+          "comment": "Det du vill säga"
+        },
+        "submit": "Skicka"
+      }
     },
     "ballot": {
       "proposal": "Förslag: {amount}, {instrument}{cap}",
@@ -710,7 +745,11 @@
       "closeLead": "Ansvarig (drev caset)",
       "closeOwner": "Uppföljningsansvarig",
       "closeHovedbok": "Huvudboken för CTORI 4 sparas när du avslutar: kommittén som den är nu, lead och uppföljningsansvarig.",
-      "close": "Avsluta omröstningen"
+      "close": "Avsluta omröstningen",
+      "defaultBlank": "Om ingen röst: blank",
+      "defaultNone": "Om ingen röst: räknas inte",
+      "defaultChangedBlank": "påslaget efter öppning, gäller från nästa omröstning",
+      "defaultChangedNone": "avstängt efter öppning, gäller från nästa omröstning"
     },
     "banner": {
       "title": "Öppen omröstning: {name}",

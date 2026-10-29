@@ -126,14 +126,17 @@
       <v-icon size="16" class="mr-2">mdi-file-pdf-box</v-icon>{{ t('deals.ballot.protocol') }}
     </a>
 
-    <!-- Committee only: who voted what (decision 2026-10-22 §3; the board sees what a member sees). -->
+    <!-- Committee only: who voted what and each member's standing vote (decision 2026-10-22 §3, dc-59 H3). -->
     <div v-if="round.named && round.named.length" class="named mt-4">
       <p class="named-label mb-2">{{ t('deals.ballot.namedLabel') }}</p>
       <div v-for="(row, i) in round.named" :key="i" class="named-row">
         <span class="named-name">{{ row.name }}</span>
         <span class="named-choice" :class="`c-${row.counted}`">{{ t(`deals.ballot.counted.${row.counted}`) }}</span>
         <span class="named-meta">
-          {{ row.castAt ? `${t(`deals.ballot.method.${row.method}`)}, ${stamp(row.castAt)}` : '' }}{{ row.late ? ` · ${t('deals.ballot.late')}` : '' }}
+          {{ row.castAt ? `${t(`deals.ballot.method.${row.method}`)}, ${stamp(row.castAt)} · ` : '' }}{{ row.late ? `${t('deals.ballot.late')} · ` : '' }}{{ t(row.defaultVote === 'blank' ? 'deals.ballot.defaultBlank' : 'deals.ballot.defaultNone') }}
+          <template v-if="row.defaultNow !== row.defaultVote">
+            ({{ t(row.defaultNow === 'blank' ? 'deals.ballot.defaultChangedBlank' : 'deals.ballot.defaultChangedNone') }})
+          </template>
         </span>
       </div>
     </div>
@@ -173,7 +176,16 @@ interface CaseRoundView {
     conflict: boolean
     ballot: { choice: string; castAt: string } | null
   }
-  named?: { name: string; counted: string; method: string | null; castAt: string | null; late: boolean }[]
+  named?: {
+    name: string
+    counted: string
+    method: string | null
+    castAt: string | null
+    late: boolean
+    /** the standing vote frozen at open (counts here) and the member's setting now */
+    defaultVote: 'blank' | null
+    defaultNow: 'blank' | null
+  }[]
   canOpen?: boolean
   close?: { due: boolean; hovedbok: boolean; missing: ('lead' | 'follow_up_owner')[] }
 }

@@ -22,8 +22,9 @@
     "deals": "Cases",
     "dealsMember": "As a member",
     "dealsCommittee": "The committee",
-    "dealsPreview": "See as …",
-    "invest": "CTORI 4"
+    "invest": "CTORI 4",
+    "expand": "Show the {item} submenu",
+    "collapse": "Hide the {item} submenu"
   },
   "layout": {
     "signedInAs": "Signed in as",
@@ -72,7 +73,14 @@
         "role": "Role",
         "memberSince": "Member since"
       },
-      "roleFallback": "member"
+      "roleFallback": "member",
+      "defaultVote": {
+        "heading": "When you don't vote",
+        "intro": "Votes in the SPV happen in the portal and stay open for 48 hours. If you don't get to vote, you can be counted as blank. Blank counts as neither yes nor no. You can always vote yourself, and then your own vote is the one that counts.",
+        "label": "If I don't vote, count me as blank",
+        "note": "A change applies from the next vote that opens. Yes can never be the default.",
+        "error": "Could not save. Try again."
+      }
     },
     "discounts": {
       "title": "Offers",
@@ -516,7 +524,10 @@
   "deals": {
     "list": {
       "title": "Cases",
-      "lastActivity": "Last activity {date}"
+      "lastActivity": "Last activity {date}",
+      "investedAt": "Invested {date}",
+      "updates": "Updates",
+      "updatesAria": "Investor updates from {name}"
     },
     "overview": {
       "intro": "The companies the committee is working on for the SPV that is investing now. Open a case to read the material, ask, or give the committee your input.",
@@ -534,19 +545,15 @@
       "showDeclined": "Show the ones we said no to",
       "declined": "Said no to",
       "declinedIntro": "Companies the committee reviewed and said no to, and votes that did not end in an investment.",
-      "declinedEmpty": "Nothing to show."
-    },
-    "preview": {
-      "showing": "You see this page as a member sees it",
-      "hint": "The board sees the same as any member. Forms are locked while you look as someone else.",
-      "choose": "See as",
-      "exit": "Back to my view",
-      "role": {
-        "deploying": "Member of {group} (investing now)",
-        "completed": "Member of {group} (fully invested)",
-        "raising": "Member of {group} (raising)",
-        "other": "Member of {group}",
-        "none": "Member in no SPV"
+      "declinedEmpty": "Nothing to show.",
+      "investedIntro": "The companies your SPVs invested in. The memo and the pitch deck are on the case once the committee has shared them.",
+      "spvFilter": "Filter by SPV",
+      "allSpvs": "All",
+      "sortLabel": "Sort",
+      "sort": {
+        "invested": "Latest invested",
+        "activity": "Latest activity",
+        "name": "Name"
       }
     },
     "status": {
@@ -596,7 +603,13 @@
       "jumpAria": "Parts of the case",
       "jumpInput": "Input",
       "jumpConflict": "I have a conflict",
-      "onlyCommittee": "Committee only"
+      "onlyCommittee": "Committee only",
+      "coLeadLabel": "Co-lead",
+      "followUp": {
+        "updates": "Investor updates from {name}",
+        "qaTitle": "Questions on status",
+        "inputTitle": "Follow-up"
+      }
     },
     "qa": {
       "title": "Questions and answers",
@@ -634,6 +647,11 @@
         "owner": "Answer from the committee",
         "ownerNamed": "Answer from {name}",
         "founder": "Answer from the founder, via the committee"
+      },
+      "followUp": {
+        "title": "Questions on status",
+        "intro": "Wondering how the company is doing? Ask here. An agent answers from what we have, and otherwise the question goes to the lead. The answer is shown to everyone in the SPV. Only the committee sees who asked.",
+        "askLabel": "What do you want to know about the company now?"
       }
     },
     "comments": {
@@ -661,7 +679,24 @@
       "mineLabel": "Your input",
       "by": "{name}, {date}",
       "withdraw": "Withdraw",
-      "withdrawnOn": "Withdrawn {date}"
+      "withdrawnOn": "Withdrawn {date}",
+      "followUp": {
+        "title": "Follow-up",
+        "titleStaff": "Follow-up from members",
+        "intro": "Have an idea for the follow-up, or can you help the company with something? Write it here. The committee sees it with your name. Other members don't.",
+        "introStaff": "What members wrote about the follow-up, with names. Each member sees only their own.",
+        "kind": {
+          "suggestion": "Follow-up idea",
+          "signal": "I can help",
+          "comment": "Other"
+        },
+        "placeholder": {
+          "suggestion": "What should we follow up on, or do differently?",
+          "signal": "What can you help with, and how?",
+          "comment": "What you want to say"
+        },
+        "submit": "Send"
+      }
     },
     "ballot": {
       "proposal": "Proposal: {amount}, {instrument}{cap}",
@@ -710,7 +745,11 @@
       "closeLead": "Lead (drove the case)",
       "closeOwner": "Follow-up owner",
       "closeHovedbok": "The CTORI 4 ledger is saved when you close: the committee as it is now, the lead and the follow-up owner.",
-      "close": "Close the vote"
+      "close": "Close the vote",
+      "defaultBlank": "If no vote: blank",
+      "defaultNone": "If no vote: not counted",
+      "defaultChangedBlank": "turned on after the vote opened, applies from the next vote",
+      "defaultChangedNone": "turned off after the vote opened, applies from the next vote"
     },
     "banner": {
       "title": "Open vote: {name}",

@@ -21,7 +21,6 @@ const PROBES = [
   '/api/member/deals',
   '/api/member/deals/open-votes',
   '/api/member/deals?declined=1',
-  '/api/member/deals?som=invest-3',
   '/api/member/updates',
   '/api/member/discounts',
   '/api/member/surveys',
@@ -195,8 +194,6 @@ for (const spec of PERSONAS) {
     }
     // Committee only (#74: the board sees cases as a member does).
     expect.soft(s('/api/member/committee/overview'), `${p.key} committee overview`).toBe(isCommittee(p) ? 200 : 403)
-    // "Se som" (?som=): only the committee may look as another role.
-    expect.soft(s('/api/member/deals?som=invest-3'), `${p.key} ?som=invest-3`).toBe(isCommittee(p) ? 200 : 403)
     // Investors or board.
     expect
       .soft(s('/api/member/open-to-work/list'), `${p.key} open-to-work list`)
@@ -208,9 +205,10 @@ for (const spec of PERSONAS) {
     // nobody opens a case the committee cannot. The committee's own list is the member
     // view by design, while its case page opens everything, so it is left out of the first rule.
     const listed = new Set<string>()
+    let overview: any = null
     if (s('/api/member/deals?declined=1') === 200) {
       const api2 = await apiFor(p)
-      const overview = await (await api2.get('/api/member/deals?declined=1')).json()
+      overview = await (await api2.get('/api/member/deals?declined=1')).json()
       for (const slug of overviewSlugs(overview)) listed.add(slug)
       await api2.dispose()
       // A declined company the viewer may not open: name, stage and date, nothing more.
@@ -219,6 +217,19 @@ for (const spec of PERSONAS) {
         expect
           .soft({ blurb: c.blurb, owner: c.owner, round: c.round }, `${p.key} declined ${c.slug} it may not open`)
           .toEqual({ blurb: null, owner: null, round: null })
+      }
+    }
+    // Invested companies: exactly what the persona's own SPVs invested in (investments x
+    // memberships), each tagged once per SPV, whatever the visible flag, rounds or the
+    // board say (Snorre, 2026-10-30). The committee is a member here too.
+    if (overview) {
+      const own = truth.funded.filter((f) => p.groups.includes(f.grp))
+      expect
+        .soft(overview.invested.map((c: any) => c.slug).sort(), `${p.key} invested list`)
+        .toEqual([...new Set(own.map((f) => f.slug))].sort())
+      for (const c of overview.invested) {
+        const tags = own.filter((f) => f.slug === c.slug).map((f) => f.grp)
+        expect.soft(c.spvs.map((g: any) => g.slug).sort(), `${p.key} ${c.slug} SPV tags`).toEqual(tags.sort())
       }
     }
     for (const [slug, status] of Object.entries(row.cases)) {

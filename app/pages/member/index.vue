@@ -66,6 +66,31 @@
         </tbody>
       </v-table>
     </section>
+
+    <!-- The member's own standing vote, per SPV (memberships.default_vote): blank or nothing, never yes. -->
+    <section v-if="spvMemberships.length" class="mb-8">
+      <h2 class="section-title">{{ t('member.overview.defaultVote.heading') }}</h2>
+      <p class="dv-intro">{{ t('member.overview.defaultVote.intro') }}</p>
+      <div class="dv-list">
+        <div v-for="m in spvMemberships" :key="m.slug" class="dv-row">
+          <p :id="`dv-${m.slug}`" class="dv-group">{{ m.group }}</p>
+          <v-switch
+            :model-value="m.defaultVote === 'blank'"
+            :label="t('member.overview.defaultVote.label')"
+            :loading="savingDefault === m.slug"
+            :disabled="savingDefault === m.slug"
+            color="white"
+            inset
+            hide-details
+            density="compact"
+            :aria-describedby="`dv-${m.slug}`"
+            @update:model-value="(on: boolean | null) => setDefaultVote(m, Boolean(on))"
+          />
+        </div>
+      </div>
+      <p v-if="defaultError" class="dv-error" role="alert">{{ t('member.overview.defaultVote.error') }}</p>
+      <p class="dv-note">{{ t('member.overview.defaultVote.note') }}</p>
+    </section>
   </div>
 </template>
 
@@ -98,6 +123,27 @@ watchEffect(() => {
   }
 })
 
+// SPV memberships (invest groups) carry the standing vote; other groups do not.
+const spvMemberships = computed(() => (memberInfo.value?.memberships ?? []).filter((m: any) => m.investPhase))
+const savingDefault = ref<string | null>(null)
+const defaultError = ref(false)
+
+async function setDefaultVote(m: any, blank: boolean) {
+  savingDefault.value = m.slug
+  defaultError.value = false
+  try {
+    const res = await $fetch<{ defaultVote: string | null }>('/api/member/default-vote', {
+      method: 'POST',
+      body: { group: m.slug, blank },
+    })
+    m.defaultVote = res.defaultVote
+  } catch {
+    defaultError.value = true
+  } finally {
+    savingDefault.value = null
+  }
+}
+
 function statusColor(status: string): string {
   const colors: Record<string, string> = {
     active: '#4caf50',
@@ -116,6 +162,41 @@ function statusLabel(status: string): string {
 <style scoped>
 .member-overview {
   line-height: 1.7;
+}
+.dv-intro,
+.dv-note {
+  color: #bbb;
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 64ch;
+}
+.dv-note {
+  color: #999;
+  font-size: 13px;
+  margin-top: 10px;
+}
+.dv-list {
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin-top: 12px;
+}
+.dv-row {
+  padding: 10px 16px 12px;
+}
+.dv-row + .dv-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.dv-group {
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  margin: 0;
+}
+.dv-error {
+  color: #ff8a80;
+  font-size: 14px;
+  margin-top: 8px;
 }
 
 .section-title {
