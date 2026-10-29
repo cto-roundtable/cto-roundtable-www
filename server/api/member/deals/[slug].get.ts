@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
     caseRoundsView(viewer, deal.id),
     listCaseQuestions(viewer, deal.id, deal.materialShared),
     listCaseComments(viewer, deal.id),
-    caseDigests(viewer, deal.id),
+    caseDigests(viewer, deal.id, deal.materialShared),
     myConflict(viewer.personId, deal.id),
     viewer.isCommittee ? listConflicts(deal.id) : Promise.resolve(null),
   ])
@@ -37,7 +37,8 @@ export default defineEventHandler(async (event) => {
     // The committee and the deal owner answer, confirm and close.
     canAnswer: viewer.isCommittee || deal.owner?.id === viewer.personId,
     comments,
-    // The newest digest of the comments: the committee one for staff, the SPV one for all.
+    // The newest digest of the comments: the committee one for staff, the SPV one for all
+    // who have the material (none before it is shared, server/utils/dealDigests.ts).
     digests,
     // "Jeg er inhabil" (dc-33 H3): the member's own; everyone's for the committee.
     conflict,

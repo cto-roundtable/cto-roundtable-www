@@ -54,11 +54,18 @@ export async function listDigests(dealId: string, opts: { audience: 'committee' 
   return (rows as any[]).map(digestOut)
 }
 
-/** The digests a case page shows: the newest committee one for staff, the newest SPV one for everyone. */
-export async function caseDigests(viewer: CaseViewer, dealId: string) {
+/**
+ * The digests a case page shows: the newest committee one for staff, the newest SPV
+ * one for everyone who has the case's material (`materialShared`, materialSharedSql;
+ * always true for the committee). A digest is free text drawn from comments that the
+ * committee writes with the investor pack in hand, so nothing can strip pack quotes
+ * out of it: until the material is shared with this viewer the SPV digest is
+ * withheld, like the blurb and the documents (Snorre, 2026-10-29).
+ */
+export async function caseDigests(viewer: CaseViewer, dealId: string, materialShared: boolean) {
   const [committee, spv] = await Promise.all([
     viewer.isCommittee ? listDigests(dealId, { audience: 'committee', limit: 1 }) : Promise.resolve([]),
-    listDigests(dealId, { audience: 'spv', limit: 1 }),
+    materialShared ? listDigests(dealId, { audience: 'spv', limit: 1 }) : Promise.resolve([]),
   ])
   return { committee: committee[0] ?? null, spv: spv[0] ?? null }
 }
