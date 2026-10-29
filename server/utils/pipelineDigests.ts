@@ -108,7 +108,10 @@ export async function pipelineSource(groupSlug: unknown, since: unknown) {
       AND NOT EXISTS (SELECT 1 FROM investments i0 WHERE i0.deal_id = pd.id)
     ORDER BY pd.last_activity_at DESC NULLS LAST, o.name
   `) as any[]
-  const ids = deals.map((d) => d.id)
+  // The SPV digests the case pages show this group: only where the material is shared
+  // with it (caseDigests), so the drafted digest cannot carry investor-pack quotes
+  // about a case the group has not been given the material for.
+  const ids = deals.filter((d) => d.material_shared).map((d) => d.id)
   const spvDigests = ids.length
     ? ((await sql`
         SELECT pd.slug, d.body_md, d.created_at

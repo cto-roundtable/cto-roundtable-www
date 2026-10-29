@@ -283,8 +283,9 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   (`PATCH /api/admin/questions/:id` `agent_working`, a compare-and-set), answers from
   the deal's investor pack with sources, or routes it to the deal owner
   (`driver_person_id`), who answers on the case page. The ANSWER is shown to everyone
-  who can see the case; WHO ASKED only to the committee, never in the admin
-  API. An agent answer is labelled as unchecked until the owner or a committee member
+  who can see the case, but its `sources` (investor-pack quotes) only once the material
+  is shared with them (Snorre, 2026-10-29); WHO ASKED only to the committee, never in
+  the admin API. An agent answer is labelled as unchecked until the owner or a committee member
   confirms it; a correction supersedes it. The asker gets a mail when it is answered
   and the owner when a question is routed to them (`server/utils/mail.ts`).
 - **Comments** (`server/utils/dealComments.ts`, `deal_comments`): input that does not
@@ -298,7 +299,8 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   themes, new information and questions for the founder
   (`POST /api/admin/deals/:slug/digests`). The committee's digest shows on the case
   page for staff; an `spv` digest ("what we heard") shows to everyone who can see the
-  case. `/member/komite` (committee only) lists every case in active work with what
+  case and has its material (it is free text that may quote the pack, so it is
+  withheld until then, Snorre 2026-10-29; the pipeline-digest source leaves it out too). `/member/komite` (committee only) lists every case in active work with what
   waits for the committee: questions with the owner, agent answers to confirm, new
   comments since the last digest, questions still with the agent (zeros shown), the
   vote, and the newest digest, grouped like the overview.

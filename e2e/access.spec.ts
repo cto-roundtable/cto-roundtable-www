@@ -82,7 +82,12 @@ async function dataTruth() {
     WHERE pd.slug IS NOT NULL
     ORDER BY pd.slug, u.update_date DESC
   `) as { slug: string; id: string }[]
-  return { allCases: allCases.map((r) => r.slug), funded, updateIds }
+  // Cases that have an SPV digest ("what we heard"), to know whether the withholding rule is exercised.
+  const spvDigests = (await sql`
+    SELECT DISTINCT pd.slug FROM deal_digests d JOIN pipeline_deals pd ON pd.id = d.deal_id
+    WHERE d.audience = 'spv' AND pd.slug IS NOT NULL
+  `) as { slug: string }[]
+  return { allCases: allCases.map((r) => r.slug), funded, updateIds, spvDigests: spvDigests.map((r) => r.slug) }
 }
 
 let truth: Awaited<ReturnType<typeof dataTruth>>
@@ -135,6 +140,7 @@ for (const spec of PERSONAS) {
       updates: {} as Record<string, number>,
       updateById: {} as Record<string, number>,
       answersWithheldSources: 0,
+      spvDigestsWithheld: 0,
     }
     for (const path of PROBES) row.probes[path] = await probe(api, path)
 
@@ -145,12 +151,16 @@ for (const spec of PERSONAS) {
       row.updates[slug] = (await probe(api, `/api/member/updates/${slug}`)).status
     for (const u of truth.updateIds)
       row.updateById[u.slug] = (await probe(api, `/api/member/updates/${u.slug}/${u.id}`)).status
-    // Q&A on a case whose material is not shared with this viewer: the answers come
-    // without their sources (quotes from the investor pack).
+    // A case whose material is not shared with this viewer: the answers come without
+    // their sources (quotes from the investor pack), and the SPV digest is withheld.
     for (const [slug, status] of Object.entries(row.cases)) {
       if (status !== 200) continue
       const c = await (await api.get(`/api/member/deals/${slug}`)).json()
       if (c.deal.materialShared) continue
+      if (truth.spvDigests.includes(slug)) row.spvDigestsWithheld++
+      expect
+        .soft(c.digests?.spv ?? null, `${p.key} case ${slug}: SPV digest while the material is not shared`)
+        .toBeNull()
       for (const q of c.questions ?? []) {
         if (!q.answer) continue
         row.answersWithheldSources++
