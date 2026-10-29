@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Look after a CTORI offering in the portal (invest_offerings, hq migrations 031 + 041)
- * from a box, until the board view (signup step 4) can do it in the browser.
+ * from a box, until the committee's view (signup step 4) can do it in the browser.
  *
  *   DATABASE_URL=... node scripts/invest-offering.mjs show ctori-4
  *   DATABASE_URL=... node scripts/invest-offering.mjs publish ctori-4 deck ./ctori4-deck.html \

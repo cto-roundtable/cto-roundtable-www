@@ -811,7 +811,7 @@
   },
   "invest": {
     "intro": "Ikke bindende. Si om du er med og omtrent hvor mye. Den bindende tegningen kommer senere, her i portalen, med det vi allerede vet om deg fylt inn.",
-    "preview": "Forhåndsvisning: bare styret ser denne siden til den åpnes for medlemmene.",
+    "preview": "Forhåndsvisning: bare komiteen ser denne siden til den åpnes for medlemmene.",
     "notFound": "Fant ikke denne siden. Den er kanskje ikke åpnet ennå.",
     "facts": {
       "heading": "Kort fortalt",
@@ -865,7 +865,7 @@
     },
     "banner": {
       "title": "{name}: er du med?",
-      "titlePreview": "{name} (forhåndsvisning for styret)",
+      "titlePreview": "{name} (forhåndsvisning for komiteen)",
       "body": "Se presentasjonen og si om du er med. Ikke bindende.",
       "cta": "Svar"
     },

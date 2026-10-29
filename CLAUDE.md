@@ -405,8 +405,10 @@ Built so far: step 3, the **interest** phase ("er du med, og omtrent hvor mye"),
 binds nobody.
 
 - **All SQL is in `server/utils/invest.ts`.** Who sees an offering: every portal member
-  in either chapter (decision D6) while it is `interest` or `committing`; only the board
-  while it is a `draft` (a preview, labelled as one). Anything else is a 404.
+  in either chapter (decision D6) while it is `interest` or `committing`; only the
+  investment committee (`current-komite`) while it is a `draft` (a preview, labelled as
+  one). Anything else is a 404. The board (`styret`) is network only and gets nothing
+  extra on investment pages (Snorre, 2026-10-29).
 - **Amounts are data**: `amount_options` (50/100/200/300k for ctori-4, dc-32), plus
   `amount_min` / `amount_step` for "annet beløp" (ctori-4: at least 50 000, in whole
   10 000s). `parseInterestInput` validates every write against the offering; nothing is
@@ -426,7 +428,7 @@ binds nobody.
 - **Entry points**: `InvestOfferingBanner` on `/member` and `/member/sweden` until the
   member has answered, and a nav item from `session.investOffering`. A magic-link
   sign-in lands on `/member`, not on the deep link; the banner is what bridges that.
-- **Operating it from a box** until the board view exists (step 4):
+- **Operating it from a box** until the committee's view exists (step 4):
   `scripts/invest-offering.mjs show|publish|status` with `DATABASE_URL`. `publish`
   writes a new document version (same bytes write nothing). `status <slug> interest`
   is the launch, so it changes nothing without `--confirm`.

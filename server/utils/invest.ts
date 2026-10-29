@@ -7,10 +7,12 @@
 //
 // Rules that hold for every route:
 // - Who sees an offering: every portal member (both chapters, decision D6) while it
-//   is in `interest` or `committing`; only the board while it is a `draft`, so the
-//   board can look at it before it opens. Anything else is a 404.
-// - Interest is editable only while the offering is in `interest` (and by the board
-//   in `draft`), and only on a row that is still interest or declined. A row that
+//   is in `interest` or `committing`; only the investment committee (`current-komite`)
+//   while it is a `draft`, so the committee can look at it before it opens. The board
+//   (`styret`) is network only and gets nothing extra here (Snorre, 2026-10-29).
+//   Anything else is a 404.
+// - Interest is editable only while the offering is in `interest` (and by the
+//   committee in `draft`), and only on a row that is still interest or declined. A row that
 //   has moved on (committed, signed, paid) is never touched from here.
 // - Amounts are validated against the offering's own data (amount_options, and
 //   amount_min / amount_step for "annet beløp"). No amount is hard-coded here.
@@ -57,7 +59,7 @@ function rowToOffering(r: any): Offering {
 
 /**
  * The offering by slug if this person may see it, else a 404 (the same answer as one
- * that does not exist). Returns whether they see it only as a board preview.
+ * that does not exist). Returns whether they see it only as a committee preview.
  */
 export async function requireVisibleOffering(
   personId: string,
@@ -72,20 +74,20 @@ export async function requireVisibleOffering(
   if (row) {
     const offering = rowToOffering(row)
     if (VISIBLE_TO_MEMBERS.includes(offering.status)) return { offering, preview: false }
-    if (offering.status === 'draft' && (await isBoardMember(personId))) return { offering, preview: true }
+    if (offering.status === 'draft' && (await isCommitteeMember(personId))) return { offering, preview: true }
   }
   throw createError({ statusCode: 404, message: 'Not found' })
 }
 
 /**
  * The offering a member should be pointed at (nav item, banner): the newest one open
- * for interest or tegning, or, for the board only, a draft. Null when there is none.
+ * for interest or tegning, or, for the committee only, a draft. Null when there is none.
  */
 export async function currentOfferingFor(
   personId: string,
 ): Promise<{ slug: string; name: string; status: OfferingStatus; answered: boolean } | null> {
   const sql = useDatabase()
-  const statuses = (await isBoardMember(personId)) ? [...VISIBLE_TO_MEMBERS, 'draft'] : VISIBLE_TO_MEMBERS
+  const statuses = (await isCommitteeMember(personId)) ? [...VISIBLE_TO_MEMBERS, 'draft'] : VISIBLE_TO_MEMBERS
   const rows = await sql`
     SELECT o.slug, o.name, o.status,
            EXISTS (SELECT 1 FROM invest_subscriptions s
