@@ -399,7 +399,7 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
 
 A CTORI cohort is an **offering** (`invest_offerings`: `ctori-1` … `ctori-4`) and a
 member's answer to it is one `invest_subscriptions` row per offering and person, moving
-interest → committed → signed → paid (or declined). Schema: hq migrations 031 and 041.
+interest → committed → signed → paid (or declined). Schema: hq migrations 031, 041 and 043.
 Design and plan: `research/portal-signup-mapping.md` in the ctori-4 project (huddle).
 Built so far: step 3, the **interest** phase ("er du med, og omtrent hvor mye"), which
 binds nobody.
@@ -425,6 +425,21 @@ binds nobody.
   `sandbox` CSP (no scripts, opaque origin, framed only by the portal), shown in an
   iframe on `/member/invest/:slug/dokument/:key`. The invitation links there, not to
   share links.
+- **Comments and questions on a document** (hq migration 043, `invest_document_comments`;
+  all SQL in `server/utils/investComments.ts`, UI `InvestDocumentComments` under the
+  frame). A member writes a question or comment on the CURRENT version, optionally on a
+  slide (`anchor` = a `<section id>` of that version, checked on write; the outline is
+  parsed from the document and cached per sha256) with a quoted passage. The committee
+  (`current-komite`, `isDocumentCommentReader`) sees every thread with names and is the
+  only one that replies; a reply marked public ("for alle") shows the question and that
+  reply to every member, without the asker's name. A member sees their own threads and
+  never which committee member replied. Filtering is in SQL. Comments stay tied to the
+  version they were written on, so a new deck keeps them readable ("written on version
+  1"). The offering page shows the committee how many threads wait on it. "Show the
+  slide" is a fragment navigation of the frame, so the document still runs no script.
+  Huddle's review-kit was considered and not used: see the ctori-4 report.
+- **The answer is said back**: a saved yes gets a green success callout at the top of the
+  form (Vuetify `type="success"`, tonal), a maybe a softer one (outlined).
 - **Entry points**: `InvestOfferingBanner` on `/member` and `/member/sweden` until the
   member has answered, and a nav item from `session.investOffering`. A magic-link
   sign-in lands on `/member`, not on the deep link; the banner is what bridges that.

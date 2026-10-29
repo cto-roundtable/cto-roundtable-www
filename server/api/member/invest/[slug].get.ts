@@ -7,12 +7,15 @@ export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''
   const { offering, preview } = await requireVisibleOffering(personId, slug)
 
-  const [mine, known, aggregate, documents] = await Promise.all([
+  const [mine, known, aggregate, documents, isCommittee] = await Promise.all([
     getMyInterest(offering.id, personId),
     getKnownForInterest(offering.id, personId),
     getInterestAggregate(offering.id),
     listOfferingDocuments(offering.id),
+    isDocumentCommentReader(personId),
   ])
+  // The committee answers comments on the documents: how many wait on it, per document.
+  const unanswered = isCommittee ? await unansweredDocumentThreads(offering.id) : null
 
   return {
     offering: {
@@ -30,6 +33,12 @@ export default defineEventHandler(async (event) => {
     lastTime: known.lastTime,
     holdings: known.holdings.map((h) => h.name),
     aggregate,
-    documents: documents.map(({ key, title, version, publishedAt }) => ({ key, title, version, publishedAt })),
+    documents: documents.map(({ key, title, version, publishedAt }) => ({
+      key,
+      title,
+      version,
+      publishedAt,
+      ...(unanswered ? { unanswered: unanswered[key] ?? 0 } : {}),
+    })),
   }
 })

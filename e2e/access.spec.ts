@@ -32,6 +32,10 @@ const PROBES = [
   '/api/member/board/meetings',
   '/api/member/board/activity',
   '/api/member/surveys/events',
+  // CTORI signup: the newest offering and its deck's comments (server/utils/invest.ts,
+  // investComments.ts). Who may read them depends on the offering's status on the branch.
+  '/api/member/invest/ctori-4',
+  '/api/member/invest/ctori-4/documents/deck/comments',
 ]
 
 interface Probe {
@@ -87,7 +91,18 @@ async function dataTruth() {
     SELECT DISTINCT pd.slug FROM deal_digests d JOIN pipeline_deals pd ON pd.id = d.deal_id
     WHERE d.audience = 'spv' AND pd.slug IS NOT NULL
   `) as { slug: string }[]
-  return { allCases: allCases.map((r) => r.slug), funded, updateIds, spvDigests: spvDigests.map((r) => r.slug) }
+  const offering = (await sql`SELECT status FROM invest_offerings WHERE slug = 'ctori-4'`) as { status: string }[]
+  const hasDeck = (await sql`
+    SELECT 1 FROM invest_offering_documents d JOIN invest_offerings o ON o.id = d.offering_id
+    WHERE o.slug = 'ctori-4' AND d.key = 'deck' LIMIT 1
+  `) as unknown[]
+  return {
+    allCases: allCases.map((r) => r.slug),
+    funded,
+    updateIds,
+    spvDigests: spvDigests.map((r) => r.slug),
+    ctori4: { status: offering[0]?.status ?? null, hasDeck: hasDeck.length > 0 },
+  }
 }
 
 let truth: Awaited<ReturnType<typeof dataTruth>>
@@ -203,6 +218,16 @@ for (const spec of PERSONAS) {
       .toBe(isInvestor(p) || has(p, 'styret') ? 200 : 403)
     // Norway-only.
     expect.soft(s('/api/member/onboarding'), `${p.key} onboarding`).toBe(has(p, 'cto-roundtable') ? 200 : 403)
+    // CTORI4: every member in either chapter once it is open (interest or committing); while
+    // it is a draft only the committee, as a preview (the board is network only, Snorre
+    // 2026-10-29); otherwise the same 404 as an offering that does not exist.
+    const ctori4 = truth.ctori4
+    const seesCtori4 =
+      ['interest', 'committing'].includes(ctori4.status ?? '') || (ctori4.status === 'draft' && isCommittee(p))
+    expect.soft(s('/api/member/invest/ctori-4'), `${p.key} ctori-4 (${ctori4.status})`).toBe(seesCtori4 ? 200 : 404)
+    expect
+      .soft(s('/api/member/invest/ctori-4/documents/deck/comments'), `${p.key} ctori-4 deck comments`)
+      .toBe(seesCtori4 && ctori4.hasDeck ? 200 : 404)
 
     // Cases: for a member the overview (declined included) and the case page agree, and
     // nobody opens a case the committee cannot. The committee's own list is the member

@@ -15,14 +15,17 @@
 
     <!-- The document is served with a sandboxing CSP as well (no scripts, opaque origin);
          the iframe sandbox says the same, so neither alone has to be right. -->
-    <iframe
-      v-else-if="checked && session.authenticated"
-      :src="src"
-      :title="title"
-      class="doc-frame"
-      sandbox="allow-popups allow-popups-to-escape-sandbox"
-      referrerpolicy="no-referrer"
-    />
+    <template v-else-if="checked && session.authenticated">
+      <iframe
+        ref="frame"
+        :src="frameSrc"
+        :title="title"
+        class="doc-frame"
+        sandbox="allow-popups allow-popups-to-escape-sandbox"
+        referrerpolicy="no-referrer"
+      />
+      <InvestDocumentComments :slug="slug" :doc-key="key" @show-anchor="showAnchor" />
+    </template>
   </div>
 </template>
 
@@ -40,6 +43,16 @@ const key = computed(() => String(route.params.key))
 const src = computed(() => `/api/member/invest/${slug.value}/documents/${key.value}`)
 const title = ref('')
 const missing = ref(false)
+const frame = ref<HTMLIFrameElement | null>(null)
+// "Show the slide" on a comment: a fragment navigation in the frame (no reload, and no
+// script in the document needed), then the frame into view.
+const fragment = ref('')
+const frameSrc = computed(() => (fragment.value ? `${src.value}#${fragment.value}` : src.value))
+
+function showAnchor(anchor: string) {
+  fragment.value = anchor
+  frame.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
 watchEffect(async () => {
   if (!checked.value || !session.value.authenticated || title.value || missing.value) return
@@ -66,6 +79,8 @@ watchEffect(async () => {
   color: #fff;
 }
 .doc-frame {
+  /* "Show the slide" scrolls the frame into view: keep it clear of the fixed app bar. */
+  scroll-margin-top: 64px;
   width: 100%;
   height: 80vh;
   border: 1px solid rgba(255, 255, 255, 0.2);

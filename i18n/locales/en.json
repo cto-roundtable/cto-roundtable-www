@@ -831,7 +831,8 @@
       "back": "Back",
       "loading": "Loading…",
       "fullScreen": "Open in a new tab",
-      "missing": "The document was not found."
+      "missing": "The document was not found.",
+      "unanswered": "{n} waiting for an answer"
     },
     "form": {
       "heading": "Are you in?",
@@ -877,6 +878,63 @@
       "closed": "The interest phase is closed.",
       "alreadyCommitted": "You have moved on to the subscription. Make changes there.",
       "unknown": "Something went wrong. Please try again."
+    },
+    "cheer": {
+      "yesTitle": "Great, you're in!",
+      "maybeTitle": "Noted: you're considering it.",
+      "viaHolding": "{amount} through {holding}.",
+      "personal": "{amount}, personally.",
+      "amountOnly": "{amount}.",
+      "maybeAmount": "Around {amount}, if you join.",
+      "maybeInfo": "We'll keep you posted before anything is binding.",
+      "canChange": "You can change your answer while the interest phase is open."
+    },
+    "comments": {
+      "heading": "Comments and questions",
+      "introMember": "Ask or comment, on a specific slide if you like. Only the committee sees what you write and that it is you. Answers that are useful to everyone can be shown to all members by the committee, without your name.",
+      "introCommittee": "You are on the committee: you see every thread with names, and you answer. A reply marked \"for everyone\" is shown to all members with the question, without the name of whoever asked.",
+      "kind": {
+        "question": "Question",
+        "comment": "Comment"
+      },
+      "anchorLabel": "Which slide?",
+      "anchorAll": "The whole deck",
+      "quoteLabel": "Quote from the slide (optional)",
+      "quoteHint": "Paste the text you have in mind.",
+      "bodyQuestion": "Your question",
+      "bodyComment": "Your comment",
+      "submit": "Send",
+      "sent": "Sent. The committee answers here.",
+      "mineHeading": "Yours",
+      "publicHeading": "Questions and answers",
+      "allHeading": "All threads",
+      "empty": "No comments or questions yet.",
+      "onlyUnanswered": "Only those waiting for an answer",
+      "committee": "The committee",
+      "waiting": "Waiting for an answer",
+      "publicChip": "For everyone",
+      "privateChip": "Only to whoever asked",
+      "olderVersion": "Written on version {v}",
+      "showSlide": "Show the slide",
+      "replyLabel": "Reply",
+      "replyPublic": "Show the reply to all members (the question is shown without a name)",
+      "replySubmit": "Send reply",
+      "makePublic": "Show to everyone",
+      "makePrivate": "Only to whoever asked",
+      "withdraw": "Withdraw",
+      "withdrawn": "Withdrawn",
+      "errors": {
+        "kind": "Pick question or comment.",
+        "body": "Write something first.",
+        "tooLong": "The text is too long.",
+        "anchor": "That slide is not in this version. Pick another one.",
+        "quote": "The quote can be at most 300 characters.",
+        "tooMany": "That is a lot of comments in an hour. Try again later.",
+        "replyToReply": "Reply to the question itself.",
+        "withdrawn": "It has been withdrawn.",
+        "notReply": "Only replies can be shown to everyone.",
+        "unknown": "Something went wrong. Try again."
+      }
     }
   }
 }
