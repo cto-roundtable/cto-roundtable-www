@@ -40,7 +40,7 @@
       </details>
       <p v-if="moved" class="moved" role="status">
         {{ t('deals.lead.moved', { name: moved.name, status: t(`deals.status.${moved.status}`) }) }}
-        <NuxtLink v-if="moved.status !== 'rejected'" :to="`/member/caser/${moved.slug}`">{{ t('deals.lead.openCase') }}</NuxtLink>
+        <NuxtLink v-if="moved.status !== 'passed'" :to="`/member/caser/${moved.slug}`">{{ t('deals.lead.openCase') }}</NuxtLink>
       </p>
 
       <!-- What waits, summed over every case: zero is said plainly, never left out. -->

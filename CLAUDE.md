@@ -281,7 +281,8 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   (`listLeads`: ansvarlig, contacted_how and the company contact, created, last activity
   and note, the first deal_event, the Slack channel). The committee moves one out of
   `incoming` there or on the case page through `POST /api/member/committee/leads/:slug`
-  (`moveLead`): to reviewing, waiting or the declined status (`DECLINED_STATUSES`), with an
+  (`moveLead`): to reviewing, waiting or `passed` ("Si nei": no, founder not told yet, so it stays out
+  of the members' declined list and digest; the visible flag is dropped; dc-64), with an
   optional note to `last_activity_note`, a `status_change` event, and
   `app.current_user = portal:<person id>` set in the same transaction so
   `audit_pipeline_deals` names the person. Only from `incoming`; 403 for anyone off the
