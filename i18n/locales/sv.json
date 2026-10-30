@@ -977,5 +977,13 @@
         "unknown": "Något gick fel. Försök igen."
       }
     }
+  },
+  "consent": {
+    "title": "Kakor 🍪",
+    "body": "Inte den ätbara sorten, tyvärr. Vi har ingen reklam och säljer inget till någon. Vi vill bara veta vilka sidor ni faktiskt använder, så att vi slutar bygga saker som ingen klickar på 😅",
+    "fine": "Säger du nej räknar vi fortfarande sidvisningar, men sparar inget i din webbläsare.",
+    "privacy": "Integritet",
+    "accept": "Kör, räkna med mig",
+    "decline": "Nej tack, jag är en ninja"
   }
 }

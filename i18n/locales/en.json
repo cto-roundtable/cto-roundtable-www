@@ -977,5 +977,13 @@
         "unknown": "Something went wrong. Try again."
       }
     }
+  },
+  "consent": {
+    "title": "Cookies 🍪",
+    "body": "Not the edible kind, sadly. We run no ads and sell nothing to anyone. We just want to know which pages you actually use, so we stop building things nobody clicks 😅",
+    "fine": "Say no and we still count page views, but store nothing in your browser.",
+    "privacy": "Privacy",
+    "accept": "Go on, count me in",
+    "decline": "No thanks, I'm a ninja"
   }
 }

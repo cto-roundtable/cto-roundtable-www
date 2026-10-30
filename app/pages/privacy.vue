@@ -4,7 +4,7 @@
       <v-col class="top-spacing" cols="12" md="8">
         <div class="privacy-content">
           <h1 class="font-weight-bold mb-4">Privacy Policy</h1>
-          <p class="text-muted mb-6"><strong>Last updated:</strong> 2026-10-29</p>
+          <p class="text-muted mb-6"><strong>Last updated:</strong> 2026-10-30</p>
 
           <section class="mb-6">
             <h2 class="font-weight-bold mb-3">1) Who we are</h2>
@@ -44,9 +44,17 @@
             <h2 class="font-weight-bold mb-3">5) Cookies</h2>
             <ul class="text-left">
               <li><strong>Sign-in cookies</strong> (member portal only): keep you signed in. Strictly necessary.</li>
-              <li><strong>Analytics</strong>: PostHog stores an identifier in a cookie and in your browser's local storage, so visits from the same browser can be counted together.</li>
+              <li><strong>Analytics, only if you say yes</strong>: PostHog stores an identifier in a cookie and in your browser's local storage, so visits from the same browser can be counted together. We ask first, in the banner.</li>
+              <li><strong>If you say no, or have not answered</strong>: PostHog runs in memory only. Page views are still counted, but nothing is stored in your browser.</li>
+              <li><strong>Your answer</strong> is remembered in your browser's local storage, so we do not ask on every visit.</li>
             </ul>
             <p class="mt-3">We do <strong>not</strong> use advertising or retargeting cookies.</p>
+            <ClientOnly>
+              <p class="mt-3">
+                <button v-if="consent?.enabled" class="consent-reset" @click="resetConsent">Change my cookie choice</button>
+                <span v-if="cleared" class="text-muted ml-2">Choice cleared. The banner will ask you again.</span>
+              </p>
+            </ClientOnly>
           </section>
 
           <section class="mb-6">
@@ -113,6 +121,13 @@
 </template>
 
 <script setup lang="ts">
+const { $analyticsConsent: consent } = useNuxtApp()
+const cleared = ref(false)
+
+function resetConsent() {
+  consent?.reset()
+  cleared.value = true
+}
 </script>
 
 <style scoped>
@@ -156,6 +171,19 @@
 
 .privacy-content a:hover {
   text-decoration: underline;
+}
+
+.consent-reset {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+}
+
+.consent-reset:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .text-muted {

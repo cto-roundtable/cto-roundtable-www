@@ -977,5 +977,13 @@
         "unknown": "Noe gikk galt. Prøv igjen."
       }
     }
+  },
+  "consent": {
+    "title": "Informasjonskapsler 🍪",
+    "body": "Ikke den spiselige typen, dessverre. Vi har ingen reklame og selger ingenting til noen. Vi vil bare vite hvilke sider dere faktisk bruker, så vi slutter å bygge ting ingen klikker på 😅",
+    "fine": "Sier du nei, teller vi fortsatt sidevisninger, men lagrer ingenting i nettleseren din.",
+    "privacy": "Personvern",
+    "accept": "Kjør på, tell meg med",
+    "decline": "Nei takk, jeg er en ninja"
   }
 }
