@@ -451,10 +451,10 @@ binds nobody.
   `sandbox` CSP (no scripts, opaque origin, framed only by the portal), shown in an
   iframe on `/member/invest/:slug/dokument/:key`. The invitation links there, not to
   share links.
-- **Comments and questions on a document** (hq migrations 043 and 044,
-  `invest_document_comments`; all SQL in `server/utils/investComments.ts`, UI
-  `InvestDocumentComments` under the frame). A member writes a question or comment on
-  the CURRENT version, optionally on a slide (`slide` = a `<section id>` of that version,
+- **Comments and questions on a document** (hq migration 043, `invest_document_comments`;
+  all SQL in `server/utils/investComments.ts`, UI `InvestDocumentComments` under the
+  frame; 044 added the writer's choice and the place in the slide). A member writes a
+  question or comment on the CURRENT version, optionally on a slide (`slide` = a `<section id>` of that version,
   checked on write, or a slide's number; the outline is parsed from the document and
   cached per sha256) with a quoted passage. Where in the slide: `anchor` (a section id or
   a block anchor such as `part1~p[2]`) and `target` (prefix/suffix, point, level; cleaned
