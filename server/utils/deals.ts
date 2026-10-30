@@ -786,12 +786,14 @@ export async function listLeads(slug: string | null = null): Promise<LeadRow[]> 
 /**
  * What the committee can do with a lead, and the status each one moves it to. Only
  * from 'incoming'; anything else goes through the investments skill as before. "Si nei"
- * is the declined status the overview lists (DECLINED_STATUSES).
+ * is 'passed' (no, the founder is not told yet), not 'rejected': a lead the members never
+ * saw stays out of their "Sagt nei til" list and digest until someone has told the
+ * founder and sets 'rejected' (Snorre, dc-64 H1 2026-10-30).
  */
 export const LEAD_TRANSITIONS = {
   review: 'reviewing',
   waiting: 'waiting',
-  decline: DECLINED_STATUSES[0]!,
+  decline: 'passed',
 } as const
 export type LeadAction = keyof typeof LEAD_TRANSITIONS
 export const MAX_LEAD_NOTE = 280
@@ -833,7 +835,9 @@ export async function moveLead(viewer: CaseViewer, slug: string, action: unknown
     sql`
       WITH moved AS (
         UPDATE pipeline_deals
-        SET status = ${to}, last_activity_at = NOW(), last_activity_note = ${line}
+        SET status = ${to}, last_activity_at = NOW(), last_activity_note = ${line},
+            -- A no also drops the visible flag, so the flag alone cannot open it to members later.
+            investor_visible = CASE WHEN ${a === 'decline'}::boolean THEN false ELSE investor_visible END
         WHERE slug = ${slug} AND status = ${LEAD_STATUS}
         RETURNING id
       )

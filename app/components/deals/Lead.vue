@@ -32,7 +32,7 @@
       <span class="note-date">{{ formatDate(lead.lastActivityAt ?? lead.createdAt, 'short') }}</span>
       {{ lead.lastActivityNote }}
     </p>
-    <p v-if="showOrigin" class="lead-origin">
+    <p v-if="showOrigin && lead.origin" class="lead-origin">
       <span class="note-date">{{ t('deals.lead.originLabel', { date: formatDate(lead.origin.occurredAt, 'short') }) }}</span>
       {{ lead.origin.body }}
     </p>
@@ -97,7 +97,7 @@ interface Lead {
 }
 const ACTIONS = ['review', 'waiting', 'decline'] as const
 type Action = (typeof ACTIONS)[number]
-const TO: Record<Action, string> = { review: 'reviewing', waiting: 'waiting', decline: 'rejected' }
+const TO: Record<Action, string> = { review: 'reviewing', waiting: 'waiting', decline: 'passed' }
 const MAX_NOTE = 280
 
 const props = defineProps<{ lead: Lead; onPage?: boolean }>()

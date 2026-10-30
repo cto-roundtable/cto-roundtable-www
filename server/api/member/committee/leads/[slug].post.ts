@@ -1,6 +1,6 @@
 // POST /api/member/committee/leads/:slug  { action: 'review' | 'waiting' | 'decline', note?: string }
 // The committee moves a new lead out of 'incoming': "Start vurdering" (reviewing),
-// "Venter på selskapet" (waiting) or "Si nei" (the declined status the overview lists).
+// "Venter på selskapet" (waiting) or "Si nei" (passed: no, the founder is not told yet; dc-64).
 // The note (at most 280 characters) goes to last_activity_note, last_activity_at is now,
 // and the audit log names the person (moveLead in server/utils/deals.ts). Committee only:
 // anyone else gets 403 before the slug is looked at, so a lead cannot be probed here.

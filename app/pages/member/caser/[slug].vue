@@ -242,7 +242,7 @@ async function reload() {
 
 /** Out of 'incoming': a lead the committee said no to is no longer a case, so back to Komiteen. */
 async function onLeadMoved(m: { status: string }) {
-  if (m.status === 'rejected') await navigateTo('/member/komite')
+  if (m.status === 'passed') await navigateTo('/member/komite')
   else await reload()
 }
 
