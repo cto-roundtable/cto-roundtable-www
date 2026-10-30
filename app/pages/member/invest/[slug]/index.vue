@@ -27,6 +27,7 @@
             <p class="font-weight-bold mb-0" style="color: #fff;">{{ d.title }}</p>
             <p class="mb-0" style="color: #aaa; font-size: 13px;">
               {{ t('invest.documents.updated', { date: formatDate(d.publishedAt) }) }}
+              <span v-if="d.unanswered" class="unanswered">· {{ t('invest.documents.unanswered', { n: d.unanswered }) }}</span>
             </p>
           </div>
           <span class="doc-card-cta">{{ d.key === 'deck' ? t('invest.documents.openDeck') : t('invest.documents.open') }}</span>
@@ -57,6 +58,19 @@
       <!-- The member's answer -->
       <section class="mb-8">
         <h2 class="section-title">{{ t('invest.form.heading') }}</h2>
+
+        <!-- The cheer: a saved yes gets the full success state, a maybe a softer one. -->
+        <v-alert
+          v-if="cheer && !locked && canAnswer"
+          id="invest-cheer"
+          type="success"
+          :variant="cheer.strong ? 'tonal' : 'outlined'"
+          :icon="cheer.strong ? 'mdi-party-popper' : 'mdi-check-circle-outline'"
+          class="text-left mb-4"
+        >
+          <p class="font-weight-bold mb-1">{{ cheer.title }}</p>
+          <p class="mb-0">{{ cheer.text }}</p>
+        </v-alert>
 
         <v-alert v-if="locked" type="info" variant="outlined" class="text-left">{{ t('invest.form.locked') }}</v-alert>
         <v-alert v-else-if="!canAnswer" type="info" variant="outlined" class="text-left">{{ t('invest.form.closed') }}</v-alert>
@@ -209,7 +223,8 @@ interface InvestPage {
   lastTime: { offering: string; amountNok: number | null; vehicle: Vehicle; holding: string | null } | null
   holdings: string[]
   aggregate: { yes: number; maybe: number; yesNok: number } | null
-  documents: { key: string; title: string; version: number; publishedAt: string }[]
+  // unanswered: comments waiting on the committee (committee only)
+  documents: { key: string; title: string; version: number; publishedAt: string; unanswered?: number }[]
 }
 
 const { t, te } = useI18n()
@@ -247,6 +262,35 @@ const holdingLabel = computed(() => {
   return holdings.length === 1
     ? t('invest.form.vehicle.holdingNamed', { holding: holdings[0] })
     : t('invest.form.vehicle.holding')
+})
+
+// What the saved answer amounts to, said back to the member (not the form's unsaved state).
+const cheer = computed(() => {
+  const mine = data.value?.mine
+  if (!mine || (mine.answer !== 'yes' && mine.answer !== 'maybe')) return null
+  const holdings = data.value?.holdings ?? []
+  const amount = mine.amountNok ? nok(mine.amountNok) : ''
+  let how = ''
+  if (amount && mine.answer === 'yes') {
+    if (mine.vehicle === 'holding' && holdings.length === 1) {
+      how = t('invest.cheer.viaHolding', { amount, holding: holdings[0] })
+    } else if (mine.vehicle === 'personal') {
+      how = t('invest.cheer.personal', { amount })
+    } else {
+      how = t('invest.cheer.amountOnly', { amount })
+    }
+  } else if (amount) {
+    how = t('invest.cheer.maybeAmount', { amount })
+  }
+  const parts =
+    mine.answer === 'yes'
+      ? [how, t('invest.cheer.canChange')]
+      : [how, t('invest.cheer.maybeInfo'), t('invest.cheer.canChange')]
+  return {
+    strong: mine.answer === 'yes',
+    title: mine.answer === 'yes' ? t('invest.cheer.yesTitle') : t('invest.cheer.maybeTitle'),
+    text: parts.filter(Boolean).join(' '),
+  }
 })
 
 function nok(value: number | null | undefined): string {
@@ -306,6 +350,11 @@ async function save() {
       },
     )
     data.value.mine = result.mine
+    // The button is at the bottom of a long form, the cheer at the top: bring it into view.
+    if (cheer.value) {
+      await nextTick()
+      document.getElementById('invest-cheer')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
   } catch (err: any) {
     const key = err?.data?.message
     saveError.value = key && te(key) ? t(key) : t('invest.errors.unknown')
@@ -374,6 +423,10 @@ watchEffect(() => {
 }
 .doc-card:hover {
   border-color: rgba(255, 255, 255, 0.6);
+}
+.unanswered {
+  color: #fff;
+  font-weight: 600;
 }
 .doc-card-cta {
   flex-shrink: 0;

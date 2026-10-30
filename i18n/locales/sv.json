@@ -872,7 +872,8 @@
       "back": "Tillbaka",
       "loading": "Laddar…",
       "fullScreen": "Öppna i ny flik",
-      "missing": "Dokumentet hittades inte."
+      "missing": "Dokumentet hittades inte.",
+      "unanswered": "{n} väntar på svar"
     },
     "form": {
       "heading": "Är du med?",
@@ -918,6 +919,63 @@
       "closed": "Intressefasen är stängd.",
       "alreadyCommitted": "Du har gått vidare till teckningen. Ändringar gör du där.",
       "unknown": "Något gick fel. Försök igen."
+    },
+    "cheer": {
+      "yesTitle": "Toppen, du är med!",
+      "maybeTitle": "Noterat: du funderar på det.",
+      "viaHolding": "{amount} via {holding}.",
+      "personal": "{amount}, personligen.",
+      "amountOnly": "{amount}.",
+      "maybeAmount": "Runt {amount}, om du är med.",
+      "maybeInfo": "Vi håller dig uppdaterad innan något blir bindande.",
+      "canChange": "Du kan ändra svaret så länge intressefasen är öppen."
+    },
+    "comments": {
+      "heading": "Kommentarer och frågor",
+      "introMember": "Fråga eller kommentera, gärna på en viss bild. Bara kommittén ser vad du skriver och att det är du. Svar som är nyttiga för alla kan kommittén visa för alla medlemmar, utan ditt namn.",
+      "introCommittee": "Du sitter i kommittén: du ser alla trådar med namn och svarar. Ett svar markerat \"för alla\" visas för alla medlemmar tillsammans med frågan, utan namnet på den som frågade.",
+      "kind": {
+        "question": "Fråga",
+        "comment": "Kommentar"
+      },
+      "anchorLabel": "Vilken bild?",
+      "anchorAll": "Hela presentationen",
+      "quoteLabel": "Citat från bilden (valfritt)",
+      "quoteHint": "Klistra in texten du tänker på.",
+      "bodyQuestion": "Din fråga",
+      "bodyComment": "Din kommentar",
+      "submit": "Skicka",
+      "sent": "Skickat. Kommittén svarar här.",
+      "mineHeading": "Dina",
+      "publicHeading": "Frågor och svar",
+      "allHeading": "Alla trådar",
+      "empty": "Inga kommentarer eller frågor än.",
+      "onlyUnanswered": "Bara de som väntar på svar",
+      "committee": "Kommittén",
+      "waiting": "Väntar på svar",
+      "publicChip": "För alla",
+      "privateChip": "Bara till den som frågade",
+      "olderVersion": "Skrivet till version {v}",
+      "showSlide": "Visa bilden",
+      "replyLabel": "Svar",
+      "replyPublic": "Visa svaret för alla medlemmar (frågan visas utan namn)",
+      "replySubmit": "Skicka svar",
+      "makePublic": "Visa för alla",
+      "makePrivate": "Bara till den som frågade",
+      "withdraw": "Dra tillbaka",
+      "withdrawn": "Tillbakadragen",
+      "errors": {
+        "kind": "Välj fråga eller kommentar.",
+        "body": "Skriv något först.",
+        "tooLong": "Texten är för lång.",
+        "anchor": "Den bilden finns inte i den här versionen. Välj en annan.",
+        "quote": "Citatet får vara högst 300 tecken.",
+        "tooMany": "Det är många kommentarer på en timme. Försök igen senare.",
+        "replyToReply": "Svara på själva frågan.",
+        "withdrawn": "Den har dragits tillbaka.",
+        "notReply": "Bara svar kan visas för alla.",
+        "unknown": "Något gick fel. Försök igen."
+      }
     }
   }
 }

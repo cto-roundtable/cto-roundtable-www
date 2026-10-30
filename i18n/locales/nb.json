@@ -872,7 +872,8 @@
       "back": "Tilbake",
       "loading": "Laster…",
       "fullScreen": "Åpne i ny fane",
-      "missing": "Fant ikke dokumentet."
+      "missing": "Fant ikke dokumentet.",
+      "unanswered": "{n} venter på svar"
     },
     "form": {
       "heading": "Er du med?",
@@ -918,6 +919,63 @@
       "closed": "Interessefasen er stengt.",
       "alreadyCommitted": "Du har gått videre til tegningen. Endringer gjør du der.",
       "unknown": "Noe gikk galt. Prøv igjen."
+    },
+    "cheer": {
+      "yesTitle": "Topp, du er med!",
+      "maybeTitle": "Notert: du vurderer det.",
+      "viaHolding": "{amount} via {holding}.",
+      "personal": "{amount}, personlig.",
+      "amountOnly": "{amount}.",
+      "maybeAmount": "Rundt {amount}, hvis du blir med.",
+      "maybeInfo": "Vi holder deg oppdatert før noe blir bindende.",
+      "canChange": "Du kan endre svaret så lenge interessefasen er åpen."
+    },
+    "comments": {
+      "heading": "Kommentarer og spørsmål",
+      "introMember": "Spør eller kommenter, gjerne på et bestemt lysbilde. Bare komiteen ser hva du skriver og at det er deg. Svar som er nyttige for alle, kan komiteen vise for alle medlemmer, uten navnet ditt.",
+      "introCommittee": "Du er i komiteen: du ser alle tråder med navn og svarer. Et svar merket «for alle» vises for alle medlemmer sammen med spørsmålet, uten navnet til den som spurte.",
+      "kind": {
+        "question": "Spørsmål",
+        "comment": "Kommentar"
+      },
+      "anchorLabel": "Hvilket lysbilde?",
+      "anchorAll": "Hele presentasjonen",
+      "quoteLabel": "Sitat fra lysbildet (valgfritt)",
+      "quoteHint": "Lim inn teksten du tenker på.",
+      "bodyQuestion": "Spørsmålet ditt",
+      "bodyComment": "Kommentaren din",
+      "submit": "Send",
+      "sent": "Sendt. Komiteen svarer her.",
+      "mineHeading": "Dine",
+      "publicHeading": "Spørsmål og svar",
+      "allHeading": "Alle tråder",
+      "empty": "Ingen kommentarer eller spørsmål ennå.",
+      "onlyUnanswered": "Bare de som venter på svar",
+      "committee": "Komiteen",
+      "waiting": "Venter på svar",
+      "publicChip": "For alle",
+      "privateChip": "Bare til den som spurte",
+      "olderVersion": "Skrevet til versjon {v}",
+      "showSlide": "Vis lysbildet",
+      "replyLabel": "Svar",
+      "replyPublic": "Vis svaret for alle medlemmer (spørsmålet vises uten navn)",
+      "replySubmit": "Send svar",
+      "makePublic": "Vis for alle",
+      "makePrivate": "Bare til den som spurte",
+      "withdraw": "Trekk tilbake",
+      "withdrawn": "Trukket tilbake",
+      "errors": {
+        "kind": "Velg spørsmål eller kommentar.",
+        "body": "Skriv noe først.",
+        "tooLong": "Teksten er for lang.",
+        "anchor": "Det lysbildet finnes ikke i denne versjonen. Velg et annet.",
+        "quote": "Sitatet kan være på høyst 300 tegn.",
+        "tooMany": "Det er mange kommentarer på en time. Prøv igjen senere.",
+        "replyToReply": "Svar på selve spørsmålet.",
+        "withdrawn": "Den er trukket tilbake.",
+        "notReply": "Bare svar kan vises for alle.",
+        "unknown": "Noe gikk galt. Prøv igjen."
+      }
     }
   }
 }
