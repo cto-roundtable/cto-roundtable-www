@@ -256,7 +256,8 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   condition (`caseVisibleSql`), shared by the list, the page and the document
   download, re-checked on every request:
   - committee (`current-komite`, `server/utils/committee.ts`): every case in active
-    work, investor-visible, with a round or invested in, drafts included;
+    work, investor-visible, with a round or invested in, drafts included, and the new
+    leads (`incoming`);
   - members of the ACTIVE SPV (`network_groups.invest_phase = 'deploying'`): every
     deal in active work (`ACTIVE_STATUSES`: reviewing, waiting, to_be_voted,
     pending_transfer) or marked investor-visible that no SPV has invested in yet
@@ -273,6 +274,18 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   is not seeing its material: the blurb and the documents are shared only once the
   committee marks it investor-visible or a round has opened (`materialSharedSql`);
   before that a member sees name, stage, ansvarlig and date, and can ask and give input.
+- **New leads** (status `incoming`, `LEAD_STATUS`) are the committee's only (Snorre,
+  2026-10-30): `caseVisibleSql` opens them to the committee and shuts them for everyone
+  else, whatever the visible flag, a round or an SPV says; the committee overview and the
+  pipeline digest leave them out. `/member/komite` lists them in the folded "Nye leads"
+  (`listLeads`: ansvarlig, contacted_how and the company contact, created, last activity
+  and note, the first deal_event, the Slack channel). The committee moves one out of
+  `incoming` there or on the case page through `POST /api/member/committee/leads/:slug`
+  (`moveLead`): to reviewing, waiting or the declined status (`DECLINED_STATUSES`), with an
+  optional note to `last_activity_note`, a `status_change` event, and
+  `app.current_user = portal:<person id>` set in the same transaction so
+  `audit_pipeline_deals` names the person. Only from `incoming`; 403 for anyone off the
+  committee, 409 once it has moved.
 - **Ansvarlig** is the deal's CURRENT `lead` and `co_lead` rows in `deal_people`
   (`valid_to IS NULL`), read through `dealOwnerJoin` in `server/utils/deals.ts`, on the
   overview, the case page, `/member/komite`, the admin API and question routing; never

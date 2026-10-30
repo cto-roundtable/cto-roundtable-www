@@ -193,7 +193,8 @@ export async function adminListComments(opts: { since: string | null; slug: stri
  * committee on it (zero counts included, so the page is never empty while there is
  * work): open and routed questions, agent answers to confirm, new comments since
  * the newest committee digest, the vote, and that digest. Each case carries the
- * member overview's section (caseSection), most waiting first.
+ * member overview's section (caseSection), most waiting first. The new leads are not
+ * here: they have their own fold on the page (listLeads).
  */
 export async function committeeOverview() {
   const sql = useDatabase()
@@ -216,7 +217,7 @@ export async function committeeOverview() {
     FROM pipeline_deals pd
     JOIN organizations o ON o.id = pd.organization_id
     ${dealOwnerJoin(sql)}
-    WHERE pd.slug IS NOT NULL
+    WHERE pd.slug IS NOT NULL AND pd.status <> ${LEAD_STATUS}
       AND (pd.status = ANY(${ACTIVE_STATUSES})
            OR EXISTS (SELECT 1 FROM deal_rounds r0 WHERE r0.deal_id = pd.id AND r0.status IN ('draft', 'open'))
            OR (pd.investor_visible AND NOT EXISTS (SELECT 1 FROM investments i WHERE i.deal_id = pd.id)))

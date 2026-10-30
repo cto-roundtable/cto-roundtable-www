@@ -90,6 +90,10 @@ async function dataTruth() {
     SELECT DISTINCT pd.slug FROM deal_digests d JOIN pipeline_deals pd ON pd.id = d.deal_id
     WHERE d.audience = 'spv' AND pd.slug IS NOT NULL
   `) as { slug: string }[]
+  // New leads: the committee's only (the synthetic one from global setup among them).
+  const leads = (await sql`
+    SELECT slug FROM pipeline_deals WHERE slug IS NOT NULL AND status = 'incoming' ORDER BY slug
+  `) as { slug: string }[]
   const offering = (await sql`SELECT status FROM invest_offerings WHERE slug = 'ctori-4'`) as { status: string }[]
   const hasDeck = (await sql`
     SELECT 1 FROM invest_offering_documents d JOIN invest_offerings o ON o.id = d.offering_id
@@ -100,6 +104,7 @@ async function dataTruth() {
     funded,
     updateIds,
     spvDigests: spvDigests.map((r) => r.slug),
+    leads: leads.map((r) => r.slug),
     ctori4: { status: offering[0]?.status ?? null, hasDeck: hasDeck.length > 0 },
   }
 }
@@ -155,6 +160,7 @@ for (const spec of PERSONAS) {
       updateById: {} as Record<string, number>,
       answersWithheldSources: 0,
       spvDigestsWithheld: 0,
+      leadMoves: {} as Record<string, number>,
     }
     for (const path of PROBES) row.probes[path] = await probe(api, path)
 
@@ -183,11 +189,35 @@ for (const spec of PERSONAS) {
           .toEqual([])
       }
     }
+    // New leads ('incoming'): only the committee opens one or moves it out of 'incoming'.
+    // Anyone else asks with a real move, so a gap would show as a moved lead; the committee
+    // asks with a move that does not exist, so nothing is written either way.
+    for (const slug of truth.leads) {
+      const res = await api.post(`/api/member/committee/leads/${slug}`, {
+        data: { action: isCommittee(p) ? 'no-such-move' : 'waiting', note: 'e2e access probe' },
+        failOnStatusCode: false,
+        maxRedirects: 0,
+      })
+      row.leadMoves[slug] = res.status()
+    }
     await api.dispose()
     mkdirSync(`${RUN_DIR}/access`, { recursive: true })
     writeFileSync(`${RUN_DIR}/access/${p.key}.json`, JSON.stringify({ persona: p, staffCases, ...row }, null, 2))
 
     const s = (path: string) => row.probes[path].status
+
+    expect.soft(truth.leads.length, 'the branch has a lead to probe (global setup makes one)').toBeGreaterThan(0)
+    for (const slug of truth.leads) {
+      const [page, move] = !p.member ? [401, 401] : isCommittee(p) ? [200, 400] : [404, 403]
+      expect.soft(row.cases[slug], `${p.key} opens lead ${slug}`).toBe(page)
+      expect.soft(row.leadMoves[slug], `${p.key} moves lead ${slug}`).toBe(move)
+    }
+    if (truth.leads.length) {
+      const still = (await neon(e2eEnv().databaseUrl)`
+        SELECT slug FROM pipeline_deals WHERE slug = ANY(${truth.leads}) AND status = 'incoming'
+      `) as { slug: string }[]
+      expect.soft(still.map((r) => r.slug).sort(), `${p.key}: a probe moved a lead`).toEqual([...truth.leads].sort())
+    }
 
     if (!p.member) {
       // Not a portal member: every member route is 401, whatever the cookie says.

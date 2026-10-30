@@ -105,6 +105,7 @@ export async function pipelineSource(groupSlug: unknown, since: unknown) {
     JOIN organizations o ON o.id = pd.organization_id
     WHERE pd.slug IS NOT NULL
       AND (pd.investor_visible OR pd.status = ANY(${ACTIVE_STATUSES}) OR pd.status = ANY(${DECLINED_STATUSES}))
+      AND pd.status <> ${LEAD_STATUS}
       AND NOT EXISTS (SELECT 1 FROM investments i0 WHERE i0.deal_id = pd.id)
     ORDER BY pd.last_activity_at DESC NULLS LAST, o.name
   `) as any[]

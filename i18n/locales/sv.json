@@ -848,6 +848,45 @@
       "noSnapshot": "Ingen omröstning har avslutats ännu. Huvudboken sparas när en CTORI 4-omröstning avslutas.",
       "period": "{from} till {to}",
       "notPassed": "Inte antaget, så det finns ingen vinst att dela."
+    },
+    "lead": {
+      "title": "Nya leads",
+      "intro": "Bolag som har kommit in och inte är bedömda än. Bara kommittén ser dem. Starta bedömning, vänta på bolaget eller säg nej.",
+      "empty": "Inga nya leads just nu.",
+      "inactive": "Ingen aktivitet på över {weeks} veckor",
+      "noOwner": "Ingen än",
+      "howLabel": "Källa",
+      "howUnknown": "Inte registrerat",
+      "howWithContact": "{how}, kontakt: {contact}",
+      "createdLabel": "Kom in",
+      "created": "Kom in {date}",
+      "lastActivity": "senaste aktivitet {date}",
+      "slackLabel": "Slack",
+      "slackOpen": "Öppna kanalen",
+      "originLabel": "Första händelse {date}:",
+      "movesAria": "Flytta {name} vidare",
+      "action": {
+        "review": "Starta bedömning",
+        "waiting": "Väntar på bolaget",
+        "decline": "Säg nej"
+      },
+      "confirm": "{name} flyttas till ”{status}”.",
+      "noteLabel": "Kort anteckning (valfritt)",
+      "cancel": "Avbryt",
+      "moved": "{name} har flyttats till ”{status}”.",
+      "openCase": "Öppna caset",
+      "error": "Kunde inte flytta den. Försök igen.",
+      "pageTitle": "Nytt lead",
+      "pageIntro": "Inte bedömt än. Bara kommittén ser det här caset tills det flyttas vidare.",
+      "how": {
+        "they_contacted_us": "De kontaktade oss",
+        "we_contacted_them": "Vi kontaktade dem",
+        "no_contact": "Ingen kontakt än",
+        "connected_by_connections": "Kopplade via nätverket",
+        "met_at_event": "Träffade på ett evenemang",
+        "mentioned_by_network": "Tips från nätverket",
+        "mass_db": "Från en databas"
+      }
     }
   },
   "invest": {
