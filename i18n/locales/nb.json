@@ -971,8 +971,8 @@
     },
     "comments": {
       "heading": "Kommentarer og spørsmål",
-      "introMember": "Spør eller kommenter, gjerne på et bestemt lysbilde. Bare komiteen ser hva du skriver og at det er deg. Svar som er nyttige for alle, kan komiteen vise for alle medlemmer, uten navnet ditt.",
-      "introCommittee": "Du er i komiteen: du ser alle tråder med navn og svarer. Et svar merket «for alle» vises for alle medlemmer sammen med spørsmålet, uten navnet til den som spurte.",
+      "introMember": "Spør eller kommenter, gjerne på et bestemt lysbilde. Du velger hvem som ser det: bare komiteen, eller alle medlemmer. Komiteen svarer her.",
+      "introCommittee": "Du er i komiteen: du ser alle tråder med navn og svarer. Medlemmene velger selv om det de skriver er for komiteen eller for alle. Et svar merket «for alle» vises for alle medlemmer; står det på et spørsmål bare komiteen ser, vises spørsmålet uten navnet til den som spurte.",
       "kind": {
         "question": "Spørsmål",
         "comment": "Kommentar"
@@ -986,7 +986,7 @@
       "submit": "Send",
       "sent": "Sendt. Komiteen svarer her.",
       "mineHeading": "Dine",
-      "publicHeading": "Spørsmål og svar",
+      "publicHeading": "Delt med alle",
       "allHeading": "Alle tråder",
       "empty": "Ingen kommentarer eller spørsmål ennå.",
       "onlyUnanswered": "Bare de som venter på svar",
@@ -1013,8 +1013,20 @@
         "replyToReply": "Svar på selve spørsmålet.",
         "withdrawn": "Den er trukket tilbake.",
         "notReply": "Bare svar kan vises for alle.",
-        "unknown": "Noe gikk galt. Prøv igjen."
-      }
+        "unknown": "Noe gikk galt. Prøv igjen.",
+        "visibility": "Velg hvem som skal se det."
+      },
+      "visibilityLabel": "Hvem ser det?",
+      "visibility": {
+        "committee": "Bare komiteen",
+        "all": "Alle medlemmer"
+      },
+      "visibilityHint": {
+        "committee": "Bare komiteen ser hva du skriver og at det er deg.",
+        "allNamed": "Alle medlemmer som ser denne siden, ser det du skriver, med navnet ditt.",
+        "allAnonymous": "Alle medlemmer som ser denne siden, ser det du skriver, uten navnet ditt."
+      },
+      "replyPublicOpen": "Vis svaret for alle medlemmer"
     }
   },
   "consent": {

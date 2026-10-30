@@ -971,8 +971,8 @@
     },
     "comments": {
       "heading": "Comments and questions",
-      "introMember": "Ask or comment, on a specific slide if you like. Only the committee sees what you write and that it is you. Answers that are useful to everyone can be shown to all members by the committee, without your name.",
-      "introCommittee": "You are on the committee: you see every thread with names, and you answer. A reply marked \"for everyone\" is shown to all members with the question, without the name of whoever asked.",
+      "introMember": "Ask or comment, on a specific slide if you like. You choose who sees it: only the committee, or all members. The committee answers here.",
+      "introCommittee": "You are on the committee: you see every thread with names, and you answer. Members choose whether what they write is for the committee or for everyone. A reply marked \"for everyone\" is shown to all members; on a question only the committee sees, the question is then shown without the name of whoever asked.",
       "kind": {
         "question": "Question",
         "comment": "Comment"
@@ -986,7 +986,7 @@
       "submit": "Send",
       "sent": "Sent. The committee answers here.",
       "mineHeading": "Yours",
-      "publicHeading": "Questions and answers",
+      "publicHeading": "Shared with everyone",
       "allHeading": "All threads",
       "empty": "No comments or questions yet.",
       "onlyUnanswered": "Only those waiting for an answer",
@@ -1013,8 +1013,20 @@
         "replyToReply": "Reply to the question itself.",
         "withdrawn": "It has been withdrawn.",
         "notReply": "Only replies can be shown to everyone.",
-        "unknown": "Something went wrong. Try again."
-      }
+        "unknown": "Something went wrong. Try again.",
+        "visibility": "Pick who sees it."
+      },
+      "visibilityLabel": "Who sees it?",
+      "visibility": {
+        "committee": "Only the committee",
+        "all": "All members"
+      },
+      "visibilityHint": {
+        "committee": "Only the committee sees what you write and that it is you.",
+        "allNamed": "Every member who can see this page sees what you write, with your name.",
+        "allAnonymous": "Every member who can see this page sees what you write, without your name."
+      },
+      "replyPublicOpen": "Show the reply to all members"
     }
   },
   "consent": {

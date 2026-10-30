@@ -451,15 +451,21 @@ binds nobody.
   `sandbox` CSP (no scripts, opaque origin, framed only by the portal), shown in an
   iframe on `/member/invest/:slug/dokument/:key`. The invitation links there, not to
   share links.
-- **Comments and questions on a document** (hq migration 043, `invest_document_comments`;
-  all SQL in `server/utils/investComments.ts`, UI `InvestDocumentComments` under the
-  frame). A member writes a question or comment on the CURRENT version, optionally on a
-  slide (`anchor` = a `<section id>` of that version, checked on write; the outline is
-  parsed from the document and cached per sha256) with a quoted passage. The committee
-  (`current-komite`, `isDocumentCommentReader`) sees every thread with names and is the
-  only one that replies; a reply marked public ("for alle") shows the question and that
-  reply to every member, without the asker's name. A member sees their own threads and
-  never which committee member replied. Filtering is in SQL. Comments stay tied to the
+- **Comments and questions on a document** (hq migrations 043 and 044,
+  `invest_document_comments`; all SQL in `server/utils/investComments.ts`, UI
+  `InvestDocumentComments` under the frame). A member writes a question or comment on
+  the CURRENT version, optionally on a slide (`slide` = a `<section id>` of that version,
+  checked on write, or a slide's number; the outline is parsed from the document and
+  cached per sha256) with a quoted passage. Where in the slide: `anchor` (a section id or
+  a block anchor such as `part1~p[2]`) and `target` (prefix/suffix, point, level; cleaned
+  to those fields). The WRITER chooses who sees it (044): "bare komiteen" (`public` false,
+  the default: `DEFAULT_VISIBILITY`) or "alle" (`public` true on the root: every member who
+  can see the offering sees it, with the writer's name while `PUBLIC_SHOWS_AUTHOR`, and
+  the replies on it marked for everyone). The committee (`current-komite`,
+  `isDocumentCommentReader`) sees every thread with names and is the only one that
+  replies; a reply marked public ("for alle") on a committee-only question shows the
+  question and that reply to every member, without the asker's name. A member sees
+  their own threads and never which committee member replied. Filtering is in SQL. Comments stay tied to the
   version they were written on, so a new deck keeps them readable ("written on version
   1"). The offering page shows the committee how many threads wait on it. "Show the
   slide" is a fragment navigation of the frame, so the document still runs no script.

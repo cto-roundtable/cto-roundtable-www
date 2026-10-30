@@ -9,6 +9,13 @@
           {{ t(`invest.comments.kind.${k}`) }}
         </v-chip>
       </v-chip-group>
+      <p class="list-label mb-1">{{ t('invest.comments.visibilityLabel') }}</p>
+      <v-chip-group v-model="visibility" mandatory selected-class="kind-on" class="mb-1">
+        <v-chip v-for="v in visibilities" :key="v" :value="v" variant="outlined" size="small" class="kind">
+          {{ t(`invest.comments.visibility.${v}`) }}
+        </v-chip>
+      </v-chip-group>
+      <p class="meta mb-3">{{ visibilityHint }}</p>
       <v-select
         v-if="outline.length"
         v-model="anchor"
@@ -83,9 +90,10 @@
         <span class="meta">{{ byline(th) }}</span>
         <span v-if="th.version < version" class="meta">· {{ t('invest.comments.olderVersion', { v: th.version }) }}</span>
         <span v-if="th.public" class="chip-public">{{ t('invest.comments.publicChip') }}</span>
-        <span v-else-if="!th.replies.some((r) => !r.withdrawnAt) && !th.withdrawnAt" class="chip-waiting">{{ t('invest.comments.waiting') }}</span>
+        <span v-else-if="th.mine" class="meta">{{ t('invest.comments.visibility.committee') }}</span>
+        <span v-if="!th.replies.some((r) => !r.withdrawnAt) && !th.withdrawnAt" class="chip-waiting">{{ t('invest.comments.waiting') }}</span>
       </div>
-      <button v-if="th.anchor" type="button" class="anchor-link" :title="t('invest.comments.showSlide')" @click="emit('showAnchor', th.anchor)">
+      <button v-if="slideOf(th)" type="button" class="anchor-link" :title="t('invest.comments.showSlide')" @click="emit('showAnchor', slideOf(th)!)">
         {{ anchorText(th) }} <v-icon size="13">mdi-arrow-up</v-icon>
       </button>
       <blockquote v-if="th.quote" class="quote">{{ th.quote }}</blockquote>
@@ -128,7 +136,7 @@
         />
         <v-checkbox
           v-model="replyPublic[th.id]"
-          :label="t('invest.comments.replyPublic')"
+          :label="th.visibility === 'all' ? t('invest.comments.replyPublicOpen') : t('invest.comments.replyPublic')"
           density="compact"
           hide-details
           theme="dark"
@@ -150,9 +158,10 @@
       <article v-for="th in publicThreads" :key="th.id" class="thread">
         <div class="d-flex align-center flex-wrap mb-1" style="gap: 8px;">
           <span class="kind-tag" :class="`kind-${th.kind}`">{{ t(`invest.comments.kind.${th.kind}`) }}</span>
+          <span v-if="th.author" class="meta">{{ th.author.name }}</span>
           <span v-if="th.version < version" class="meta">{{ t('invest.comments.olderVersion', { v: th.version }) }}</span>
         </div>
-        <button v-if="th.anchor" type="button" class="anchor-link" :title="t('invest.comments.showSlide')" @click="emit('showAnchor', th.anchor)">
+        <button v-if="slideOf(th)" type="button" class="anchor-link" :title="t('invest.comments.showSlide')" @click="emit('showAnchor', slideOf(th)!)">
           {{ anchorText(th) }} <v-icon size="13">mdi-arrow-up</v-icon>
         </button>
         <blockquote v-if="th.quote" class="quote">{{ th.quote }}</blockquote>
@@ -168,9 +177,10 @@
 
 <script setup lang="ts">
 // Comments and questions on an offering document (the deck), and the committee's
-// replies. What each viewer gets is decided on the server (server/utils/investComments.ts):
-// the committee sees every thread with names; a member their own, plus replies the
-// committee showed to everyone, without the asker's name.
+// replies. The writer chooses who sees one: the committee only, or every member ("alle").
+// What each viewer gets is decided on the server (server/utils/investComments.ts): the
+// committee sees every thread with names; a member their own, the ones written for
+// "alle", and replies the committee showed to everyone.
 interface Reply {
   id: string
   body: string
@@ -180,10 +190,13 @@ interface Reply {
   mine: boolean
   author?: { name: string }
 }
+type Visibility = 'committee' | 'all'
 interface Thread {
   id: string
   kind: 'question' | 'comment'
+  visibility: Visibility
   anchor: string | null
+  slide: string | null
   anchorTitle: string | null
   quote: string | null
   body: string
@@ -205,6 +218,9 @@ const { $posthog } = useNuxtApp()
 
 const kinds = ['question', 'comment'] as const
 const kind = ref<'question' | 'comment'>('question')
+const visibilities = ['committee', 'all'] as const
+const visibility = ref<Visibility>('committee')
+const publicShowsAuthor = ref(true)
 const anchor = ref<string | null>(null)
 const quote = ref('')
 const draft = ref('')
@@ -236,9 +252,23 @@ const shownThreads = computed(() =>
 const mineThreads = computed(() => [...threads.value].reverse().filter((th) => th.mine))
 const publicThreads = computed(() => threads.value.filter((th) => !th.mine && th.public))
 
+const visibilityHint = computed(() => {
+  if (visibility.value === 'committee') return t('invest.comments.visibilityHint.committee')
+  return publicShowsAuthor.value
+    ? t('invest.comments.visibilityHint.allNamed')
+    : t('invest.comments.visibilityHint.allAnonymous')
+})
+
+/** The slide a thread is on, as an element id the viewer can go to (a number cannot). */
+function slideOf(th: Thread): string | null {
+  const id = th.slide ?? th.anchor
+  return id && /^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(id) ? id : null
+}
+
 function anchorText(th: Thread) {
-  const n = outline.value.findIndex((o) => o.id === th.anchor)
-  const title = th.anchorTitle || th.anchor
+  const id = slideOf(th)
+  const n = outline.value.findIndex((o) => o.id === id)
+  const title = th.anchorTitle || id
   return n >= 0 && th.version === version.value ? `${n + 1}. ${title}` : title
 }
 
@@ -252,17 +282,26 @@ function errorText(e: any) {
   return key && te(key) ? t(key) : t('invest.comments.errors.unknown')
 }
 
+let loaded = false
 async function load() {
   const res = await $fetch<{
     canReply: boolean
     version: number
     outline: { id: string; title: string }[]
     threads: Thread[]
+    defaultVisibility: Visibility
+    publicShowsAuthor: boolean
   }>(`${base.value}/documents/${props.docKey}/comments`)
+  // The writer's choice stands once made; the server's default only fills an untouched form.
+  if (!loaded) visibility.value = res.defaultVisibility
+  loaded = true
   canReply.value = res.canReply
   version.value = res.version
   outline.value = res.outline
   threads.value = res.threads
+  publicShowsAuthor.value = res.publicShowsAuthor
+  // A reply on a comment for everyone is for everyone too, unless the committee says not.
+  for (const th of res.threads) replyPublic.value[th.id] ??= th.visibility === 'all'
 }
 
 async function send() {
@@ -272,9 +311,20 @@ async function send() {
   try {
     await $fetch(`${base.value}/documents/${props.docKey}/comments`, {
       method: 'POST',
-      body: { kind: kind.value, body: draft.value, anchor: anchor.value, quote: anchor.value ? quote.value : null },
+      body: {
+        kind: kind.value,
+        visibility: visibility.value,
+        body: draft.value,
+        slide: anchor.value,
+        quote: anchor.value ? quote.value : null,
+      },
     })
-    $posthog?.capture?.('invest_document_comment_added', { slug: props.slug, key: props.docKey, kind: kind.value })
+    $posthog?.capture?.('invest_document_comment_added', {
+      slug: props.slug,
+      key: props.docKey,
+      kind: kind.value,
+      visibility: visibility.value,
+    })
     draft.value = ''
     quote.value = ''
     sent.value = true
@@ -306,7 +356,7 @@ function reply(threadId: string) {
       body: { body: replyDraft.value[threadId] ?? '', public: Boolean(replyPublic.value[threadId]) },
     })
     replyDraft.value[threadId] = ''
-    replyPublic.value[threadId] = false
+    replyPublic.value[threadId] = threads.value.find((th) => th.id === threadId)?.visibility === 'all'
   })
 }
 

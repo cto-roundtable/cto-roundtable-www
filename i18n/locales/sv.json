@@ -971,8 +971,8 @@
     },
     "comments": {
       "heading": "Kommentarer och frågor",
-      "introMember": "Fråga eller kommentera, gärna på en viss bild. Bara kommittén ser vad du skriver och att det är du. Svar som är nyttiga för alla kan kommittén visa för alla medlemmar, utan ditt namn.",
-      "introCommittee": "Du sitter i kommittén: du ser alla trådar med namn och svarar. Ett svar markerat \"för alla\" visas för alla medlemmar tillsammans med frågan, utan namnet på den som frågade.",
+      "introMember": "Fråga eller kommentera, gärna på en viss bild. Du väljer vem som ser det: bara kommittén eller alla medlemmar. Kommittén svarar här.",
+      "introCommittee": "Du sitter i kommittén: du ser alla trådar med namn och svarar. Medlemmarna väljer själva om det de skriver är för kommittén eller för alla. Ett svar markerat \"för alla\" visas för alla medlemmar; på en fråga som bara kommittén ser visas frågan då utan namnet på den som frågade.",
       "kind": {
         "question": "Fråga",
         "comment": "Kommentar"
@@ -986,7 +986,7 @@
       "submit": "Skicka",
       "sent": "Skickat. Kommittén svarar här.",
       "mineHeading": "Dina",
-      "publicHeading": "Frågor och svar",
+      "publicHeading": "Delat med alla",
       "allHeading": "Alla trådar",
       "empty": "Inga kommentarer eller frågor än.",
       "onlyUnanswered": "Bara de som väntar på svar",
@@ -1013,8 +1013,20 @@
         "replyToReply": "Svara på själva frågan.",
         "withdrawn": "Den har dragits tillbaka.",
         "notReply": "Bara svar kan visas för alla.",
-        "unknown": "Något gick fel. Försök igen."
-      }
+        "unknown": "Något gick fel. Försök igen.",
+        "visibility": "Välj vem som ska se det."
+      },
+      "visibilityLabel": "Vem ser det?",
+      "visibility": {
+        "committee": "Bara kommittén",
+        "all": "Alla medlemmar"
+      },
+      "visibilityHint": {
+        "committee": "Bara kommittén ser vad du skriver och att det är du.",
+        "allNamed": "Alla medlemmar som ser den här sidan ser det du skriver, med ditt namn.",
+        "allAnonymous": "Alla medlemmar som ser den här sidan ser det du skriver, utan ditt namn."
+      },
+      "replyPublicOpen": "Visa svaret för alla medlemmar"
     }
   },
   "consent": {
