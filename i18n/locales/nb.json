@@ -848,6 +848,45 @@
       "noSnapshot": "Ingen avstemning er avsluttet ennå. Hovedboka lagres når en CTORI 4-avstemning avsluttes.",
       "period": "{from} til {to}",
       "notPassed": "Ikke vedtatt, så det er ingen gevinst å dele."
+    },
+    "lead": {
+      "title": "Nye leads",
+      "intro": "Selskaper som har kommet inn og ikke er vurdert ennå. Bare komiteen ser dem. Start vurdering, vent på selskapet eller si nei.",
+      "empty": "Ingen nye leads akkurat nå.",
+      "inactive": "Uten aktivitet på over {weeks} uker",
+      "noOwner": "Ingen ennå",
+      "howLabel": "Kilde",
+      "howUnknown": "Ikke registrert",
+      "howWithContact": "{how}, kontakt: {contact}",
+      "createdLabel": "Kom inn",
+      "created": "Kom inn {date}",
+      "lastActivity": "sist aktivitet {date}",
+      "slackLabel": "Slack",
+      "slackOpen": "Åpne kanalen",
+      "originLabel": "Første hendelse {date}:",
+      "movesAria": "Flytt {name} videre",
+      "action": {
+        "review": "Start vurdering",
+        "waiting": "Venter på selskapet",
+        "decline": "Si nei"
+      },
+      "confirm": "{name} flyttes til «{status}».",
+      "noteLabel": "Kort notat (valgfritt)",
+      "cancel": "Avbryt",
+      "moved": "{name} er flyttet til «{status}».",
+      "openCase": "Åpne casen",
+      "error": "Fikk ikke flyttet den. Prøv igjen.",
+      "pageTitle": "Ny lead",
+      "pageIntro": "Ikke vurdert ennå. Bare komiteen ser denne casen, til den flyttes videre.",
+      "how": {
+        "they_contacted_us": "De tok kontakt med oss",
+        "we_contacted_them": "Vi tok kontakt med dem",
+        "no_contact": "Ingen kontakt ennå",
+        "connected_by_connections": "Koblet via nettverket",
+        "met_at_event": "Møtt på et arrangement",
+        "mentioned_by_network": "Tips fra nettverket",
+        "mass_db": "Fra en database"
+      }
     }
   },
   "invest": {

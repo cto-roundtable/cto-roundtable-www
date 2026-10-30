@@ -848,6 +848,45 @@
       "noSnapshot": "No vote has closed yet. The ledger is saved when a CTORI 4 vote closes.",
       "period": "{from} to {to}",
       "notPassed": "Not passed, so there is no gain to share."
+    },
+    "lead": {
+      "title": "New leads",
+      "intro": "Companies that have come in and are not reviewed yet. Only the committee sees them. Start a review, wait for the company or say no.",
+      "empty": "No new leads right now.",
+      "inactive": "No activity for over {weeks} weeks",
+      "noOwner": "None yet",
+      "howLabel": "Source",
+      "howUnknown": "Not recorded",
+      "howWithContact": "{how}, contact: {contact}",
+      "createdLabel": "Came in",
+      "created": "Came in {date}",
+      "lastActivity": "last activity {date}",
+      "slackLabel": "Slack",
+      "slackOpen": "Open the channel",
+      "originLabel": "First event {date}:",
+      "movesAria": "Move {name} on",
+      "action": {
+        "review": "Start review",
+        "waiting": "Waiting for the company",
+        "decline": "Say no"
+      },
+      "confirm": "{name} moves to “{status}”.",
+      "noteLabel": "Short note (optional)",
+      "cancel": "Cancel",
+      "moved": "{name} moved to “{status}”.",
+      "openCase": "Open the case",
+      "error": "Could not move it. Try again.",
+      "pageTitle": "New lead",
+      "pageIntro": "Not reviewed yet. Only the committee sees this case until it moves on.",
+      "how": {
+        "they_contacted_us": "They contacted us",
+        "we_contacted_them": "We contacted them",
+        "no_contact": "No contact yet",
+        "connected_by_connections": "Introduced through the network",
+        "met_at_event": "Met at an event",
+        "mentioned_by_network": "Tip from the network",
+        "mass_db": "From a database"
+      }
     }
   },
   "invest": {

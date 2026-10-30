@@ -4,7 +4,8 @@
 // member may see it (server/utils/dealQuestions.ts), and
 // the comments: all with names for the committee, only their own for a member
 // (server/utils/dealComments.ts), and the digests of them (server/utils/dealDigests.ts).
-// 404 for a case the member may not see, the same as for one that does not exist.
+// 404 for a case the member may not see, the same as for one that does not exist
+// (a new lead is the committee's only).
 // Document BYTES are not returned here: the page links to
 // /api/member/deals/:slug/documents/:id.
 export default defineEventHandler(async (event) => {
@@ -13,7 +14,8 @@ export default defineEventHandler(async (event) => {
 
   const viewer = await caseViewer(event.context.session.personId)
   const deal = await requireCase(viewer, slug)
-  const [documents, rounds, qa, comments, digests, conflict, conflicts] = await Promise.all([
+  const isLead = viewer.isCommittee && deal.status === LEAD_STATUS
+  const [documents, rounds, qa, comments, digests, conflict, conflicts, lead] = await Promise.all([
     deal.materialShared ? listCaseDocuments(deal.id) : Promise.resolve([]),
     caseRoundsView(viewer, deal.id),
     listCaseQuestions(viewer, deal.id, deal.materialShared),
@@ -21,6 +23,7 @@ export default defineEventHandler(async (event) => {
     caseDigests(viewer, deal.id, deal.materialShared),
     myConflict(viewer.personId, deal.id),
     viewer.isCommittee ? listConflicts(deal.id) : Promise.resolve(null),
+    isLead ? listLeads(slug).then((l) => l[0] ?? null) : Promise.resolve(null),
   ])
 
   const { id: _id, ...publicDeal } = deal
@@ -40,5 +43,8 @@ export default defineEventHandler(async (event) => {
     // "Jeg er inhabil" (dc-33 H3): the member's own; everyone's for the committee.
     conflict,
     conflicts,
+    // A new lead (committee only, members get the 404 above): how it came in, and the
+    // committee's moves out of 'incoming' (POST /api/member/committee/leads/:slug).
+    lead,
   }
 })

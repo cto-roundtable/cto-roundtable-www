@@ -16,6 +16,33 @@
         <DealsPipelineDigestReview v-for="d in drafts" :key="d.id" :digest="d" class="mb-3" @changed="reload" />
       </section>
 
+      <!-- New leads ('incoming'): the committee's only, folded with the count (Snorre, 2026-10-30). -->
+      <details class="group group-fold leads" :open="leadsOpen" @toggle="leadsOpen = ($event.target as HTMLDetailsElement).open">
+        <summary class="group-title">
+          <v-icon size="20" class="fold-icon" aria-hidden="true">mdi-chevron-right</v-icon>
+          {{ t('deals.lead.title') }} <span class="count">{{ leads.length }}</span>
+          <span class="only-committee"><v-icon size="13" aria-hidden="true">mdi-lock-outline</v-icon>{{ t('deals.case.onlyCommittee') }}</span>
+        </summary>
+        <p class="fold-intro">{{ t('deals.lead.intro') }}</p>
+        <p v-if="!leads.length" class="empty">{{ t('deals.lead.empty') }}</p>
+        <div v-if="newLeads.length" class="lead-list">
+          <DealsLead v-for="l in newLeads" :key="l.slug" :lead="l" @moved="onMoved" />
+        </div>
+        <details v-if="quietLeads.length" class="group-fold quiet">
+          <summary class="sub-fold">
+            <v-icon size="18" class="fold-icon" aria-hidden="true">mdi-chevron-right</v-icon>
+            {{ t('deals.lead.inactive', { weeks: Math.round(inactiveAfterDays / 7) }) }} <span class="count">{{ quietLeads.length }}</span>
+          </summary>
+          <div class="lead-list">
+            <DealsLead v-for="l in quietLeads" :key="l.slug" :lead="l" @moved="onMoved" />
+          </div>
+        </details>
+      </details>
+      <p v-if="moved" class="moved" role="status">
+        {{ t('deals.lead.moved', { name: moved.name, status: t(`deals.status.${moved.status}`) }) }}
+        <NuxtLink v-if="moved.status !== 'rejected'" :to="`/member/caser/${moved.slug}`">{{ t('deals.lead.openCase') }}</NuxtLink>
+      </p>
+
       <!-- What waits, summed over every case: zero is said plainly, never left out. -->
       <dl class="totals" :aria-label="t('deals.committee.totalsAria')">
         <div v-for="k in COUNTS" :key="k" class="total" :class="{ hot: totals[k] > 0 }">
@@ -69,7 +96,8 @@
 // The committee's overview across cases: every case in active work with what waits
 // for the committee (questions routed to the owner, agent answers to confirm, new
 // comments since the last digest, questions still with the agent), zero counts shown,
-// grouped like the member overview. Committee only (the board sees what a member
+// grouped like the member overview; and the new leads ('incoming'), folded, with the
+// moves out of 'incoming'. Committee only (the board sees what a member
 // sees): server/api/member/committee/overview.get.ts.
 definePageMeta({ layout: 'member' })
 
@@ -97,13 +125,33 @@ const loading = ref(true)
 const forbidden = ref(false)
 const cases = ref<CommitteeCase[]>([])
 const drafts = ref<any[]>([])
+// The new leads, typed where they are drawn (DealsLead).
+const leads = ref<any[]>([])
+const inactiveAfterDays = ref(56)
+const leadsOpen = ref(false)
+const moved = ref<{ slug: string; name: string; status: string } | null>(null)
 
 async function reload() {
-  const data = await $fetch<{ cases: CommitteeCase[]; pipelineDigests: { drafts: any[] } }>(
-    '/api/member/committee/overview',
-  )
+  const data = await $fetch<{
+    cases: CommitteeCase[]
+    leads: any[]
+    inactiveAfterDays: number
+    pipelineDigests: { drafts: any[] }
+  }>('/api/member/committee/overview')
   cases.value = data.cases
+  leads.value = data.leads
+  inactiveAfterDays.value = data.inactiveAfterDays
   drafts.value = data.pipelineDigests.drafts
+}
+
+// Sorted by the server: newest activity (else when it came in) first.
+const newLeads = computed(() => leads.value.filter((l) => l.section === 'new'))
+const quietLeads = computed(() => leads.value.filter((l) => l.section === 'inactive'))
+
+/** A lead left 'incoming': say where it went, and re-read (it may now be a case below). */
+async function onMoved(m: { slug: string; name: string; status: string }) {
+  moved.value = m
+  await reload()
 }
 
 watchEffect(async () => {
@@ -227,8 +275,56 @@ function stateLine(c: CommitteeCase) {
   margin-left: -4px;
   transition: transform 0.15s ease;
 }
-.group-fold[open] .fold-icon {
+.group-fold[open] > summary .fold-icon {
   transform: rotate(90deg);
+}
+.leads {
+  margin-bottom: 32px;
+}
+.fold-intro {
+  color: #aaa;
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 66ch;
+  margin: 0 0 12px;
+}
+.lead-list {
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.quiet {
+  margin-top: 14px;
+}
+.sub-fold {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ccc;
+  font-size: 14.5px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.only-committee {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #aaa;
+  font-size: 12.5px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 1px 9px;
+}
+.moved {
+  color: #ddd;
+  font-size: 14px;
+  margin: -16px 0 28px;
+}
+.moved a {
+  color: #fff;
+  margin-left: 6px;
 }
 .waits-table {
   width: 100%;

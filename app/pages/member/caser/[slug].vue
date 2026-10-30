@@ -40,6 +40,16 @@
         </NuxtLink>
       </header>
 
+      <!-- A new lead ('incoming'): only the committee gets here at all. How it came in, and the moves out. -->
+      <section v-if="data.lead" class="lead-panel" :aria-label="t('deals.lead.pageTitle')">
+        <h2 class="sub-title">
+          {{ t('deals.lead.pageTitle') }}
+          <span class="only-committee"><v-icon size="13" aria-hidden="true">mdi-lock-outline</v-icon>{{ t('deals.case.onlyCommittee') }}</span>
+        </h2>
+        <p class="section-intro">{{ t('deals.lead.pageIntro') }}</p>
+        <DealsLead :lead="data.lead" on-page @moved="onLeadMoved" />
+      </section>
+
       <!-- Where to go on this page: every action a member has lives in its own section below. -->
       <nav class="jump" :aria-label="t('deals.case.jumpAria')">
         <a v-for="s in sections" :key="s.id" :href="`#${s.id}`" class="jump-link" @click.prevent="jump(s.id)">
@@ -186,6 +196,8 @@ interface CaseResponse {
   conflict: { declaredAt: string; reason: string | null } | null
   conflicts: { person: { id: string; name: string }; declaredAt: string; reason: string | null }[] | null
   digests: { committee: any | null; spv: any | null }
+  // A new lead, for the committee only (typed where it is drawn, DealsLead).
+  lead: any | null
 }
 
 const route = useRoute()
@@ -226,6 +238,12 @@ watch(
 /** Re-read the case after a question, an answer or a ballot, without the loading state. */
 async function reload() {
   data.value = await fetchCase()
+}
+
+/** Out of 'incoming': a lead the committee said no to is no longer a case, so back to Komiteen. */
+async function onLeadMoved(m: { status: string }) {
+  if (m.status === 'rejected') await navigateTo('/member/komite')
+  else await reload()
 }
 
 // The counts are live: re-read every 30 seconds while a vote is open on the case.
@@ -414,6 +432,14 @@ function trackOpen(d: CaseDocument) {
   line-height: 1.6;
   max-width: 66ch;
   margin: 20px 0 0;
+}
+.lead-panel {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: #161616;
+  padding: 18px 20px;
+  margin: 8px 0 20px;
+  max-width: 760px;
 }
 .jump {
   display: flex;

@@ -57,7 +57,11 @@ add `invest-4`; if nobody is in it yet, make it synthetic.
   invested list is exactly what the persona's own SPVs invested in, one tag per
   SPV; onboarding only for Norway; for a member, what the
   case overview offers to open is exactly what the case page opens; nobody opens
-  a case the committee cannot; a member in no SPV and not on the committee sees no
+  a case the committee cannot; a new lead (status `incoming`) opens for the committee
+  only, everyone else gets the 404 of a missing case, and its move API
+  (`POST /api/member/committee/leads/:slug`) is 403 for anyone off the committee (global
+  setup adds the investor-visible `e2e-synthetic-lead` so this is probed even on a day
+  with no real leads); a member in no SPV and not on the committee sees no
   cases and no updates; investor updates exactly for the groups that funded the
   company. Path tricks without a cookie (`//api/member/...`, encoded) never 200.
 - `views.spec.ts`: a walk through the member pages per persona (plus the first

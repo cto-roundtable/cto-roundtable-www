@@ -8,7 +8,8 @@ import { createHash } from 'node:crypto'
  * Who sees a case is derived on every request, never stored
  * (decision 2026-10-22 on the vote model, project ctori-4):
  *   - the committee (`current-komite`): every case that is in active work,
- *     investor-visible, has a round or was invested in, drafts included. The board
+ *     investor-visible, has a round or was invested in, drafts included, and every
+ *     new lead (status 'incoming', LEAD_STATUS). The board
  *     (`styret`) is NOT staff here: for cases a board member is a member like any
  *     other (Snorre, 2026-10-29: "They are separate entities");
  *   - a member of the ACTIVE invest group (the SPV deploying now,
@@ -36,6 +37,9 @@ import { createHash } from 'node:crypto'
 
 /** Active work (deal_statuses): what the active SPV sees. Leads ('incoming') are not. */
 export const ACTIVE_STATUSES = ['reviewing', 'waiting', 'to_be_voted', 'pending_transfer']
+/** A new lead, not yet reviewed: the committee's only, never a member's, whatever the
+ *  visible flag, a round or an SPV says (Snorre, 2026-10-30). */
+export const LEAD_STATUS = 'incoming'
 /** Declined: shown on the feed only on request. 'passed' stays out until the founder is told ('rejected'). */
 export const DECLINED_STATUSES = ['rejected']
 
@@ -98,14 +102,16 @@ export function isDealDriver(deal: { owner: Person | null; coLeads: Person[] }, 
  */
 function caseVisibleSql(sql: ReturnType<typeof useDatabase>, viewer: CaseViewer) {
   if (viewer.isCommittee) {
-    // Everything a member could open, and more: active work, visible, any round, and
-    // every invested company (members of the investing SPV open those, 2026-10-30).
-    return sql`(pd.investor_visible OR pd.status = ANY(${ACTIVE_STATUSES})
+    // Everything a member could open, and more: active work, visible, any round,
+    // every invested company (members of the investing SPV open those, 2026-10-30),
+    // and the new leads.
+    return sql`(pd.investor_visible OR pd.status = ANY(${ACTIVE_STATUSES}) OR pd.status = ${LEAD_STATUS}
                 OR EXISTS (SELECT 1 FROM deal_rounds r0 WHERE r0.deal_id = pd.id)
                 OR EXISTS (SELECT 1 FROM investments i0 WHERE i0.deal_id = pd.id))`
   }
   const groups = viewer.groupIds
-  return sql`(
+  // A lead is never a member's case, not even with the visible flag or a round set.
+  return sql`(pd.status <> ${LEAD_STATUS} AND (
     ((pd.investor_visible OR pd.status = ANY(${ACTIVE_STATUSES}))
       AND NOT EXISTS (SELECT 1 FROM investments i0 WHERE i0.deal_id = pd.id)
       AND EXISTS (
@@ -118,7 +124,7 @@ function caseVisibleSql(sql: ReturnType<typeof useDatabase>, viewer: CaseViewer)
     OR EXISTS (
       SELECT 1 FROM investments i
       WHERE i.deal_id = pd.id AND i.group_id = ANY(${groups}::uuid[]))
-  )`
+  ))`
 }
 
 /** Whether the blurb and the documents of a visible case are shared with this viewer. */
@@ -693,4 +699,155 @@ export async function listCaseOverview(
     out.declined = [...declinedRows.map(caseRowOut), ...ended.filter((r) => !seen.has(r.slug))]
   }
   return out
+}
+
+// --- New leads (/member/komite, committee only) --------------------------------------
+
+export type LeadSection = 'new' | 'inactive'
+
+export interface LeadRow {
+  slug: string
+  name: string
+  /** ansvarlig: the current lead, then the co-leads (deal_people) */
+  owner: string | null
+  coLeads: string[]
+  /** how it came in (contacted_how, the contact_method enum; the page says it in words) */
+  contactedHow: string | null
+  /** our contact at the company (pipeline_deals.contact_person_id: the founder or CEO) */
+  contact: string | null
+  createdAt: string
+  /** last_activity_at, or null when nothing was logged after it came in */
+  lastActivityAt: string | null
+  lastActivityNote: string | null
+  slackUrl: string | null
+  /** the first thing logged on it (deal_events): where it came from, in words */
+  origin: { occurredAt: string; kind: string; body: string } | null
+  /** quiet for INACTIVE_AFTER_DAYS (last activity, else when it came in): folded */
+  section: LeadSection
+}
+
+/** The Slack workspace the deal channels live in (#invest-committee and the deal channels). */
+const SLACK_WORKSPACE = 'https://cto-round-table.slack.com'
+const SLACK_CHANNEL_RE = /^[CG][A-Z0-9]{6,20}$/
+const ORIGIN_MAX = 280
+
+/**
+ * Every deal in status 'incoming', newest activity first (last_activity_at, else
+ * created_at), with what the committee needs to decide what to do with it. With a slug,
+ * just that lead (the case page). Committee only: callers check.
+ */
+export async function listLeads(slug: string | null = null): Promise<LeadRow[]> {
+  const sql = useDatabase()
+  const rows = (await sql`
+    SELECT pd.slug, o.name, pd.contacted_how::text AS contacted_how, cp.name AS contact,
+           pd.created_at, pd.last_activity_at, pd.last_activity_note, pd.slack_channel_id,
+           COALESCE(pd.last_activity_at, pd.created_at) AS seen_at,
+           owner.name AS owner_name, owner.co_leads,
+           (SELECT json_build_object('occurredAt', e.occurred_at, 'kind', e.kind, 'body', e.body)
+            FROM deal_events e WHERE e.deal_id = pd.id
+            ORDER BY e.occurred_at, e.created_at LIMIT 1) AS origin
+    FROM pipeline_deals pd
+    JOIN organizations o ON o.id = pd.organization_id
+    LEFT JOIN persons cp ON cp.id = pd.contact_person_id
+    ${dealOwnerJoin(sql)}
+    WHERE pd.slug IS NOT NULL AND pd.status = ${LEAD_STATUS}
+      AND (${slug}::text IS NULL OR pd.slug = ${slug})
+    ORDER BY seen_at DESC, o.name
+  `) as any[]
+  const quietBefore = Date.now() - INACTIVE_AFTER_DAYS * 86_400_000
+  return rows.map((r) => {
+    const body: string | undefined = r.origin?.body
+    return {
+      slug: r.slug,
+      name: r.name,
+      owner: r.owner_name,
+      coLeads: (r.co_leads ?? []).map((p: Person) => p.name),
+      contactedHow: r.contacted_how,
+      contact: r.contact,
+      createdAt: r.created_at,
+      lastActivityAt: r.last_activity_at,
+      lastActivityNote: r.last_activity_note,
+      slackUrl: SLACK_CHANNEL_RE.test(r.slack_channel_id ?? '')
+        ? `${SLACK_WORKSPACE}/archives/${r.slack_channel_id}`
+        : null,
+      // json_build_object hands the timestamp back as Postgres text.
+      origin: body
+        ? {
+            occurredAt: new Date(r.origin.occurredAt).toISOString(),
+            kind: r.origin.kind,
+            body: body.length > ORIGIN_MAX ? `${body.slice(0, ORIGIN_MAX - 1).trimEnd()}…` : body,
+          }
+        : null,
+      section: new Date(r.seen_at).getTime() < quietBefore ? 'inactive' : 'new',
+    }
+  })
+}
+
+/**
+ * What the committee can do with a lead, and the status each one moves it to. Only
+ * from 'incoming'; anything else goes through the investments skill as before. "Si nei"
+ * is the declined status the overview lists (DECLINED_STATUSES).
+ */
+export const LEAD_TRANSITIONS = {
+  review: 'reviewing',
+  waiting: 'waiting',
+  decline: DECLINED_STATUSES[0]!,
+} as const
+export type LeadAction = keyof typeof LEAD_TRANSITIONS
+export const MAX_LEAD_NOTE = 280
+
+/** The line written to last_activity_note when no note is given. */
+const LEAD_ACTION_NOTE: Record<LeadAction, string> = {
+  review: 'startet vurdering',
+  waiting: 'venter på selskapet',
+  decline: 'sa nei',
+}
+
+/**
+ * Move a lead out of 'incoming': the status, last_activity_at = now() and
+ * last_activity_note ("<first name> <date>: <note>"), plus a status_change event,
+ * in one transaction. app.current_user names the person, so audit_pipeline_deals
+ * (001's trigger_audit_log) records who did it. A compare-and-set on the status: two
+ * clicks at once move it once, and the second gets a 409. Never a delete.
+ */
+export async function moveLead(viewer: CaseViewer, slug: string, action: unknown, note: unknown) {
+  if (!viewer.isCommittee) throw createError({ statusCode: 403, message: 'Committee only' })
+  if (typeof action !== 'string' || !Object.hasOwn(LEAD_TRANSITIONS, action)) {
+    throw createError({ statusCode: 400, message: `action must be one of ${Object.keys(LEAD_TRANSITIONS).join(', ')}` })
+  }
+  if (note != null && typeof note !== 'string') throw createError({ statusCode: 400, message: 'note must be text' })
+  const text = (note ?? '').replace(/\s+/g, ' ').trim()
+  if (text.length > MAX_LEAD_NOTE) {
+    throw createError({ statusCode: 400, message: `note: at most ${MAX_LEAD_NOTE} characters` })
+  }
+  const a = action as LeadAction
+  const to = LEAD_TRANSITIONS[a]
+  const sql = useDatabase()
+  const me = ((await sql`SELECT name FROM persons WHERE id = ${viewer.personId}`) as any[])[0]
+  const firstName = String(me?.name ?? '').split(' ')[0] || 'Komiteen'
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Oslo' })
+  const line = `${firstName} ${today}: ${text || LEAD_ACTION_NOTE[a]}`
+  const who = `portal:${viewer.personId}`
+  const [, moved] = (await sql.transaction([
+    sql`SELECT set_config('app.current_user', ${who}, true)`,
+    sql`
+      WITH moved AS (
+        UPDATE pipeline_deals
+        SET status = ${to}, last_activity_at = NOW(), last_activity_note = ${line}
+        WHERE slug = ${slug} AND status = ${LEAD_STATUS}
+        RETURNING id
+      )
+      INSERT INTO deal_events (deal_id, occurred_at, kind, body, source_kind, created_by)
+      SELECT id, NOW(), 'status_change', ${`${LEAD_STATUS} -> ${to} in the portal (${me?.name ?? who})${text ? `: ${text}` : ''}`},
+             'manual', ${who}
+      FROM moved
+      RETURNING deal_id
+    `,
+  ])) as [unknown, any[]]
+  if (!moved.length) {
+    const exists = (await sql`SELECT status FROM pipeline_deals WHERE slug = ${slug}`) as any[]
+    if (!exists.length) throw createError({ statusCode: 404, message: 'Case not found' })
+    throw createError({ statusCode: 409, message: 'No longer a new lead: someone moved it already' })
+  }
+  return { slug, status: to, lastActivityNote: line }
 }
