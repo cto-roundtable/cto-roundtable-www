@@ -910,7 +910,6 @@
       "updated": "Uppdaterad {date}",
       "back": "Tillbaka",
       "loading": "Laddar…",
-      "fullScreen": "Öppna i ny flik",
       "missing": "Dokumentet hittades inte.",
       "unanswered": "{n} väntar på svar"
     },
@@ -1024,5 +1023,18 @@
     "privacy": "Integritet",
     "accept": "Kör, räkna med mig",
     "decline": "Nej tack, jag är en ninja"
+  },
+  "documentViewer": {
+    "previous": "Föregående",
+    "next": "Nästa",
+    "counter": "{n} / {count}",
+    "jump": "Gå till bild",
+    "untitled": "Utan titel",
+    "slideMode": "En bild i taget",
+    "scrollMode": "Hela dokumentet",
+    "newTab": "Öppna i ny flik",
+    "full": "Helskärm",
+    "exitFull": "Stäng helskärm",
+    "failed": "Kunde inte ladda dokumentet. Försök att ladda om sidan."
   }
 }
