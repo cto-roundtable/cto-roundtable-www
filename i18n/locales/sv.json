@@ -7,7 +7,7 @@
   },
   "nav": {
     "overview": "Översikt",
-    "hosting": "Värdskap",
+    "hosting": "Vara värd",
     "openToWork": "Öppen för jobb",
     "myActivity": "Min aktivitet",
     "discounts": "Erbjudanden",
@@ -76,7 +76,7 @@
       "roleFallback": "medlem",
       "defaultVote": {
         "heading": "När du inte röstar",
-        "intro": "Omröstningar i SPV:n sker i portalen och är öppna i 48 timmar. Hinner du inte rösta kan du räknas som blank. Blank räknas varken som ja eller nej. Du kan alltid rösta själv, och då är det din röst som gäller.",
+        "intro": "Omröstningar i SPV:t sker i portalen och är öppna i 48 timmar. Hinner du inte rösta kan du räknas som blank. Blank räknas varken som ja eller nej. Du kan alltid rösta själv, och då är det din röst som gäller.",
         "label": "Om jag inte röstar, räkna mig som blank",
         "note": "En ändring gäller från nästa omröstning som öppnar. Ja kan aldrig vara standard.",
         "error": "Kunde inte spara. Försök igen."
@@ -138,7 +138,7 @@
       }
     },
     "host": {
-      "title": "Värdskap",
+      "title": "Vara värd",
       "intro": "Anmäl intresse för att vara värd. Det är inget åtagande: styrelsen hör av sig när vi planerar nästa träff och matchar dig med ett passande tema och en passande grupp. Själva träffarna bokar vi via Luma.",
       "yourInterest": "Ditt intresse",
       "onList": "Du står på listan",
@@ -212,7 +212,7 @@
     },
     "myActivity": {
       "title": "Min aktivitet",
-      "intro": "Din aktivitet från Slack (inlägg, trådsvar, reaktioner) och Luma (närvaro + värdskap), de senaste 12 månaderna.",
+      "intro": "Din aktivitet från Slack (inlägg, trådsvar, reaktioner) och Luma (närvaro och träffar du varit värd för), de senaste 12 månaderna.",
       "signInPrompt": "Logga in för att se din aktivitet."
     },
     "activityDetail": {
@@ -223,7 +223,7 @@
         "replies": "trådsvar",
         "reactions": "reaktioner",
         "attended": "närvaro",
-        "hosted": "värdskap",
+        "hosted": "som värd",
         "points": "{points} p"
       },
       "weeklyHeading": "Aktivitet per vecka",
@@ -652,7 +652,7 @@
       },
       "followUp": {
         "title": "Frågor om status",
-        "intro": "Undrar du hur det går för bolaget? Fråga här. En agent svarar utifrån det vi har, och annars går frågan till den ansvariga. Svaret visas för alla i SPV:n. Bara kommittén ser vem som frågade.",
+        "intro": "Undrar du hur det går för bolaget? Fråga här. En agent svarar utifrån det vi har, och annars går frågan till den ansvariga. Svaret visas för alla i SPV:t. Bara kommittén ser vem som frågade.",
         "askLabel": "Vad undrar du om bolaget nu?"
       }
     },
