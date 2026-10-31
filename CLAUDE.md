@@ -448,9 +448,20 @@ binds nobody.
 - **Documents** (the deck now; vedtekter, aksjonæravtale, mandat at tegning) are
   `invest_offering_documents`: versioned rows with the bytes in Postgres (an HTML deck
   is ~25 KB), never edited. Served by `/api/member/invest/:slug/documents/:key` with a
-  `sandbox` CSP (no scripts, opaque origin, framed only by the portal), shown in an
-  iframe on `/member/invest/:slug/dokument/:key`. The invitation links there, not to
-  share links.
+  `sandbox` CSP (no scripts, opaque origin, framed only by the portal). The page
+  `/member/invest/:slug/dokument/:key` shows it in `DocumentViewer`
+  (`app/components/document/`): one slide at a time (prev/next, arrow keys, a swipe, a
+  counter that jumps, a full view; iPhone has no element fullscreen, so there it covers
+  the page), and links in the document open in a new tab. The viewer fetches the HTML
+  and frames a copy as `srcdoc` with `app/utils/documentFrame.ts` added: the frame is
+  sandboxed WITHOUT allow-same-origin (opaque origin, no cookies or API), and a `<meta>`
+  CSP lets only that script run (by nonce), the same policy the API serves less
+  `sandbox`. Viewer and frame talk by postMessage (`dv: 1`, checked on `event.source`).
+  A slide is `[data-slide]`, else `section.slide`, else `.slides > section`; a document
+  without slides scrolls as before, and a non-HTML document is framed from the API as
+  it was. Built for the CTORI4 deck; other pages may use it, none does yet (ctori-4
+  decision 2026-10-30-deck-viewer-scope). The invitation links there, not to share
+  links.
 - **Comments and questions on a document** (hq migration 043, `invest_document_comments`;
   all SQL in `server/utils/investComments.ts`, UI `InvestDocumentComments` under the
   frame). A member writes a question or comment on the CURRENT version, optionally on a
@@ -462,8 +473,7 @@ binds nobody.
   never which committee member replied. Filtering is in SQL. Comments stay tied to the
   version they were written on, so a new deck keeps them readable ("written on version
   1"). The offering page shows the committee how many threads wait on it. "Show the
-  slide" is a fragment navigation of the frame, so the document still runs no script.
-  Huddle's review-kit was considered and not used: see the ctori-4 report.
+  slide" asks the viewer to go to that slide.
 - **The answer is said back**: a saved yes gets a green success callout at the top of the
   form (Vuetify `type="success"`, tonal), a maybe a softer one (outlined).
 - **Entry points**: `InvestOfferingBanner` on `/member` and `/member/sweden` until the

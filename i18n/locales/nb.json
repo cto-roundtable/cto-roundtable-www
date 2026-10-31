@@ -910,7 +910,6 @@
       "updated": "Oppdatert {date}",
       "back": "Tilbake",
       "loading": "Laster…",
-      "fullScreen": "Åpne i ny fane",
       "missing": "Fant ikke dokumentet.",
       "unanswered": "{n} venter på svar"
     },
@@ -1024,5 +1023,18 @@
     "privacy": "Personvern",
     "accept": "Kjør på, tell meg med",
     "decline": "Nei takk, jeg er en ninja"
+  },
+  "documentViewer": {
+    "previous": "Forrige",
+    "next": "Neste",
+    "counter": "{n} / {count}",
+    "jump": "Gå til lysbilde",
+    "untitled": "Uten tittel",
+    "slideMode": "Ett lysbilde om gangen",
+    "scrollMode": "Hele dokumentet",
+    "newTab": "Åpne i ny fane",
+    "full": "Fullskjerm",
+    "exitFull": "Lukk fullskjerm",
+    "failed": "Fikk ikke lastet dokumentet. Prøv å laste siden på nytt."
   }
 }

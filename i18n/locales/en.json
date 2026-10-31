@@ -910,7 +910,6 @@
       "updated": "Updated {date}",
       "back": "Back",
       "loading": "Loading…",
-      "fullScreen": "Open in a new tab",
       "missing": "The document was not found.",
       "unanswered": "{n} waiting for an answer"
     },
@@ -1024,5 +1023,18 @@
     "privacy": "Privacy",
     "accept": "Go on, count me in",
     "decline": "No thanks, I'm a ninja"
+  },
+  "documentViewer": {
+    "previous": "Previous",
+    "next": "Next",
+    "counter": "{n} / {count}",
+    "jump": "Go to slide",
+    "untitled": "Untitled",
+    "slideMode": "One slide at a time",
+    "scrollMode": "Whole document",
+    "newTab": "Open in a new tab",
+    "full": "Full screen",
+    "exitFull": "Exit full screen",
+    "failed": "Could not load the document. Try reloading the page."
   }
 }
