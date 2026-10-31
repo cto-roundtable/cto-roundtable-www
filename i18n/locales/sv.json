@@ -970,7 +970,7 @@
     },
     "comments": {
       "heading": "Kommentarer och frågor",
-      "introMember": "Fråga eller kommentera, gärna på en viss bild. Du väljer vem som ser det: bara kommittén eller alla medlemmar. Kommittén svarar här.",
+      "introMember": "Kommentera direkt i presentationen: markera text, eller slå på \"Kommentera\" och tryck där du vill. Eller skriv här. Du väljer vem som ser det: bara kommittén eller alla medlemmar. Kommittén svarar.",
       "introCommittee": "Du sitter i kommittén: du ser alla trådar med namn och svarar. Medlemmarna väljer själva om det de skriver är för kommittén eller för alla. Ett svar markerat \"för alla\" visas för alla medlemmar; på en fråga som bara kommittén ser visas frågan då utan namnet på den som frågade.",
       "kind": {
         "question": "Fråga",
@@ -1025,7 +1025,19 @@
         "allNamed": "Alla medlemmar som ser den här sidan ser det du skriver, med ditt namn.",
         "allAnonymous": "Alla medlemmar som ser den här sidan ser det du skriver, utan ditt namn."
       },
-      "replyPublicOpen": "Visa svaret för alla medlemmar"
+      "replyPublicOpen": "Visa svaret för alla medlemmar",
+      "inline": {
+        "toggle": "Kommentera",
+        "toggleHint": "Slå på och tryck där du vill kommentera i presentationen",
+        "chip": "Kommentera",
+        "tapHint": "Tryck på det du vill kommentera.",
+        "newTitle": "Ny kommentar",
+        "onSlide": "Bild {n}",
+        "wholeSlide": "hela bilden",
+        "close": "Stäng",
+        "cancel": "Avbryt",
+        "sent": "Skickat."
+      }
     }
   },
   "consent": {
