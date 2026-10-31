@@ -480,6 +480,17 @@ binds nobody.
   version they were written on, so a new deck keeps them readable ("written on version
   1"). The offering page shows the committee how many threads wait on it. "Show the
   slide" asks the viewer to go to that slide.
+- **Comments IN the deck** (ctori-4 dc-65): `InvestDeckCommentLayer` over the viewer's
+  frame, on the same `useDocumentComments` as the list. In the frame runs huddle's
+  review-kit **bridge**, copied byte for byte into `app/vendor/huddle-review-kit/` (the
+  frame half only, MIT; update it from huddle, never edit it here; biome skips it). The
+  viewer injects it after its own script under the same CSP nonce. The bridge names the
+  block a tap or a selection hit (`slide-4~div[1]/p[1]`) and draws numbered markers the
+  layer sends it (`{hb: 1}` messages; markers only for the slide on screen, since a block
+  on a hidden slide has no place). "Kommenter" off (the default): taps are the page's,
+  selected words get a "Kommenter" chip. On: a tap on a block comments on it. A marker
+  opens the thread beside the deck (a bottom sheet on a phone). Every new comment starts
+  at "bare komiteen", whatever was chosen last.
 - **The answer is said back**: a saved yes gets a green success callout at the top of the
   form (Vuetify `type="success"`, tonal), a maybe a softer one (outlined).
 - **Entry points**: `InvestOfferingBanner` on `/member` and `/member/sweden` until the

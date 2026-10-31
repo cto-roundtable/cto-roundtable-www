@@ -10,7 +10,7 @@
         </v-chip>
       </v-chip-group>
       <p class="list-label mb-1">{{ t('invest.comments.visibilityLabel') }}</p>
-      <v-chip-group v-model="visibility" mandatory selected-class="kind-on" class="mb-1">
+      <v-chip-group v-model="visibility" mandatory selected-class="kind-on" class="mb-1" @update:model-value="chosen = true">
         <v-chip v-for="v in visibilities" :key="v" :value="v" variant="outlined" size="small" class="kind">
           {{ t(`invest.comments.visibility.${v}`) }}
         </v-chip>
@@ -93,7 +93,7 @@
         <span v-else-if="th.mine" class="meta">{{ t('invest.comments.visibility.committee') }}</span>
         <span v-if="!th.replies.some((r) => !r.withdrawnAt) && !th.withdrawnAt" class="chip-waiting">{{ t('invest.comments.waiting') }}</span>
       </div>
-      <button v-if="slideOf(th)" type="button" class="anchor-link" :title="t('invest.comments.showSlide')" @click="emit('showAnchor', slideOf(th)!)">
+      <button v-if="slideOf(th)" type="button" class="anchor-link" :title="t('invest.comments.showSlide')" @click="emit('show', th)">
         {{ anchorText(th) }} <v-icon size="13">mdi-arrow-up</v-icon>
       </button>
       <blockquote v-if="th.quote" class="quote">{{ th.quote }}</blockquote>
@@ -161,7 +161,7 @@
           <span v-if="th.author" class="meta">{{ th.author.name }}</span>
           <span v-if="th.version < version" class="meta">{{ t('invest.comments.olderVersion', { v: th.version }) }}</span>
         </div>
-        <button v-if="slideOf(th)" type="button" class="anchor-link" :title="t('invest.comments.showSlide')" @click="emit('showAnchor', slideOf(th)!)">
+        <button v-if="slideOf(th)" type="button" class="anchor-link" :title="t('invest.comments.showSlide')" @click="emit('show', th)">
           {{ anchorText(th) }} <v-icon size="13">mdi-arrow-up</v-icon>
         </button>
         <blockquote v-if="th.quote" class="quote">{{ th.quote }}</blockquote>
@@ -177,50 +177,26 @@
 
 <script setup lang="ts">
 // Comments and questions on an offering document (the deck), and the committee's
-// replies. The writer chooses who sees one: the committee only, or every member ("alle").
-// What each viewer gets is decided on the server (server/utils/investComments.ts): the
-// committee sees every thread with names; a member their own, the ones written for
-// "alle", and replies the committee showed to everyone.
-interface Reply {
-  id: string
-  body: string
-  public: boolean
-  createdAt: string
-  withdrawnAt: string | null
-  mine: boolean
-  author?: { name: string }
-}
-type Visibility = 'committee' | 'all'
-interface Thread {
-  id: string
-  kind: 'question' | 'comment'
-  visibility: Visibility
-  anchor: string | null
-  slide: string | null
-  anchorTitle: string | null
-  quote: string | null
-  body: string
-  version: number
-  createdAt: string
-  withdrawnAt: string | null
-  mine: boolean
-  public: boolean
-  replies: Reply[]
-  author?: { name: string }
-}
+// replies, as a list under the viewer, with a form for the deck as a whole or a slide.
+// The same comments are shown IN the deck by InvestDeckCommentLayer; both read one
+// useDocumentComments (the page makes it). The writer chooses who sees one: the
+// committee only, or every member ("alle"). What each viewer gets is decided on the
+// server (server/utils/investComments.ts).
+import type { CommentVisibility, DocumentComments, DocumentThread } from '~/composables/useDocumentComments'
 
-const props = defineProps<{ slug: string; docKey: string }>()
-const emit = defineEmits<{ showAnchor: [anchor: string] }>()
+const props = defineProps<{ comments: DocumentComments }>()
+/** "Show" on a thread: the page shows it in the deck. */
+const emit = defineEmits<{ show: [thread: DocumentThread] }>()
 
-const { t, te } = useI18n()
+const { t } = useI18n()
 const { formatDate } = useLocaleDate()
-const { $posthog } = useNuxtApp()
+const c = props.comments
+const { canReply, version, outline, threads, publicShowsAuthor } = c
 
 const kinds = ['question', 'comment'] as const
 const kind = ref<'question' | 'comment'>('question')
 const visibilities = ['committee', 'all'] as const
-const visibility = ref<Visibility>('committee')
-const publicShowsAuthor = ref(true)
+const visibility = ref<CommentVisibility>(c.defaultVisibility.value)
 const anchor = ref<string | null>(null)
 const quote = ref('')
 const draft = ref('')
@@ -232,22 +208,31 @@ const onlyUnanswered = ref(false)
 const replyDraft = ref<Record<string, string>>({})
 const replyPublic = ref<Record<string, boolean>>({})
 
-const canReply = ref(false)
-const version = ref(0)
-const outline = ref<{ id: string; title: string }[]>([])
-const threads = ref<Thread[]>([])
-
-const base = computed(() => `/api/member/invest/${props.slug}`)
+// The server's default fills the form until the writer chooses (it comes with the first load).
+let chosen = false
+watch(
+  () => c.defaultVisibility.value,
+  (v) => {
+    if (!chosen) visibility.value = v
+  },
+)
+// A reply on a comment for everyone is for everyone too, unless the committee says not.
+watch(
+  threads,
+  (list) => {
+    for (const th of list) replyPublic.value[th.id] ??= th.visibility === 'all'
+  },
+  { immediate: true },
+)
 
 const anchorItems = computed(() => [
   { title: t('invest.comments.anchorAll'), value: null },
   ...outline.value.map((o, i) => ({ title: `${i + 1}. ${o.title || o.id}`, value: o.id })),
 ])
 
-const answered = (th: Thread) => th.replies.some((r) => !r.withdrawnAt)
 const shownThreads = computed(() =>
   // Newest first for the committee; with the switch on, only what still waits on it.
-  [...threads.value].reverse().filter((th) => !onlyUnanswered.value || (!answered(th) && !th.withdrawnAt)),
+  [...threads.value].reverse().filter((th) => !onlyUnanswered.value || (!c.answered(th) && !th.withdrawnAt)),
 )
 const mineThreads = computed(() => [...threads.value].reverse().filter((th) => th.mine))
 const publicThreads = computed(() => threads.value.filter((th) => !th.mine && th.public))
@@ -260,48 +245,21 @@ const visibilityHint = computed(() => {
 })
 
 /** The slide a thread is on, as an element id the viewer can go to (a number cannot). */
-function slideOf(th: Thread): string | null {
+function slideOf(th: DocumentThread): string | null {
   const id = th.slide ?? th.anchor
   return id && /^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(id) ? id : null
 }
 
-function anchorText(th: Thread) {
+function anchorText(th: DocumentThread) {
   const id = slideOf(th)
   const n = outline.value.findIndex((o) => o.id === id)
   const title = th.anchorTitle || id
   return n >= 0 && th.version === version.value ? `${n + 1}. ${title}` : title
 }
 
-function byline(th: Thread) {
+function byline(th: DocumentThread) {
   const date = formatDate(th.createdAt, 'short')
   return th.author ? `${th.author.name} · ${date}` : date
-}
-
-function errorText(e: any) {
-  const key = e?.data?.message
-  return key && te(key) ? t(key) : t('invest.comments.errors.unknown')
-}
-
-let loaded = false
-async function load() {
-  const res = await $fetch<{
-    canReply: boolean
-    version: number
-    outline: { id: string; title: string }[]
-    threads: Thread[]
-    defaultVisibility: Visibility
-    publicShowsAuthor: boolean
-  }>(`${base.value}/documents/${props.docKey}/comments`)
-  // The writer's choice stands once made; the server's default only fills an untouched form.
-  if (!loaded) visibility.value = res.defaultVisibility
-  loaded = true
-  canReply.value = res.canReply
-  version.value = res.version
-  outline.value = res.outline
-  threads.value = res.threads
-  publicShowsAuthor.value = res.publicShowsAuthor
-  // A reply on a comment for everyone is for everyone too, unless the committee says not.
-  for (const th of res.threads) replyPublic.value[th.id] ??= th.visibility === 'all'
 }
 
 async function send() {
@@ -309,28 +267,22 @@ async function send() {
   sent.value = false
   sending.value = true
   try {
-    await $fetch(`${base.value}/documents/${props.docKey}/comments`, {
-      method: 'POST',
-      body: {
-        kind: kind.value,
-        visibility: visibility.value,
-        body: draft.value,
-        slide: anchor.value,
-        quote: anchor.value ? quote.value : null,
-      },
-    })
-    $posthog?.capture?.('invest_document_comment_added', {
-      slug: props.slug,
-      key: props.docKey,
+    await c.add({
       kind: kind.value,
       visibility: visibility.value,
+      body: draft.value,
+      slide: anchor.value,
+      quote: anchor.value ? quote.value : null,
+      from: 'form',
     })
     draft.value = ''
     quote.value = ''
     sent.value = true
-    await load()
+    // The next one starts at the default again: "alle" is chosen per comment.
+    visibility.value = c.defaultVisibility.value
+    chosen = false
   } catch (e: any) {
-    error.value = errorText(e)
+    error.value = c.errorText(e)
   } finally {
     sending.value = false
   }
@@ -341,9 +293,8 @@ async function act(id: string, run: () => Promise<unknown>) {
   busy.value = id
   try {
     await run()
-    await load()
   } catch (e: any) {
-    error.value = errorText(e)
+    error.value = c.errorText(e)
   } finally {
     busy.value = null
   }
@@ -351,30 +302,19 @@ async function act(id: string, run: () => Promise<unknown>) {
 
 function reply(threadId: string) {
   return act(`reply-${threadId}`, async () => {
-    await $fetch(`${base.value}/comments/${threadId}/reply`, {
-      method: 'POST',
-      body: { body: replyDraft.value[threadId] ?? '', public: Boolean(replyPublic.value[threadId]) },
-    })
+    await c.reply(threadId, replyDraft.value[threadId] ?? '', Boolean(replyPublic.value[threadId]))
     replyDraft.value[threadId] = ''
     replyPublic.value[threadId] = threads.value.find((th) => th.id === threadId)?.visibility === 'all'
   })
 }
 
 function setPublic(replyId: string, value: boolean) {
-  return act(replyId, () =>
-    $fetch(`${base.value}/comments/${replyId}/public`, { method: 'POST', body: { public: value } }),
-  )
+  return act(replyId, () => c.setPublic(replyId, value))
 }
 
 function withdraw(id: string) {
-  return act(id, () => $fetch(`${base.value}/comments/${id}/withdraw`, { method: 'POST' }))
+  return act(id, () => c.withdraw(id))
 }
-
-onMounted(() => {
-  load().catch(() => {
-    error.value = t('invest.comments.errors.unknown')
-  })
-})
 </script>
 
 <style scoped>

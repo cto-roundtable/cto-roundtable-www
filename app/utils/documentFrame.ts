@@ -71,12 +71,15 @@ function frameRuntime(cfg: FrameConfig, selectors: string[]) {
   let mode: 'slides' | 'scroll' = cfg.slides && slides.length >= 2 ? 'slides' : 'scroll'
   let at = Math.max(0, Math.min(slides.length - 1, cfg.start || 0))
 
+  // One slide shown, the others gone; the PAGE scrolls a slide taller than the frame
+  // (never the slide itself), so anything placed on the page, like the comment
+  // markers the bridge draws, moves with it.
   const style = document.createElement('style')
   style.setAttribute('data-portal-viewer', '')
   style.textContent = [
-    'html.dv-slides, html.dv-slides body { height: 100%; overflow: hidden; scroll-snap-type: none !important; }',
+    'html.dv-slides { scroll-snap-type: none !important; }',
     'html.dv-slides .dv-off { display: none !important; }',
-    'html.dv-slides .dv-on { min-height: 100vh; height: 100vh; overflow-y: auto; box-sizing: border-box; scroll-snap-align: none; }',
+    'html.dv-slides .dv-on { min-height: 100vh; box-sizing: border-box; scroll-snap-align: none; }',
   ].join('\n')
   document.head.appendChild(style)
 
@@ -92,25 +95,13 @@ function frameRuntime(cfg: FrameConfig, selectors: string[]) {
     return text.replace(/\s+/g, ' ').trim().slice(0, 140)
   }
 
-  // A slide that centres its content (a flex column, justify-content: center) and is taller than
-  // the frame would lose its top: what overflows a centred box goes above it, where no
-  // scroll reaches. `safe center` centres when it fits and starts at the top when not.
-  const centred = new Set<HTMLElement>()
-  for (const el of slides) {
-    const cs = getComputedStyle(el)
-    if (cs.display.includes('flex') && cs.flexDirection.startsWith('column') && cs.justifyContent === 'center') {
-      centred.add(el)
-    }
-  }
-
   function apply() {
     document.documentElement.classList.toggle('dv-slides', mode === 'slides')
     slides.forEach((el, i) => {
       el.classList.toggle('dv-on', mode === 'slides' && i === at)
       el.classList.toggle('dv-off', mode === 'slides' && i !== at)
-      if (centred.has(el)) el.style.justifyContent = mode === 'slides' ? 'safe center' : ''
     })
-    if (mode === 'slides' && slides[at]) slides[at].scrollTop = 0
+    if (mode === 'slides') window.scrollTo(0, 0)
   }
 
   function go(i: number) {
@@ -294,7 +285,7 @@ function frameRuntime(cfg: FrameConfig, selectors: string[]) {
  * anything but fonts and images. A `srcdoc` frame gets no response headers, so it goes in
  * a <meta> at the top of <head>, before anything it governs.
  */
-export function withDocumentFrame(html: string, cfg: FrameConfig, nonce: string): string {
+export function withDocumentFrame(html: string, cfg: FrameConfig, nonce: string, extra: string[] = []): string {
   const csp =
     "default-src 'none'; " +
     `script-src 'nonce-${nonce}'; ` +
@@ -307,7 +298,14 @@ export function withDocumentFrame(html: string, cfg: FrameConfig, nonce: string)
     : meta + html
 
   const args = JSON.stringify([cfg, SLIDE_SELECTORS]).replace(/</g, '\\u003c')
-  const script = `<script nonce="${nonce}" data-portal-viewer>(${frameRuntime.toString()}).apply(null, ${args});</script>`
+  // Other scripts the viewer was given (the comment bridge) run after ours, by the same
+  // nonce. Each is one self-contained script with no `</script` in it.
+  const script =
+    `<script nonce="${nonce}" data-portal-viewer>(${frameRuntime.toString()}).apply(null, ${args});</script>` +
+    extra
+      .filter((src) => !/<\/script/i.test(src))
+      .map((src) => `<script nonce="${nonce}">${src}</script>`)
+      .join('')
   const end = out.toLowerCase().lastIndexOf('</body>')
   out = end === -1 ? out + script : out.slice(0, end) + script + out.slice(end)
   return out

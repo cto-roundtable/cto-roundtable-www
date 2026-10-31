@@ -112,8 +112,10 @@ const props = withDefaults(
     title?: string
     /** Start one slide at a time, when the document has slides. */
     slides?: boolean
+    /** More scripts to run in the frame, after the viewer's own (the comment bridge). */
+    scripts?: string[]
   }>(),
-  { title: '', slides: true },
+  { title: '', slides: true, scripts: () => [] },
 )
 
 const emit = defineEmits<{
@@ -139,7 +141,12 @@ const ready = ref(false)
 let pendingAnchor: string | null = null
 
 function post(message: Omit<ToDocumentFrame, 'dv'> | Record<string, unknown>) {
-  frame.value?.contentWindow?.postMessage({ dv: 1, ...message }, '*')
+  send({ dv: 1, ...message })
+}
+
+/** A message to the frame as it is (another script's protocol: the comment bridge). */
+function send(message: Record<string, unknown>) {
+  frame.value?.contentWindow?.postMessage(message, '*')
 }
 
 function go(index: number) {
@@ -175,6 +182,7 @@ async function load() {
       html,
       { slides: props.slides, start: 0, base: window.location.origin },
       crypto.randomUUID().replace(/-/g, ''),
+      props.scripts,
     )
   } catch {
     failed.value = true
@@ -265,7 +273,7 @@ onBeforeUnmount(() => {
 })
 watch(() => props.src, load)
 
-defineExpose({ showAnchor, go, post })
+defineExpose({ showAnchor, go, post, send, slides, at, mode })
 </script>
 
 <style scoped>
