@@ -1,32 +1,53 @@
 /**
  * Comments and questions on an offering's documents (the CTORI4 deck), and the
- * committee's replies. Table invest_document_comments (ctoroundtable-hq migration 043).
- * All SQL for it lives here; the offering check (requireVisibleOffering) runs first.
+ * committee's replies. Table invest_document_comments (ctoroundtable-hq migrations 043
+ * and 044). All SQL for it lives here; the offering check (requireVisibleOffering) runs
+ * first.
  *
  * Who sees what. The committee runs investment matters and the board (`styret`) is
  * network only (Snorre, 2026-10-29), so the board gets nothing extra here:
  *   - the investment committee (`current-komite`) sees every thread on every version
  *     of the document, with names, and is the only one that replies;
  *   - a member sees their own threads, with every reply on them;
- *   - a reply the committee marks public ("for alle") is shown to every member who
- *     can see the offering, with the question it answers, WITHOUT the asker's name.
+ *   - the WRITER chooses who sees a comment or question (044, Snorre 2026-10-30):
+ *     "bare komiteen" (visibility `committee`, as above) or "alle" (`all`: every member
+ *     who can see the offering sees it, and the replies on it the committee gave for
+ *     everyone). Whether "alle" shows the writer's name is PUBLIC_SHOWS_AUTHOR;
+ *   - a reply the committee marks public ("for alle") on a `committee` question is shown
+ *     to every member, with the question it answers, WITHOUT the asker's name: they
+ *     did not choose to be shown.
  * A member never sees which committee member replied: the reply is "the committee".
  * The filtering happens in SQL, so a row a viewer may not see never leaves the database.
  *
  * A comment is written on the CURRENT version of the document and stays tied to that
- * version (document_id), so a new deck keeps the old comments readable. Its anchor is
- * an element id in that version (a slide, `slide-4`), checked against the document's
- * own sections, or null for the whole document.
+ * version (document_id), so a new deck keeps the old comments readable. Where it is:
+ *   - anchor: the block it is about, an element id (a slide, `slide-4`, checked against
+ *     the document's own sections) or a block anchor the viewer made (`part1~p[2]`),
+ *     or null for the whole document;
+ *   - slide: the slide it sits on (its id, checked, or its 1-based number);
+ *   - target: where in the block (the words around a selection, a point, a level), kept
+ *     as the viewer sent it, cleaned to known fields;
+ *   - quote: the words selected.
  */
 
 export const DOCUMENT_COMMENT_KINDS = ['question', 'comment'] as const
 export type DocumentCommentKind = (typeof DOCUMENT_COMMENT_KINDS)[number]
+export const DOCUMENT_COMMENT_VISIBILITIES = ['committee', 'all'] as const
+export type DocumentCommentVisibility = (typeof DOCUMENT_COMMENT_VISIBILITIES)[number]
+/** What a comment is when the writer does not say: "bare komiteen" (dc-65 H3, recommended). */
+export const DEFAULT_VISIBILITY: DocumentCommentVisibility = 'committee'
+/** A comment for "alle" shows its writer's name to the other members (dc-65 H2, recommended yes). */
+export const PUBLIC_SHOWS_AUTHOR = true
 export const MAX_DOCUMENT_COMMENT = 4000
 export const MAX_DOCUMENT_QUOTE = 300
 /** Comments and replies one person may write in an hour, across all documents. */
 const MAX_PER_HOUR = 20
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+// The same rules as the table's CHECKs (044).
+const ANCHOR = /^[A-Za-z0-9_~./:#[\]-]{1,300}$/
+const SLIDE_NUMBER = /^[1-9][0-9]{0,3}$/
+const TARGET_LEVELS = ['block', 'box', 'part', 'page'] as const
 
 export interface OutlinePart {
   id: string
@@ -44,22 +65,36 @@ export interface DocumentReply {
   author?: { name: string }
 }
 
+/** Where in a block a comment is, as the viewer reported it (cleaned to these fields). */
+export interface DocumentCommentTarget {
+  prefix?: string
+  suffix?: string
+  /** x, y in % of the document; vw, vh the frame's viewport when it was taken. */
+  point?: { x: number; y: number; vw: number; vh: number }
+  level?: (typeof TARGET_LEVELS)[number]
+}
+
 export interface DocumentThread {
   id: string
   kind: DocumentCommentKind
+  /** Who the writer chose to see it. */
+  visibility: DocumentCommentVisibility
   anchor: string | null
-  /** The anchored part's title in the version it was written on. */
+  /** The slide it sits on: an id of the outline, or a 1-based number. */
+  slide: string | null
+  /** The anchored part's (or its slide's) title in the version it was written on. */
   anchorTitle: string | null
+  target: DocumentCommentTarget | null
   quote: string | null
   body: string
   version: number
   createdAt: string
   withdrawnAt: string | null
   mine: boolean
-  /** Some reply on it is shown to every member. */
+  /** Shown to every member: the writer chose "alle", or a reply on it is for everyone. */
   public: boolean
   replies: DocumentReply[]
-  /** committee only */
+  /** The committee; and every member on a comment for "alle" when PUBLIC_SHOWS_AUTHOR. */
   author?: { name: string }
 }
 
@@ -156,8 +191,8 @@ export async function listDocumentThreads(
   const outlines = await outlinesFor(offeringId, key)
   const sql = useDatabase()
   const rows = await sql`
-    SELECT c.id, c.parent_id, c.kind, c.anchor, c.quote, c.body, c.public, c.withdrawn_at, c.created_at,
-           c.author_person_id, p.name AS author_name, d.version
+    SELECT c.id, c.parent_id, c.kind, c.anchor, c.slide, c.target, c.quote, c.body, c.public, c.withdrawn_at,
+           c.created_at, c.author_person_id, p.name AS author_name, d.version
     FROM invest_document_comments c
     JOIN invest_offering_documents d ON d.id = c.document_id
     JOIN persons p ON p.id = c.author_person_id
@@ -166,6 +201,7 @@ export async function listDocumentThreads(
       AND (
         ${viewer.isCommittee}
         OR COALESCE(root.author_person_id, c.author_person_id) = ${viewer.personId}
+        OR (c.parent_id IS NULL AND c.public AND c.withdrawn_at IS NULL)
         OR (c.parent_id IS NULL AND c.withdrawn_at IS NULL AND EXISTS (
               SELECT 1 FROM invest_document_comments x
               WHERE x.parent_id = c.id AND x.public AND x.withdrawn_at IS NULL))
@@ -179,20 +215,25 @@ export async function listDocumentThreads(
     if (r.parent_id) continue
     const outline = outlines.get(r.version) ?? []
     const mine = r.author_person_id === viewer.personId
+    const titleOf = (id: string | null) => (id ? (outline.find((o) => o.id === id)?.title ?? null) : null)
+    const shown = r.public && !r.withdrawn_at
     const t: DocumentThread = {
       id: r.id,
       kind: r.kind,
+      visibility: r.public ? 'all' : 'committee',
       anchor: r.anchor,
-      anchorTitle: r.anchor ? (outline.find((o) => o.id === r.anchor)?.title ?? null) : null,
+      slide: r.slide,
+      anchorTitle: titleOf(r.anchor) ?? titleOf(r.slide),
+      target: r.target ?? null,
       quote: r.quote,
       body: r.body,
       version: r.version,
       createdAt: r.created_at,
       withdrawnAt: r.withdrawn_at,
       mine,
-      public: false,
+      public: shown,
       replies: [],
-      ...(viewer.isCommittee ? { author: { name: r.author_name } } : {}),
+      ...(viewer.isCommittee || (shown && PUBLIC_SHOWS_AUTHOR) ? { author: { name: r.author_name } } : {}),
     }
     threads.push(t)
     byId.set(t.id, t)
@@ -236,25 +277,85 @@ async function underRateLimit(personId: string) {
   }
 }
 
+const given = (v: unknown) => v !== undefined && v !== null && v !== ''
+
+/**
+ * Where in a block, from the viewer: only the known fields, each checked, so what is
+ * stored is small and means one thing. Anything else in it is dropped; a bad value
+ * of a known field is a 400.
+ */
+function cleanTarget(value: unknown): DocumentCommentTarget | null {
+  if (!given(value)) return null
+  if (typeof value !== 'object' || Array.isArray(value)) {
+    throw createError({ statusCode: 400, message: 'invest.comments.errors.anchor' })
+  }
+  const v = value as Record<string, unknown>
+  const out: DocumentCommentTarget = {}
+  const bad = () => createError({ statusCode: 400, message: 'invest.comments.errors.anchor' })
+  for (const k of ['prefix', 'suffix'] as const) {
+    if (!given(v[k])) continue
+    if (typeof v[k] !== 'string') throw bad()
+    out[k] = (v[k] as string).slice(0, 64)
+  }
+  if (given(v.point)) {
+    const p = v.point as Record<string, unknown>
+    const n = (x: unknown, max: number) => typeof x === 'number' && Number.isFinite(x) && x >= 0 && x <= max
+    if (typeof p !== 'object' || !n(p.x, 100) || !n(p.y, 100) || !n(p.vw, 10000) || !n(p.vh, 10000)) throw bad()
+    const r = (x: unknown) => Math.round((x as number) * 100) / 100
+    out.point = { x: r(p.x), y: r(p.y), vw: Math.round(p.vw as number), vh: Math.round(p.vh as number) }
+  }
+  if (given(v.level)) {
+    if (!TARGET_LEVELS.includes(v.level as (typeof TARGET_LEVELS)[number])) throw bad()
+    out.level = v.level as (typeof TARGET_LEVELS)[number]
+  }
+  return Object.keys(out).length ? out : null
+}
+
 /** A member (or the committee) writes a comment or question on the current version. */
 export async function addDocumentComment(
   personId: string,
   offeringId: string,
   key: string,
-  input: { kind?: unknown; body?: unknown; anchor?: unknown; quote?: unknown },
+  input: {
+    kind?: unknown
+    body?: unknown
+    anchor?: unknown
+    slide?: unknown
+    target?: unknown
+    quote?: unknown
+    visibility?: unknown
+  },
 ): Promise<{ id: string }> {
   if (!DOCUMENT_COMMENT_KINDS.includes(input.kind as DocumentCommentKind)) {
     throw createError({ statusCode: 400, message: 'invest.comments.errors.kind' })
   }
+  const visibility = given(input.visibility) ? input.visibility : DEFAULT_VISIBILITY
+  if (!DOCUMENT_COMMENT_VISIBILITIES.includes(visibility as DocumentCommentVisibility)) {
+    throw createError({ statusCode: 400, message: 'invest.comments.errors.visibility' })
+  }
   const body = cleanBody(input.body, MAX_DOCUMENT_COMMENT, 'invest.comments.errors.body')
   const current = await currentVersion(offeringId, key)
+  // The slide: one of this version's sections, or a slide's number when it has no id.
+  let slide: string | null = null
+  if (given(input.slide)) {
+    const ok =
+      typeof input.slide === 'string' &&
+      (current.outline.some((o) => o.id === input.slide) || SLIDE_NUMBER.test(input.slide))
+    if (!ok) throw createError({ statusCode: 400, message: 'invest.comments.errors.anchor' })
+    slide = input.slide as string
+  }
+  // The anchor: a section of this version, or a block anchor the viewer made in it
+  // (which only the frame can resolve; it is checked for shape, like the table does).
   let anchor: string | null = null
-  if (input.anchor !== undefined && input.anchor !== null && input.anchor !== '') {
-    if (typeof input.anchor !== 'string' || !current.outline.some((o) => o.id === input.anchor)) {
+  if (given(input.anchor)) {
+    if (typeof input.anchor !== 'string' || !ANCHOR.test(input.anchor)) {
       throw createError({ statusCode: 400, message: 'invest.comments.errors.anchor' })
     }
     anchor = input.anchor
+    // An anchor that is a slide is on that slide.
+    if (!slide && current.outline.some((o) => o.id === anchor)) slide = anchor
   }
+  const target = cleanTarget(input.target)
   let quote: string | null = null
   if (typeof input.quote === 'string' && input.quote.trim()) {
     quote = input.quote.replace(/\s+/g, ' ').trim()
@@ -264,8 +365,10 @@ export async function addDocumentComment(
   await underRateLimit(personId)
   const sql = useDatabase()
   const rows = await sql`
-    INSERT INTO invest_document_comments (document_id, kind, anchor, quote, body, author_person_id)
-    VALUES (${current.id}, ${input.kind as string}, ${anchor}, ${quote}, ${body}, ${personId})
+    INSERT INTO invest_document_comments
+      (document_id, kind, anchor, slide, target, quote, body, author_person_id, public)
+    VALUES (${current.id}, ${input.kind as string}, ${anchor}, ${slide}, ${target ? JSON.stringify(target) : null},
+            ${quote}, ${body}, ${personId}, ${visibility === 'all'})
     RETURNING id
   `
   return { id: (rows[0] as any).id }
