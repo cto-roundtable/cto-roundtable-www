@@ -13,6 +13,9 @@
     <!-- Open deal votes the member has not voted in yet (/member/caser) -->
     <DealsOpenVoteBanner />
 
+    <!-- An announced or live general meeting the member votes in (/member/arsmote) -->
+    <MeetingsBanner />
+
     <!-- Open surveys the member has not answered yet (/member/surveys) -->
     <NuxtLink
       v-for="s in pendingSurveys"

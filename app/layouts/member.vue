@@ -301,6 +301,11 @@ const navItems = computed(() => {
   if (session.value.isInvestor) {
     items.push({ to: '/member/updates', key: 'nav.investorUpdates', icon: 'mdi-finance', exact: false })
   }
+  // General meetings (årsmøte): the board runs them; members get there from the
+  // /member banner once one is announced, and the page is open to every Norwegian member.
+  if (session.value.isBoard || route.path.startsWith('/member/arsmote')) {
+    items.push({ to: '/member/arsmote', key: 'nav.generalMeeting', icon: 'mdi-account-group-outline', exact: false })
+  }
   if (session.value.isBoard) {
     items.push({ to: '/member/board', key: 'nav.boardMeetings', icon: 'mdi-gavel', exact: false })
     items.push({ to: '/member/activity', key: 'nav.boardActivity', icon: 'mdi-pulse', exact: false })

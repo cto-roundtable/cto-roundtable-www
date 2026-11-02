@@ -421,6 +421,51 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   it lists.
 - i18n keys live under `deals.*` (and `nav.deals`).
 
+### Årsmøte: the forening's general meeting (`/member/arsmote`)
+
+The second kind of vote in the portal, next to the deal votes, and deliberately
+separate from them: its own tables (hq migration 045: `general_meetings`,
+`meeting_items`, `meeting_attendance`, `meeting_ballots`, `meeting_ballot_receipts`,
+`meeting_secret_ballots`, `meeting_events`), its own util and its own gate. Design:
+ctori-4 memory `votes/meeting-votes-design.md`; rules from the vedtekter § 5 and § 9.
+
+- **All meeting SQL is in `server/utils/generalMeetings.ts`; the counting rules are pure,
+  in `server/utils/voteRules.ts`** (no database, no Nuxt), unit-tested with `npm run
+  test:unit`. The deal vote does not use them: `dealRounds.ts` is untouched, and
+  `tests/unit/regression-deals.test.ts` pins its rule, counting and hash, checks the
+  two agree on 2/3 for every yes/no pair up to 60, and fails if a branch edits a deal file.
+- **Gates are the opposite of the deals'.** The board (`styret`, `isBoardMember`) creates
+  and sets up a meeting; the chair the meeting elected (`chair_person_id`, set by the
+  board, may be outside it) opens and closes saker, records attendance and the lot,
+  during the session only. `current-komite` gets nothing here, and the board gets nothing
+  extra on deals. A draft is the board's; a `trial` meeting (roster = `styret`, protocol
+  marked PRØVE) is its roster's; a real one is every member of the Norwegian chapter. A
+  Swedish-only member, anyone else: the 404 of a missing meeting.
+- **Flow**: draft (board adds saker, each a PRESET: `majority` § 5.5, `two_thirds` § 9,
+  `three_quarters` § 10, `three_quarters_present` § 5.2; ballot `open` or `secret`) ->
+  "Lås manntallet" (active members of `cto-roundtable`, `persons.status = 'active'`, so
+  pensjonerte are out; re-freezable until the session) -> announced (members see the
+  saksliste, a banner on `/member`) -> in_session (members check in, "Jeg er til stede";
+  the chair opens one sak at a time, members vote yes/no/blank while present, the chair
+  closes it and the count is frozen with a sha256) -> closed. No window: live.
+- **Counting**: "avgitte stemmer" = yes + no by default (blank is not cast, dc-76 H1);
+  `count_base = 'yes+no+blank'` on the meeting switches it. A majority sak with yes = no
+  is a `tie`: the server never draws; the chair draws lots in the meeting and enters the
+  outcome and how (`/lot`), once, logged. A base of 0 is `no_votes`.
+- **Secret ballots**: one final ballot per person, written as a receipt (who) and a
+  choice with no person and no timestamp (what), in one transaction. Nobody sees who
+  voted what in the portal or the API; the protocol lists who voted. Open ballots are
+  named, append-only, latest counts until close, and shown with names after close.
+- **Kontingent (§ 5.3)**: `requires_paid_dues` + `duesStatus()` is the hook; until the
+  payment check exists, freezing a roster with it on is refused.
+- **Protocol**: each closed sak has "Til referatet" text (`itemProtocolText`) and
+  `GET /api/member/meetings/:id/protocol` renders the PDF (`server/utils/meetingPdf.ts`)
+  from the frozen snapshots. Nothing here sends mail or Slack.
+- **Logging**: every board and chair action is a `meeting_events` row, written in the
+  same statement as the guarded UPDATE (`updateAndLog`), so a refused action logs nothing.
+- i18n keys live under `meetings.*` (and `nav.generalMeeting`, board only; members come
+  in through the `/member` banner).
+
 ### CTORI signup (`/member/invest/<slug>`)
 
 A CTORI cohort is an **offering** (`invest_offerings`: `ctori-1` … `ctori-4`) and a

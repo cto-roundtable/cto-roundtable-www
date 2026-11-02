@@ -68,6 +68,21 @@ add `invest-4`; if nobody is in it yet, make it synthetic.
   case and the first investor update it can open), full-page screenshots, a
   video, page errors asserted empty. Nothing that writes is clicked.
 
+- `meeting.spec.ts`: the general meeting (årsmøte) end to end, needs hq migration 045
+  on the branch. The board creates and sets it up, the roster is the active Norwegian
+  members (no retired, no Swedish-only), a member who is not on the board chairs, members
+  check in and vote: an open majority sak, a secret 2/3 sak (no names to anyone), a
+  majority tie settled by the chair's lot (once, logged once), the protocol PDF, a trial
+  meeting invisible to members. Access: the committee and ordinary members get 403 on
+  every board action. Screens of the pages (member, chair, board, desktop and phone) in
+  `.run/meeting/`.
+- `deal-vote.spec.ts`: REGRESSION for the deal vote, end to end on the branch: the admin
+  API publishes a document and a draft round, the committee opens it (the board cannot),
+  SPV members vote with the bundle hash, no early close, the committee closes after the
+  48 hours (fast-forwarded on the branch), protocol PDF, `deal_events`, and the CTORI4
+  hovedbok's 409 `ledger_incomplete`. Start the preview server with
+  `DEAL_DOCUMENTS_DIR` set (documents and protocols go to a folder instead of GCS).
+
 The run's files are in `e2e/.run/` (gitignored): `personas.json`,
 `access/<key>.json`, `views/<key>/`, Playwright's HTML report with traces in
 `report/`, and the persona pages in `gallery/`.

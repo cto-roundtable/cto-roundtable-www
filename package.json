@@ -14,6 +14,7 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
+    "test:unit": "node --test --experimental-strip-types tests/unit/*.test.ts",
     "e2e": "e2e/preview.sh test",
     "preview:up": "e2e/preview.sh up",
     "preview:down": "e2e/preview.sh down"

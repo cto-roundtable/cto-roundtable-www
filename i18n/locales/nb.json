@@ -24,7 +24,8 @@
     "dealsCommittee": "Komiteen",
     "invest": "CTORI 4",
     "expand": "Vis undermenyen for {item}",
-    "collapse": "Skjul undermenyen for {item}"
+    "collapse": "Skjul undermenyen for {item}",
+    "generalMeeting": "Årsmøte"
   },
   "layout": {
     "signedInAs": "Innlogget som",
@@ -1060,5 +1061,151 @@
     "full": "Fullskjerm",
     "exitFull": "Lukk fullskjerm",
     "failed": "Fikk ikke lastet dokumentet. Prøv å laste siden på nytt."
+  },
+  "meetings": {
+    "title": "Årsmøte",
+    "intro": "Årsmøtet er foreningens høyeste myndighet (vedtektene § 5). Her registrerer du at du er til stede og stemmer i hver sak når møteleder åpner den.",
+    "back": "Alle årsmøter",
+    "none": "Ingen årsmøter ennå.",
+    "itemCount": "{count} sak | {count} saker",
+    "youVote": "du har stemmerett",
+    "create": {
+      "title": "Nytt årsmøte",
+      "submit": "Opprett som utkast"
+    },
+    "fields": {
+      "kind": "Type møte",
+      "title": "Navn",
+      "heldAt": "Tidspunkt",
+      "place": "Sted eller lenke",
+      "itemTitle": "Sak",
+      "itemBody": "Forslag til vedtak",
+      "preset": "Krav for vedtak",
+      "ballot": "Stemmegivning",
+      "chair": "Møteleder",
+      "secretary": "Referent"
+    },
+    "kindHint": {
+      "ordinary": "Ordinært årsmøte, innen utgangen av mars (§ 5.1). Alle aktive medlemmer i CTO Roundtable har stemmerett.",
+      "extraordinary": "Ekstraordinært årsmøte (§ 5.6). Kan bare vedta sakene i innkallingen.",
+      "trial": "Prøvemøte for styret: bare styret er i manntallet, og protokollen merkes PRØVE. Bruk det til å øve før et ekte årsmøte."
+    },
+    "kind": {
+      "ordinary": "Ordinært årsmøte",
+      "extraordinary": "Ekstraordinært årsmøte",
+      "trial": "Prøvemøte"
+    },
+    "status": {
+      "draft": "Utkast",
+      "announced": "Innkalt",
+      "in_session": "Pågår",
+      "closed": "Avsluttet",
+      "cancelled": "Avlyst"
+    },
+    "errors": {
+      "load": "Kunne ikke hente årsmøtet. Prøv igjen.",
+      "action": "Det gikk ikke. Prøv igjen.",
+      "notFound": "Fant ikke dette årsmøtet."
+    },
+    "chairIs": "Møteleder: {name}",
+    "secretaryIs": "Referent: {name}",
+    "cancelled": "Avlyst: {reason}",
+    "me": {
+      "onRoster": "Du står i manntallet og har stemmerett.",
+      "noVote": "Du står i manntallet, men har ikke stemmerett: {reason}",
+      "present": "Du er registrert til stede.",
+      "notPresent": "Du er ikke registrert til stede ennå.",
+      "checkIn": "Jeg er til stede",
+      "checkOut": "Jeg går fra møtet",
+      "beforeSession": "Møtet er ikke åpnet ennå. Når styret åpner det, registrerer du at du er til stede her.",
+      "notOnRoster": "Du står ikke i manntallet for dette møtet og kan ikke stemme."
+    },
+    "attendanceCount": "{n} av {of} er til stede.",
+    "setup": {
+      "title": "Forberedelse",
+      "roster": "Manntall",
+      "rosterFrozen": "Låst med {n} medlemmer {date}.",
+      "rosterHint": {
+        "real": "Aktive medlemmer i CTO Roundtable. Pensjonerte og den svenske avdelingen er ikke med. Lås når innkallingen går ut.",
+        "trial": "Styret er manntallet i et prøvemøte."
+      },
+      "refreeze": "Lås på nytt",
+      "freeze": "Lås manntallet",
+      "countBase": "Hva er en avgitt stemme?",
+      "addItem": "Ny sak",
+      "addItemButton": "Legg til sak",
+      "announce": "Publiser sakslisten",
+      "openSession": "Åpne møtet",
+      "roles": "Møteleder og referent"
+    },
+    "countBase": {
+      "yesNo": "Ja og nei. Blanke stemmer regnes ikke som avgitt (anbefalt).",
+      "withBlank": "Ja, nei og blankt. Blanke stemmer regnes som avgitt."
+    },
+    "items": "Saker",
+    "noItems": "Ingen saker ennå.",
+    "itemHeading": "Sak {n}: {title}",
+    "itemStatus": {
+      "pending": "Ikke behandlet",
+      "open": "Stemmegivning pågår",
+      "closed": "Behandlet",
+      "withdrawn": "Trukket"
+    },
+    "preset": {
+      "majority": "Alminnelig flertall (§ 5.5)",
+      "two_thirds": "2/3 av avgitte stemmer, vedtektsendring (§ 9)",
+      "three_quarters": "3/4 av avgitte stemmer, oppløsning (§ 10)",
+      "three_quarters_present": "3/4 av de fremmøtte, sak utenfor sakslisten (§ 5.2)"
+    },
+    "ballot": {
+      "open": "Åpen stemmegivning",
+      "secret": "Hemmelig stemmegivning"
+    },
+    "withdrawn": "Trukket: {reason}",
+    "progress": "{voted} av {present} til stede har stemt.",
+    "vote": {
+      "votedSecret": "Du har stemt. Stemmen er hemmelig og kan ikke endres.",
+      "votedOpen": "Du har stemt {choice}. Du kan endre til møteleder lukker saken.",
+      "secretOnce": "Hemmelig: ingen ser hva du stemmer, heller ikke styret. Du kan stemme én gang.",
+      "checkInFirst": "Registrer at du er til stede for å stemme."
+    },
+    "choice": {
+      "yes": "Ja",
+      "no": "Nei",
+      "blank": "Blankt"
+    },
+    "outcome": {
+      "passed": "Vedtatt",
+      "failed": "Ikke vedtatt",
+      "tie": "Stemmelikhet, avgjøres ved loddtrekning",
+      "no_votes": "Ikke vedtatt, ingen avgitte stemmer"
+    },
+    "countLine": "Ja {yes}, nei {no}, blankt {blank}. {present} til stede.",
+    "lotLine": "Loddtrekning: {outcome} ({note}, ført av {by}).",
+    "namedVotes": "Vis hvem som stemte hva ({count}) | Vis hvem som stemte hva ({count})",
+    "secretVoters": "Vis hvem som stemte ({count}) | Vis hvem som stemte ({count})",
+    "forMinutes": "Til referatet",
+    "copy": "Kopier",
+    "chair": {
+      "openItem": "Åpne saken for stemmegivning",
+      "closeItem": "Lukk saken og tell opp",
+      "lotIntro": "Stemmelikhet. Trekk lodd i møtet (§ 5.5) og før inn utfallet her.",
+      "lotNote": "Hvordan loddet ble trukket",
+      "lotSave": "Før inn loddtrekningen",
+      "attendance": "Til stede",
+      "attendanceHint": "Registrer for et medlem som ikke kommer inn i portalen. Det logges at du gjorde det.",
+      "search": "Finn et navn",
+      "noVote": "uten stemmerett",
+      "onBehalfReason": "Registrert av møteleder i møtet",
+      "markAway": "Gått",
+      "markPresent": "Til stede",
+      "closeSession": "Avslutt møtet"
+    },
+    "protocolPdf": "Protokoll (PDF)",
+    "banner": {
+      "announced": "Årsmøte: {title}",
+      "live": "Årsmøtet pågår nå: {title}",
+      "cta": "Åpne"
+    }
   }
 }
