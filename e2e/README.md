@@ -76,6 +76,15 @@ add `invest-4`; if nobody is in it yet, make it synthetic.
   meeting invisible to members. Access: the committee and ordinary members get 403 on
   every board action. Screens of the pages (member, chair, board, desktop and phone) in
   `.run/meeting/`.
+- `meeting-admin.spec.ts`: the general meeting through the ADMIN API (`ctr meetings`),
+  needs hq migrations 045 and 046 on the branch. The gate: a token whose owner is
+  committee-only, a member, Swedish-only or an outsider is refused (401, the token gate),
+  a board token with every deal scope but no meetings scope gets a 403, a read token
+  cannot write, and a token stops working the moment its owner leaves `styret`. Then a
+  whole meeting run from a board token while members vote in the portal: no ballot route
+  exists, a secret sak shows no names, a tie needs its lot before the session ends, the
+  protocol PDF, every `meeting_events` row names the token's owner, and the audit log
+  holds no title, reason or note.
 - `deal-vote.spec.ts`: REGRESSION for the deal vote, end to end on the branch: the admin
   API publishes a document and a draft round, the committee opens it (the board cannot),
   SPV members vote with the bundle hash, no early close, the committee closes after the

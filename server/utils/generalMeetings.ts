@@ -68,6 +68,19 @@ export async function meetingViewer(event: H3Event): Promise<MeetingViewer> {
   }
 }
 
+/**
+ * The admin API's viewer (/api/admin/meetings/**, `ctr meetings`): the token's
+ * owner, whom requireApiToken has just checked is an active `styret` member.
+ * The board check is made again here with the session gate's own isBoardMember,
+ * so the meeting gate never rests on the token gate alone. The admin routes
+ * never call the member's own actions (castMeetingBallot, selfAttendance) or
+ * registerMeetingBallot: nothing votes through a token.
+ */
+export async function meetingViewerForOwner(personId: string): Promise<MeetingViewer> {
+  if (!(await isBoardMember(personId))) throw createError({ statusCode: 403, message: 'Board only' })
+  return { personId, isBoard: true, isForeningMember: (await getChapters(personId)).includes('no') }
+}
+
 const UUID = /^[0-9a-f-]{36}$/i
 
 async function loadMeeting(id: string) {

@@ -345,7 +345,9 @@
         "eventsRead": "läsa evenemang",
         "eventsWrite": "skapa evenemang och registrera närvaro från Luma",
         "surveysRead": "läsa enkäter och svar",
-        "surveysWrite": "skapa, stänga och skicka ut enkäter"
+        "surveysWrite": "skapa, stänga och skicka ut enkäter",
+        "meetingsRead": "läsa årsmöten: ärenden, röstlängd, närvaro, resultat och protokoll",
+        "meetingsWrite": "leda årsmöten som styrelsen: ärenden, röstlängd, mötesordförande, mötet och omröstningarna (aldrig rösta)"
       },
       "tokenNote": "Om du godkänner får agenten en nyckel i ditt namn i {days} dagar, med exakt den här åtkomsten. Den slutar fungera om du lämnar styrelsen, och allt den gör loggas.",
       "reauth": "Av säkerhetsskäl kan du bara godkänna direkt efter att du har loggat in. Bekräfta att det är du med en passkey, så kan du godkänna direkt. Har du ingen passkey, logga ut och in igen med e-postlänken och öppna länken från terminalen igen efteråt.",

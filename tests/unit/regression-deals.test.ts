@@ -126,14 +126,43 @@ describe('no deal file is touched by this branch', () => {
   ]
   test('the diff against origin/main leaves every deal path alone', (t) => {
     let changed: string[]
+    let base: string
     try {
-      const base = execFileSync('git', ['merge-base', 'origin/main', 'HEAD'], { encoding: 'utf8' }).trim()
+      base = execFileSync('git', ['merge-base', 'origin/main', 'HEAD'], { encoding: 'utf8' }).trim()
       changed = execFileSync('git', ['diff', '--name-only', base], { encoding: 'utf8' }).split('\n').filter(Boolean)
     } catch {
       t.skip('no git or no origin/main here')
       return
     }
-    const touched = changed.filter((f) => DEAL_PATHS.some((p) => (p.endsWith('/') ? f.startsWith(p) : f === p)))
+    const touched = changed
+      .filter((f) => DEAL_PATHS.some((p) => (p.endsWith('/') ? f.startsWith(p) : f === p)))
+      .filter((f) => !(f === 'server/utils/apiTokens.ts' && onlyAddsMeetingScopes(base, f)))
     assert.deepEqual(touched, [], `deal files changed: ${touched.join(', ')}`)
+  })
+})
+
+/**
+ * The one change allowed in apiTokens.ts (ctori-4 ctr-meetings): lines ADDED to
+ * API_SCOPES naming a `meetings:` scope, or a comment. Nothing removed, nothing
+ * else added, so the gate the deal routes run through stays byte-for-byte.
+ */
+const MEETING_SCOPE_LINE = /^\+\s*('meetings:[a-z]+',|\/\/ .*)$/
+const allowed = (lines: string[]) => lines.every((l) => MEETING_SCOPE_LINE.test(l))
+
+function onlyAddsMeetingScopes(base: string, file: string): boolean {
+  const diff = execFileSync('git', ['diff', '-U0', base, '--', file], { encoding: 'utf8' })
+  const changes = diff.split('\n').filter((l) => /^[+-]/.test(l) && !/^(\+\+\+|---) /.test(l))
+  return allowed(changes)
+}
+
+describe('the guard lets apiTokens.ts gain meeting scopes and nothing else', () => {
+  // Pins the allowance itself: a removed or changed line still counts as touching a deal file.
+  test('added meeting scopes and a comment pass', () => {
+    assert.equal(allowed(['+  // The general meeting (årsmøte)', "+  'meetings:read',", "+  'meetings:write',"]), true)
+  })
+  test('anything else fails', () => {
+    assert.equal(allowed(["-  'qa:write',"]), false)
+    assert.equal(allowed(["+  'deals:admin',"]), false)
+    assert.equal(allowed(['+  if (!r.owner_on_board) return']), false)
   })
 })

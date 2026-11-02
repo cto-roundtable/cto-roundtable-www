@@ -41,6 +41,9 @@ export const API_SCOPES = [
   'digests:write',
   'qa:read',
   'qa:write',
+  // The general meeting (årsmøte), /api/admin/meetings/** (hq migration 046).
+  'meetings:read',
+  'meetings:write',
 ] as const
 export type ApiScope = (typeof API_SCOPES)[number]
 
