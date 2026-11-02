@@ -24,7 +24,8 @@
     "dealsCommittee": "The committee",
     "invest": "CTORI 4",
     "expand": "Show the {item} submenu",
-    "collapse": "Hide the {item} submenu"
+    "collapse": "Hide the {item} submenu",
+    "generalMeeting": "General meeting"
   },
   "layout": {
     "signedInAs": "Signed in as",
@@ -1060,5 +1061,151 @@
     "full": "Full screen",
     "exitFull": "Exit full screen",
     "failed": "Could not load the document. Try reloading the page."
+  },
+  "meetings": {
+    "title": "General meeting",
+    "intro": "The general meeting (årsmøte) is the association's highest authority (articles § 5). Here you register that you are present and vote on each item when the chair opens it.",
+    "back": "All general meetings",
+    "none": "No general meetings yet.",
+    "itemCount": "{count} item | {count} items",
+    "youVote": "you have a vote",
+    "create": {
+      "title": "New general meeting",
+      "submit": "Create as draft"
+    },
+    "fields": {
+      "kind": "Kind of meeting",
+      "title": "Name",
+      "heldAt": "Time",
+      "place": "Place or link",
+      "itemTitle": "Item",
+      "itemBody": "Proposed resolution",
+      "preset": "Required to pass",
+      "ballot": "Ballot",
+      "chair": "Chair",
+      "secretary": "Minute taker"
+    },
+    "kindHint": {
+      "ordinary": "Ordinary general meeting, by the end of March (§ 5.1). Every active member of CTO Roundtable has a vote.",
+      "extraordinary": "Extraordinary general meeting (§ 5.6). May only decide the items in the notice.",
+      "trial": "Board rehearsal: only the board is on the roster, and the protocol is marked PRØVE (trial). Use it to practise before a real meeting."
+    },
+    "kind": {
+      "ordinary": "Ordinary general meeting",
+      "extraordinary": "Extraordinary general meeting",
+      "trial": "Rehearsal"
+    },
+    "status": {
+      "draft": "Draft",
+      "announced": "Called",
+      "in_session": "In session",
+      "closed": "Closed",
+      "cancelled": "Cancelled"
+    },
+    "errors": {
+      "load": "Could not load the general meeting. Try again.",
+      "action": "That did not work. Try again.",
+      "notFound": "This general meeting was not found."
+    },
+    "chairIs": "Chair: {name}",
+    "secretaryIs": "Minute taker: {name}",
+    "cancelled": "Cancelled: {reason}",
+    "me": {
+      "onRoster": "You are on the roster and have a vote.",
+      "noVote": "You are on the roster but have no vote: {reason}",
+      "present": "You are registered as present.",
+      "notPresent": "You are not registered as present yet.",
+      "checkIn": "I am present",
+      "checkOut": "I am leaving the meeting",
+      "beforeSession": "The meeting has not opened yet. When the board opens it, you register here that you are present.",
+      "notOnRoster": "You are not on the roster for this meeting and cannot vote."
+    },
+    "attendanceCount": "{n} of {of} are present.",
+    "setup": {
+      "title": "Preparation",
+      "roster": "Roster",
+      "rosterFrozen": "Frozen with {n} members on {date}.",
+      "rosterHint": {
+        "real": "Active members of CTO Roundtable. Retired members and the Swedish chapter are not included. Freeze it when the notice goes out.",
+        "trial": "The board is the roster of a rehearsal."
+      },
+      "refreeze": "Freeze again",
+      "freeze": "Freeze the roster",
+      "countBase": "What is a vote cast?",
+      "addItem": "New item",
+      "addItemButton": "Add item",
+      "announce": "Publish the agenda",
+      "openSession": "Open the meeting",
+      "roles": "Chair and minute taker"
+    },
+    "countBase": {
+      "yesNo": "Yes and no. Blank votes are not counted as cast (recommended).",
+      "withBlank": "Yes, no and blank. Blank votes are counted as cast."
+    },
+    "items": "Items",
+    "noItems": "No items yet.",
+    "itemHeading": "Item {n}: {title}",
+    "itemStatus": {
+      "pending": "Not dealt with",
+      "open": "Voting open",
+      "closed": "Decided",
+      "withdrawn": "Withdrawn"
+    },
+    "preset": {
+      "majority": "Simple majority (§ 5.5)",
+      "two_thirds": "2/3 of votes cast, change of articles (§ 9)",
+      "three_quarters": "3/4 of votes cast, dissolution (§ 10)",
+      "three_quarters_present": "3/4 of those present, item not on the agenda (§ 5.2)"
+    },
+    "ballot": {
+      "open": "Open ballot",
+      "secret": "Secret ballot"
+    },
+    "withdrawn": "Withdrawn: {reason}",
+    "progress": "{voted} of {present} present have voted.",
+    "vote": {
+      "votedSecret": "You have voted. The vote is secret and cannot be changed.",
+      "votedOpen": "You voted {choice}. You can change it until the chair closes the item.",
+      "secretOnce": "Secret: nobody sees what you vote, not the board either. You can vote once.",
+      "checkInFirst": "Register that you are present to vote."
+    },
+    "choice": {
+      "yes": "Yes",
+      "no": "No",
+      "blank": "Blank"
+    },
+    "outcome": {
+      "passed": "Passed",
+      "failed": "Not passed",
+      "tie": "Tie, to be settled by drawing lots",
+      "no_votes": "Not passed, no votes cast"
+    },
+    "countLine": "Yes {yes}, no {no}, blank {blank}. {present} present.",
+    "lotLine": "Drawing lots: {outcome} ({note}, entered by {by}).",
+    "namedVotes": "Show who voted what ({count}) | Show who voted what ({count})",
+    "secretVoters": "Show who voted ({count}) | Show who voted ({count})",
+    "forMinutes": "For the minutes",
+    "copy": "Copy",
+    "chair": {
+      "openItem": "Open the item for voting",
+      "closeItem": "Close the item and count",
+      "lotIntro": "A tie. Draw lots in the meeting (§ 5.5) and enter the outcome here.",
+      "lotNote": "How the lots were drawn",
+      "lotSave": "Enter the draw",
+      "attendance": "Present",
+      "attendanceHint": "Register a member who cannot get into the portal. It is logged that you did.",
+      "search": "Find a name",
+      "noVote": "no vote",
+      "onBehalfReason": "Registered by the chair in the meeting",
+      "markAway": "Left",
+      "markPresent": "Present",
+      "closeSession": "Close the meeting"
+    },
+    "protocolPdf": "Protocol (PDF)",
+    "banner": {
+      "announced": "General meeting: {title}",
+      "live": "The general meeting is on now: {title}",
+      "cta": "Open"
+    }
   }
 }

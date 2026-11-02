@@ -24,7 +24,8 @@
     "dealsCommittee": "Kommittén",
     "invest": "CTORI 4",
     "expand": "Visa undermenyn för {item}",
-    "collapse": "Dölj undermenyn för {item}"
+    "collapse": "Dölj undermenyn för {item}",
+    "generalMeeting": "Årsmöte"
   },
   "layout": {
     "signedInAs": "Inloggad som",
@@ -1060,5 +1061,151 @@
     "full": "Helskärm",
     "exitFull": "Stäng helskärm",
     "failed": "Kunde inte ladda dokumentet. Försök att ladda om sidan."
+  },
+  "meetings": {
+    "title": "Årsmöte",
+    "intro": "Årsmötet är föreningens högsta beslutande organ (stadgarna § 5). Här registrerar du att du är närvarande och röstar i varje ärende när mötesordföranden öppnar det.",
+    "back": "Alla årsmöten",
+    "none": "Inga årsmöten ännu.",
+    "itemCount": "{count} ärende | {count} ärenden",
+    "youVote": "du har rösträtt",
+    "create": {
+      "title": "Nytt årsmöte",
+      "submit": "Skapa som utkast"
+    },
+    "fields": {
+      "kind": "Typ av möte",
+      "title": "Namn",
+      "heldAt": "Tidpunkt",
+      "place": "Plats eller länk",
+      "itemTitle": "Ärende",
+      "itemBody": "Förslag till beslut",
+      "preset": "Krav för beslut",
+      "ballot": "Röstning",
+      "chair": "Mötesordförande",
+      "secretary": "Sekreterare"
+    },
+    "kindHint": {
+      "ordinary": "Ordinarie årsmöte, före utgången av mars (§ 5.1). Alla aktiva medlemmar i CTO Roundtable har rösträtt.",
+      "extraordinary": "Extra årsmöte (§ 5.6). Får bara besluta i ärendena i kallelsen.",
+      "trial": "Övningsmöte för styrelsen: bara styrelsen är i röstlängden, och protokollet märks PRØVE (övning). Använd det för att öva före ett riktigt årsmöte."
+    },
+    "kind": {
+      "ordinary": "Ordinarie årsmöte",
+      "extraordinary": "Extra årsmöte",
+      "trial": "Övningsmöte"
+    },
+    "status": {
+      "draft": "Utkast",
+      "announced": "Kallat",
+      "in_session": "Pågår",
+      "closed": "Avslutat",
+      "cancelled": "Inställt"
+    },
+    "errors": {
+      "load": "Kunde inte hämta årsmötet. Försök igen.",
+      "action": "Det gick inte. Försök igen.",
+      "notFound": "Hittade inte årsmötet."
+    },
+    "chairIs": "Mötesordförande: {name}",
+    "secretaryIs": "Sekreterare: {name}",
+    "cancelled": "Inställt: {reason}",
+    "me": {
+      "onRoster": "Du står i röstlängden och har rösträtt.",
+      "noVote": "Du står i röstlängden men har inte rösträtt: {reason}",
+      "present": "Du är registrerad som närvarande.",
+      "notPresent": "Du är inte registrerad som närvarande ännu.",
+      "checkIn": "Jag är närvarande",
+      "checkOut": "Jag lämnar mötet",
+      "beforeSession": "Mötet är inte öppnat ännu. När styrelsen öppnar det registrerar du här att du är närvarande.",
+      "notOnRoster": "Du står inte i röstlängden för det här mötet och kan inte rösta."
+    },
+    "attendanceCount": "{n} av {of} är närvarande.",
+    "setup": {
+      "title": "Förberedelse",
+      "roster": "Röstlängd",
+      "rosterFrozen": "Låst med {n} medlemmar {date}.",
+      "rosterHint": {
+        "real": "Aktiva medlemmar i CTO Roundtable. Pensionerade och den svenska avdelningen ingår inte. Lås när kallelsen går ut.",
+        "trial": "Styrelsen är röstlängden i ett övningsmöte."
+      },
+      "refreeze": "Lås igen",
+      "freeze": "Lås röstlängden",
+      "countBase": "Vad är en avgiven röst?",
+      "addItem": "Nytt ärende",
+      "addItemButton": "Lägg till ärende",
+      "announce": "Publicera föredragningslistan",
+      "openSession": "Öppna mötet",
+      "roles": "Mötesordförande och sekreterare"
+    },
+    "countBase": {
+      "yesNo": "Ja och nej. Blanka röster räknas inte som avgivna (rekommenderas).",
+      "withBlank": "Ja, nej och blankt. Blanka röster räknas som avgivna."
+    },
+    "items": "Ärenden",
+    "noItems": "Inga ärenden ännu.",
+    "itemHeading": "Ärende {n}: {title}",
+    "itemStatus": {
+      "pending": "Ej behandlat",
+      "open": "Röstning pågår",
+      "closed": "Behandlat",
+      "withdrawn": "Återkallat"
+    },
+    "preset": {
+      "majority": "Enkel majoritet (§ 5.5)",
+      "two_thirds": "2/3 av avgivna röster, stadgeändring (§ 9)",
+      "three_quarters": "3/4 av avgivna röster, upplösning (§ 10)",
+      "three_quarters_present": "3/4 av de närvarande, ärende utanför föredragningslistan (§ 5.2)"
+    },
+    "ballot": {
+      "open": "Öppen röstning",
+      "secret": "Sluten röstning"
+    },
+    "withdrawn": "Återkallat: {reason}",
+    "progress": "{voted} av {present} närvarande har röstat.",
+    "vote": {
+      "votedSecret": "Du har röstat. Rösten är hemlig och kan inte ändras.",
+      "votedOpen": "Du har röstat {choice}. Du kan ändra tills mötesordföranden stänger ärendet.",
+      "secretOnce": "Sluten: ingen ser hur du röstar, inte heller styrelsen. Du kan rösta en gång.",
+      "checkInFirst": "Registrera att du är närvarande för att rösta."
+    },
+    "choice": {
+      "yes": "Ja",
+      "no": "Nej",
+      "blank": "Blankt"
+    },
+    "outcome": {
+      "passed": "Beslutat",
+      "failed": "Inte beslutat",
+      "tie": "Lika röstetal, avgörs genom lottning",
+      "no_votes": "Inte beslutat, inga avgivna röster"
+    },
+    "countLine": "Ja {yes}, nej {no}, blankt {blank}. {present} närvarande.",
+    "lotLine": "Lottning: {outcome} ({note}, förd av {by}).",
+    "namedVotes": "Visa vem som röstade vad ({count}) | Visa vem som röstade vad ({count})",
+    "secretVoters": "Visa vem som röstade ({count}) | Visa vem som röstade ({count})",
+    "forMinutes": "Till protokollet",
+    "copy": "Kopiera",
+    "chair": {
+      "openItem": "Öppna ärendet för röstning",
+      "closeItem": "Stäng ärendet och räkna",
+      "lotIntro": "Lika röstetal. Lotta i mötet (§ 5.5) och för in utfallet här.",
+      "lotNote": "Hur lottningen gjordes",
+      "lotSave": "För in lottningen",
+      "attendance": "Närvarande",
+      "attendanceHint": "Registrera en medlem som inte kommer in i portalen. Det loggas att du gjorde det.",
+      "search": "Hitta ett namn",
+      "noVote": "utan rösträtt",
+      "onBehalfReason": "Registrerad av mötesordföranden i mötet",
+      "markAway": "Gått",
+      "markPresent": "Närvarande",
+      "closeSession": "Avsluta mötet"
+    },
+    "protocolPdf": "Protokoll (PDF)",
+    "banner": {
+      "announced": "Årsmöte: {title}",
+      "live": "Årsmötet pågår nu: {title}",
+      "cta": "Öppna"
+    }
   }
 }
