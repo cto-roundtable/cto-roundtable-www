@@ -164,7 +164,7 @@ token's sha256 is stored (`api_tokens`, hq migration 026), so a request is a has
 lookup. Scopes: `events:read`, `events:write`, `surveys:read`, `surveys:write`, and for
 deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digests:write`,
 `qa:read`, `qa:write` (hq migration 032), and for the general meeting `meetings:read`,
-`meetings:write` (hq migration 046).
+`meetings:write` (hq migration 047).
 
 - **The gate** is `requireApiToken` in `server/utils/apiTokens.ts`, checked on every
   request: not revoked, not expired, the owner an active `styret` member right now

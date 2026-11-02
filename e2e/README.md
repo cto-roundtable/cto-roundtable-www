@@ -77,7 +77,7 @@ add `invest-4`; if nobody is in it yet, make it synthetic.
   every board action. Screens of the pages (member, chair, board, desktop and phone) in
   `.run/meeting/`.
 - `meeting-admin.spec.ts`: the general meeting through the ADMIN API (`ctr meetings`),
-  needs hq migrations 045 and 046 on the branch. The gate: a token whose owner is
+  needs hq migrations 045 and 047 on the branch. The gate: a token whose owner is
   committee-only, a member, Swedish-only or an outsider is refused (401, the token gate),
   a board token with every deal scope but no meetings scope gets a 403, a read token
   cannot write, and a token stops working the moment its owner leaves `styret`. Then a

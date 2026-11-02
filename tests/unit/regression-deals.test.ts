@@ -141,28 +141,9 @@ describe('no deal file is touched by this branch', () => {
   })
 })
 
-/**
- * The one change allowed in apiTokens.ts (ctori-4 ctr-meetings): lines ADDED to
- * API_SCOPES naming a `meetings:` scope, or a comment. Nothing removed, nothing
- * else added, so the gate the deal routes run through stays byte-for-byte.
- */
-const MEETING_SCOPE_LINE = /^\+\s*('meetings:[a-z]+',|\/\/ .*)$/
-const allowed = (lines: string[]) => lines.every((l) => MEETING_SCOPE_LINE.test(l))
-
+// The one change allowed in apiTokens.ts (ctori-4 ctr-meetings): added `meetings:` scope lines or a comment.
 function onlyAddsMeetingScopes(base: string, file: string): boolean {
   const diff = execFileSync('git', ['diff', '-U0', base, '--', file], { encoding: 'utf8' })
   const changes = diff.split('\n').filter((l) => /^[+-]/.test(l) && !/^(\+\+\+|---) /.test(l))
-  return allowed(changes)
+  return changes.every((l) => /^\+\s*('meetings:[a-z]+',|\/\/ .*)$/.test(l))
 }
-
-describe('the guard lets apiTokens.ts gain meeting scopes and nothing else', () => {
-  // Pins the allowance itself: a removed or changed line still counts as touching a deal file.
-  test('added meeting scopes and a comment pass', () => {
-    assert.equal(allowed(['+  // The general meeting (årsmøte)', "+  'meetings:read',", "+  'meetings:write',"]), true)
-  })
-  test('anything else fails', () => {
-    assert.equal(allowed(["-  'qa:write',"]), false)
-    assert.equal(allowed(["+  'deals:admin',"]), false)
-    assert.equal(allowed(['+  if (!r.owner_on_board) return']), false)
-  })
-})

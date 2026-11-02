@@ -5,7 +5,7 @@ import { apiAs, branchApiToken, db } from './support/meeting'
 import { persona } from './support/run'
 
 // The general meeting through the ADMIN API (/api/admin/meetings/**, what `ctr
-// meetings` calls), on the e2e branch (needs hq migrations 045 and 046 there).
+// meetings` calls), on the e2e branch (needs hq migrations 045 and 047 there).
 // The gate: a token works only while its OWNER is in styret, and only with a
 // meetings scope; current-komite gives nothing; a deal token gets nothing. Then a
 // whole meeting run from a board token while members vote in the portal, and
@@ -80,7 +80,7 @@ test.afterAll(async () => {
   if (leaver) await db()`DELETE FROM memberships WHERE person_id = ${leaver}`
 })
 
-test('the scopes exist in the database (hq 046)', async () => {
+test('the scopes exist in the database (hq 047)', async () => {
   const [{ ok }] = (await db()`
     SELECT pg_get_constraintdef(oid) LIKE '%meetings:write%' AS ok
     FROM pg_constraint WHERE conname = 'device_authorizations_scopes_check'
