@@ -812,8 +812,8 @@ const LEAD_ACTION_NOTE: Record<LeadAction, string> = {
 /**
  * Move a lead out of 'incoming': the status, last_activity_at = now() and
  * last_activity_note ("<first name> <date>: <note>"), plus a status_change event,
- * in one transaction. app.current_user names the person, so audit_pipeline_deals
- * (001's trigger_audit_log) records who did it. A compare-and-set on the status: two
+ * in one transaction. setActor names the person, so audit_pipeline_deals
+ * (trigger_audit_log, hq 046) records who did it. A compare-and-set on the status: two
  * clicks at once move it once, and the second gets a 409. Never a delete.
  */
 export async function moveLead(viewer: CaseViewer, slug: string, action: unknown, note: unknown) {
@@ -835,7 +835,7 @@ export async function moveLead(viewer: CaseViewer, slug: string, action: unknown
   const line = `${firstName} ${today}: ${text || LEAD_ACTION_NOTE[a]}`
   const who = `portal:${viewer.personId}`
   const [, moved] = (await sql.transaction([
-    sql`SELECT set_config('app.current_user', ${who}, true)`,
+    setActor(sql, who),
     sql`
       WITH moved AS (
         UPDATE pipeline_deals
