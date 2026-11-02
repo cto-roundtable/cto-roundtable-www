@@ -1,9 +1,9 @@
 // Regression tests: the DEAL vote (server/utils/dealRounds.ts) is exactly as it
 // was before the general meeting module (ctori-4 meeting-votes, Snorre's
-// requirement 1). These pin today's rule, counting and hashing, and fail if a
-// branch changes a deal file. Run: npm run test:unit.
+// requirement 1). These pin today's rule, counting and hashing. Run: npm run test:unit.
+// The diff guard that refused any branch touching a deal file was lifted by Snorre
+// 2026-11-02 (ctori-4 dc-84 H2) once the meeting branches had landed.
 import assert from 'node:assert/strict'
-import { execFileSync } from 'node:child_process'
 import { describe, test } from 'node:test'
 import { bundleSha256, countRound, ROUND_RULES, resultOf } from '../../server/utils/dealRounds.ts'
 import { decide, rulesFor } from '../../server/utils/voteRules.ts'
@@ -106,44 +106,3 @@ describe('deal counting: unchanged', () => {
     assert.equal(sha, '29ecd4fa073318b0bcecdcf3aec55612ce5f806671009af6e1d19485cba1ae5b')
   })
 })
-
-describe('no deal file is touched by this branch', () => {
-  // Every file the deal vote runs through. The general meeting has its own.
-  const DEAL_PATHS = [
-    'server/utils/dealRounds.ts',
-    'server/utils/deals.ts',
-    'server/utils/votePdf.ts',
-    'server/utils/dealLedger.ts',
-    'server/utils/dealConflicts.ts',
-    'server/utils/committee.ts',
-    'server/utils/apiTokens.ts',
-    'server/api/member/deals/',
-    'server/api/member/committee/',
-    'server/api/admin/rounds/',
-    'server/api/admin/deals/',
-    'app/pages/member/caser/',
-    'app/pages/member/komite/',
-  ]
-  test('the diff against origin/main leaves every deal path alone', (t) => {
-    let changed: string[]
-    let base: string
-    try {
-      base = execFileSync('git', ['merge-base', 'origin/main', 'HEAD'], { encoding: 'utf8' }).trim()
-      changed = execFileSync('git', ['diff', '--name-only', base], { encoding: 'utf8' }).split('\n').filter(Boolean)
-    } catch {
-      t.skip('no git or no origin/main here')
-      return
-    }
-    const touched = changed
-      .filter((f) => DEAL_PATHS.some((p) => (p.endsWith('/') ? f.startsWith(p) : f === p)))
-      .filter((f) => !(f === 'server/utils/apiTokens.ts' && onlyAddsMeetingScopes(base, f)))
-    assert.deepEqual(touched, [], `deal files changed: ${touched.join(', ')}`)
-  })
-})
-
-// The one change allowed in apiTokens.ts (ctori-4 ctr-meetings): added `meetings:` scope lines or a comment.
-function onlyAddsMeetingScopes(base: string, file: string): boolean {
-  const diff = execFileSync('git', ['diff', '-U0', base, '--', file], { encoding: 'utf8' })
-  const changes = diff.split('\n').filter((l) => /^[+-]/.test(l) && !/^(\+\+\+|---) /.test(l))
-  return changes.every((l) => /^\+\s*('meetings:[a-z]+',|\/\/ .*)$/.test(l))
-}

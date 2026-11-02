@@ -50,7 +50,7 @@ merging anything that changes who can see what, and add a persona to
 ### Server API routes (`server/`)
 Database credentials and sensitive tokens live in **private** `runtimeConfig` (never exposed to the browser). API routes in `server/api/` handle all DB queries.
 
-- `server/utils/db.ts` — Neon connection helper
+- `server/utils/db.ts` — Neon connection helper, and `setActor(sql, who)`: the first statement of every write transaction, so Neon's audit triggers name the writer (`portal:<person id>`; ctoroundtable-hq migration 046 and `security.md` "Audit trail")
 - `server/api/members.get.ts` — GET /api/members (from Postgres)
 
 ### Client pages (in `app/`)
@@ -286,7 +286,7 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   (`moveLead`): to reviewing, waiting or `passed` ("Si nei": no, founder not told yet, so it stays out
   of the members' declined list and digest; the visible flag is dropped; dc-64), with an
   optional note to `last_activity_note`, a `status_change` event, and
-  `app.current_user = portal:<person id>` set in the same transaction so
+  `setActor(sql, 'portal:<person id>')` (`app.changed_by`) in the same transaction so
   `audit_pipeline_deals` names the person. Only from `incoming`; 403 for anyone off the
   committee, 409 once it has moved.
 - **Ansvarlig** is the deal's CURRENT `lead` and `co_lead` rows in `deal_people`

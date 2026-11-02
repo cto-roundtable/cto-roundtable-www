@@ -387,7 +387,8 @@ export const MAX_BLURB = 400
 /**
  * Set what the SPV sees of a deal before any round: the flag and the one or two
  * investor-safe lines. Writes a deal_events note (created_by names the token
- * owner) so the feed's "last change" moves.
+ * owner) so the feed's "last change" moves, in the same transaction, which also
+ * names the owner in audit_log (setActor).
  */
 export async function setDealInvestorFields(
   dealId: string,
@@ -398,12 +399,6 @@ export async function setDealInvestorFields(
   const visible = changes.investorVisible ?? null
   const setBlurb = changes.investorBlurb !== undefined
   const blurb = changes.investorBlurb ?? null
-  await sql`
-    UPDATE pipeline_deals
-    SET investor_visible = COALESCE(${visible}::boolean, investor_visible),
-        investor_blurb = CASE WHEN ${setBlurb} THEN ${blurb}::text ELSE investor_blurb END
-    WHERE id = ${dealId}
-  `
   const what = [
     changes.investorVisible === undefined
       ? null
@@ -414,10 +409,19 @@ export async function setDealInvestorFields(
   ]
     .filter(Boolean)
     .join(', ')
-  await sql`
-    INSERT INTO deal_events (deal_id, occurred_at, kind, body, source_kind, created_by)
-    VALUES (${dealId}, NOW(), 'note', ${`Portal: ${what}`}, 'manual', ${`portal-admin-api:${byPersonId}`})
-  `
+  await sql.transaction([
+    setActor(sql, `portal:${byPersonId}`),
+    sql`
+      UPDATE pipeline_deals
+      SET investor_visible = COALESCE(${visible}::boolean, investor_visible),
+          investor_blurb = CASE WHEN ${setBlurb} THEN ${blurb}::text ELSE investor_blurb END
+      WHERE id = ${dealId}
+    `,
+    sql`
+      INSERT INTO deal_events (deal_id, occurred_at, kind, body, source_kind, created_by)
+      VALUES (${dealId}, NOW(), 'note', ${`Portal: ${what}`}, 'manual', ${`portal-admin-api:${byPersonId}`})
+    `,
+  ])
 }
 
 const DOCUMENT_TYPES: Record<string, string> = {
@@ -808,8 +812,8 @@ const LEAD_ACTION_NOTE: Record<LeadAction, string> = {
 /**
  * Move a lead out of 'incoming': the status, last_activity_at = now() and
  * last_activity_note ("<first name> <date>: <note>"), plus a status_change event,
- * in one transaction. app.current_user names the person, so audit_pipeline_deals
- * (001's trigger_audit_log) records who did it. A compare-and-set on the status: two
+ * in one transaction. setActor names the person, so audit_pipeline_deals
+ * (trigger_audit_log, hq 046) records who did it. A compare-and-set on the status: two
  * clicks at once move it once, and the second gets a 409. Never a delete.
  */
 export async function moveLead(viewer: CaseViewer, slug: string, action: unknown, note: unknown) {
@@ -831,7 +835,7 @@ export async function moveLead(viewer: CaseViewer, slug: string, action: unknown
   const line = `${firstName} ${today}: ${text || LEAD_ACTION_NOTE[a]}`
   const who = `portal:${viewer.personId}`
   const [, moved] = (await sql.transaction([
-    sql`SELECT set_config('app.current_user', ${who}, true)`,
+    setActor(sql, who),
     sql`
       WITH moved AS (
         UPDATE pipeline_deals
