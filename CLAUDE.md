@@ -163,7 +163,8 @@ browser session or the shared `INGEST_API_KEY`. Each agent has its own bearer to
 token's sha256 is stored (`api_tokens`, hq migration 026), so a request is a hash
 lookup. Scopes: `events:read`, `events:write`, `surveys:read`, `surveys:write`, and for
 deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digests:write`,
-`qa:read`, `qa:write` (hq migration 032).
+`qa:read`, `qa:write` (hq migration 032), and for the general meeting `meetings:read`,
+`meetings:write` (hq migration 047).
 
 - **The gate** is `requireApiToken` in `server/utils/apiTokens.ts`, checked on every
   request: not revoked, not expired, the owner an active `styret` member right now
@@ -187,7 +188,8 @@ deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digest
   track-event-attendance dedup keys; only the two network calendars), `deals`, `deals/:slug`, `deals/:slug/documents/:key`, `deals/:slug/rounds`, `rounds`, `rounds/:id` and its actions, `comments`, `deals/:slug/digests`, `pipeline-digests` and its actions, `questions`, `questions/:id`, `questions/:id/answers`, `answers` (see Caser below), `surveys` (list, create), `surveys/:id` (show; PATCH
   close/reopen only), `surveys/:id/results` (names and free text only with
   `?texts=1`), `surveys/sweep` (`sweepPastEventSurveys`, `?dryRun=1`). The survey
-  routes call the helpers in `server/utils/surveys.ts` and have no SQL of their own.
+  routes call the helpers in `server/utils/surveys.ts` and have no SQL of their own;
+  the `meetings/**` routes likewise call `server/utils/generalMeetings.ts` (see Årsmøte below).
 - **CLI**: `ctr`, in Rust, in its own repo (cto-roundtable/ctr-cli), `--json` everywhere.
   `ctr login` (device flow below) or env `CTR_API_TOKEN`; `CTR_API_URL`. The daily job
   on the cto-roundtable box (`members-portal-daily`, 06:00) is
@@ -461,6 +463,22 @@ ctori-4 memory `votes/meeting-votes-design.md`; rules from the vedtekter § 5 an
 - **Protocol**: each closed sak has "Til referatet" text (`itemProtocolText`) and
   `GET /api/member/meetings/:id/protocol` renders the PDF (`server/utils/meetingPdf.ts`)
   from the frozen snapshots. Nothing here sends mail or Slack.
+- **Admin API** (`/api/admin/meetings/**`, `ctr meetings`, ctori-4 item ctr-meetings):
+  `meetings` (GET list, POST create), `meetings/:id` (GET; PATCH setup, chair, referent),
+  `:id/items` (POST), `:id/items/:itemId` (PATCH), `.../withdraw`, `.../open`, `.../close`,
+  `.../lot`, `:id/roster`, `:id/announce`, `:id/cancel`, `:id/session` `{action}`,
+  `:id/attendance/:personId` `{present, reason}` (POST), `:id/protocol` (GET, the PDF).
+  GET needs `meetings:read`, the rest `meetings:write`. Each route is a thin caller of
+  the same generalMeetings.ts function as its member route, with the token's OWNER as the
+  viewer (`meetingCall` in `server/utils/meetingsAdmin.ts`, which builds it with
+  `meetingViewerForOwner`): `requireApiToken`
+  already refuses an owner who is not an active `styret` member right now (401), and
+  the viewer checks the board again. `current-komite` gives nothing; a deal token
+  gets a 403. **Nothing votes through the API**: no route casts a ballot, registers
+  one on someone's behalf or checks the owner in, and a secret ballot is as unreadable
+  here as in the portal. `tests/unit/meetings-admin.test.ts` pins that in the source,
+  `e2e/meeting-admin.spec.ts` runs the gate and a whole meeting on the e2e branch.
+  The audit `summary` holds the action and ids only, never a title, reason or note.
 - **Logging**: every board and chair action is a `meeting_events` row, written in the
   same statement as the guarded UPDATE (`updateAndLog`), so a refused action logs nothing.
 - i18n keys live under `meetings.*` (and `nav.generalMeeting`, board only; members come

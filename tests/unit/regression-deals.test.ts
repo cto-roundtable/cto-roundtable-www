@@ -126,14 +126,24 @@ describe('no deal file is touched by this branch', () => {
   ]
   test('the diff against origin/main leaves every deal path alone', (t) => {
     let changed: string[]
+    let base: string
     try {
-      const base = execFileSync('git', ['merge-base', 'origin/main', 'HEAD'], { encoding: 'utf8' }).trim()
+      base = execFileSync('git', ['merge-base', 'origin/main', 'HEAD'], { encoding: 'utf8' }).trim()
       changed = execFileSync('git', ['diff', '--name-only', base], { encoding: 'utf8' }).split('\n').filter(Boolean)
     } catch {
       t.skip('no git or no origin/main here')
       return
     }
-    const touched = changed.filter((f) => DEAL_PATHS.some((p) => (p.endsWith('/') ? f.startsWith(p) : f === p)))
+    const touched = changed
+      .filter((f) => DEAL_PATHS.some((p) => (p.endsWith('/') ? f.startsWith(p) : f === p)))
+      .filter((f) => !(f === 'server/utils/apiTokens.ts' && onlyAddsMeetingScopes(base, f)))
     assert.deepEqual(touched, [], `deal files changed: ${touched.join(', ')}`)
   })
 })
+
+// The one change allowed in apiTokens.ts (ctori-4 ctr-meetings): added `meetings:` scope lines or a comment.
+function onlyAddsMeetingScopes(base: string, file: string): boolean {
+  const diff = execFileSync('git', ['diff', '-U0', base, '--', file], { encoding: 'utf8' })
+  const changes = diff.split('\n').filter((l) => /^[+-]/.test(l) && !/^(\+\+\+|---) /.test(l))
+  return changes.every((l) => /^\+\s*('meetings:[a-z]+',|\/\/ .*)$/.test(l))
+}
