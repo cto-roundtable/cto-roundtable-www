@@ -387,7 +387,8 @@ export const MAX_BLURB = 400
 /**
  * Set what the SPV sees of a deal before any round: the flag and the one or two
  * investor-safe lines. Writes a deal_events note (created_by names the token
- * owner) so the feed's "last change" moves.
+ * owner) so the feed's "last change" moves, in the same transaction, which also
+ * names the owner in audit_log (setActor).
  */
 export async function setDealInvestorFields(
   dealId: string,
@@ -398,12 +399,6 @@ export async function setDealInvestorFields(
   const visible = changes.investorVisible ?? null
   const setBlurb = changes.investorBlurb !== undefined
   const blurb = changes.investorBlurb ?? null
-  await sql`
-    UPDATE pipeline_deals
-    SET investor_visible = COALESCE(${visible}::boolean, investor_visible),
-        investor_blurb = CASE WHEN ${setBlurb} THEN ${blurb}::text ELSE investor_blurb END
-    WHERE id = ${dealId}
-  `
   const what = [
     changes.investorVisible === undefined
       ? null
@@ -414,10 +409,19 @@ export async function setDealInvestorFields(
   ]
     .filter(Boolean)
     .join(', ')
-  await sql`
-    INSERT INTO deal_events (deal_id, occurred_at, kind, body, source_kind, created_by)
-    VALUES (${dealId}, NOW(), 'note', ${`Portal: ${what}`}, 'manual', ${`portal-admin-api:${byPersonId}`})
-  `
+  await sql.transaction([
+    setActor(sql, `portal:${byPersonId}`),
+    sql`
+      UPDATE pipeline_deals
+      SET investor_visible = COALESCE(${visible}::boolean, investor_visible),
+          investor_blurb = CASE WHEN ${setBlurb} THEN ${blurb}::text ELSE investor_blurb END
+      WHERE id = ${dealId}
+    `,
+    sql`
+      INSERT INTO deal_events (deal_id, occurred_at, kind, body, source_kind, created_by)
+      VALUES (${dealId}, NOW(), 'note', ${`Portal: ${what}`}, 'manual', ${`portal-admin-api:${byPersonId}`})
+    `,
+  ])
 }
 
 const DOCUMENT_TYPES: Record<string, string> = {

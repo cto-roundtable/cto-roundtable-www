@@ -149,7 +149,8 @@ export function dealPeopleInsert(
 
 /**
  * Hand the follow-up over: close the current owner's row and open the new one, in
- * one transaction. The months each held follow from the dates.
+ * one transaction that names the person in audit_log (setActor). The months each
+ * held follow from the dates.
  */
 export async function setFollowUpOwner(dealId: string, personId: unknown, byPersonId: string) {
   const person = await requirePerson(personId, 'personId')
@@ -159,6 +160,7 @@ export async function setFollowUpOwner(dealId: string, personId: unknown, byPers
   }
   const sql = useDatabase()
   await sql.transaction([
+    setActor(sql, `portal:${byPersonId}`),
     sql`
       UPDATE deal_people SET valid_to = NOW()
       WHERE deal_id = ${dealId} AND role = 'follow_up_owner' AND valid_to IS NULL
