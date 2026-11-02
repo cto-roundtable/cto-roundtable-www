@@ -23,6 +23,9 @@ let admin: APIRequestContext
 const slug = `e2e-deal-vote-${Date.now().toString(36)}`
 let roundId = ''
 let bundle = ''
+// The deadline is the branch's NOW() + 2 seconds; the wait is the box's clock. Neon runs
+// 1 to 1.5 s ahead of this box, so 3 s of slack over the deadline, not 1.
+const PAST_DEADLINE_MS = 5000
 
 async function json(res: Awaited<ReturnType<Api['get']>>, want = 200) {
   const body = await res.json().catch(() => null)
@@ -130,7 +133,7 @@ test('after the deadline the committee closes: 2/3 of yes + no, protocol, deal_e
     UPDATE deal_rounds SET opened_at = NOW() - interval '48 hours', closes_at = NOW() + interval '2 seconds'
     WHERE id = ${roundId}
   `
-  await new Promise((r) => setTimeout(r, 3000))
+  await new Promise((r) => setTimeout(r, PAST_DEADLINE_MS))
   const late = await api['invest-3']!.post(`/api/member/deals/${slug}/rounds/${roundId}/ballot`, {
     data: { choice: 'no', attested: bundle },
     failOnStatusCode: false,
@@ -197,7 +200,7 @@ test('CTORI4 hovedbok (hq 039): a passed invest-4 round needs a lead and a follo
     UPDATE deal_rounds SET opened_at = NOW() - interval '48 hours', closes_at = NOW() + interval '2 seconds'
     WHERE id = ${id}
   `
-  await new Promise((r) => setTimeout(r, 3000))
+  await new Promise((r) => setTimeout(r, PAST_DEADLINE_MS))
   const refused = await admin.post(`/api/admin/rounds/${id}/close`, { data: {}, failOnStatusCode: false })
   expect(refused.status()).toBe(409)
   const body = await refused.json()
