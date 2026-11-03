@@ -375,9 +375,18 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   of the SPV group is frozen and the 48 hours start. A roster member votes yes, no or
   blank with one tap and can change until the deadline; every cast is a new row
   (append-only) attesting to the round's `bundle_sha256`, and the latest on-time one
-  counts. Members see the live counts and turnout, never names; only the committee
-  sees the named list (dc-59 H3, 2026-10-30; the rule's name `choices_board_only` is
-  older). A standing `memberships.default_vote = 'blank'` counts as blank until the
+  counts. **Nobody sees how anyone else voted while it runs** (komité 2026-11-03: people
+  piled onto the first no): no live counts to anyone, the committee included. Everyone
+  who sees the case sees the turnout (how many, never how), and the counts once the
+  round is closed. The committee's named list shows WHO has voted (how, when, late,
+  standing default), never the choice. That is ONE switch, `ROUND_RULES.ballot`
+  (`'choices_hidden'`); `ballotVisibility()` maps it, and every place a tally or a
+  ballot leaves the server (case page, admin API rounds and ballots, notice mails)
+  asks it. A round takes the switch when it opens. `'choices_board_only'` is the
+  old rule (live counts to members, named choices to the committee, dc-59 H3): set it
+  back to open it up again. The ballots are always stored with their person
+  (`deal_ballots`, `result_snapshot`), so the count and the protocol never depend on
+  it. A standing `memberships.default_vote = 'blank'` counts as blank until the
   member votes: each member sets it on `/member` per SPV ("Hvis jeg ikke stemmer, regn
   meg som blank", `POST /api/member/default-vote`, audited by 032's trigger, never
   'yes'). It is frozen into the roster at open, so a change counts from the next vote;

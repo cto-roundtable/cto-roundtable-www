@@ -8,8 +8,8 @@ import { createHash } from 'node:crypto'
  * with a SNAPSHOT of what it is about: the proposal and the current version of
  * each named document, hashed together into bundle_sha256, which every ballot
  * attests to. The rules are set here, never by the caller: model A+, 48 hours
- * flat, 2/3 of yes + no, live counts to members and named ballots to the
- * committee only (decision 2026-10-22 on the vote model, project ctori-4).
+ * flat, 2/3 of yes + no (decision 2026-10-22 on the vote model, project ctori-4).
+ * Who sees what of the ballots is `ballot`, see ballotVisibility() below.
  */
 
 export const ROUND_RULES = {
@@ -18,9 +18,38 @@ export const ROUND_RULES = {
   excluded: ['blank', 'none'],
   weighting: 'person',
   window_h: 48,
-  ballot: 'choices_board_only',
+  // THE visibility switch (komité 2026-11-03, ctori-4 item hide-votes). 'choices_hidden':
+  // nobody sees the counts while the vote runs, the committee sees who has voted but
+  // never what. Set it back to 'choices_board_only' (live counts to members, named
+  // choices to the committee) to open it up again. A round takes the switch when it opens.
+  ballot: 'choices_hidden',
   mandate: null,
 } as const
+
+export interface BallotVisibility {
+  /** the yes / no / blank counts while the round is open; after close everyone who sees the case gets them */
+  liveCounts: boolean
+  /** each roster member's choice by name, to the committee and the admin API (otherwise only that they voted) */
+  namedChoices: boolean
+}
+
+/**
+ * What a round's `rules.ballot` lets anyone see. Every place a tally or a ballot
+ * leaves the server asks this, so the rule is in one place. The ballots themselves
+ * are always stored with their person (deal_ballots, result_snapshot): the record
+ * and the protocol do not depend on it.
+ */
+export function ballotVisibility(rule: unknown): BallotVisibility {
+  // 'open' is the email era (reply-all), 'choices_board_only' the portal until 2026-11-03.
+  if (rule === 'choices_board_only' || rule === 'open') return { liveCounts: true, namedChoices: true }
+  // 'choices_hidden', and anything unknown: the strictest.
+  return { liveCounts: false, namedChoices: false }
+}
+
+/** The counts may leave the server: once the round is closed, or live where its rule says so. */
+export function countsShown(r: { status: string; rules?: { ballot?: unknown } | null }): boolean {
+  return r.status === 'closed' || ballotVisibility(r.rules?.ballot).liveCounts
+}
 
 const PROPOSAL_KEYS = ['amount', 'currency', 'instrument', 'cap', 'termsSummary']
 
@@ -96,7 +125,7 @@ export function bundleSha256(documents: RoundDocument[], proposal: Proposal): st
     .digest('hex')
 }
 
-/** The round object of the admin API (memory votes/admin-api.md). Add the tally with withTally(). */
+/** The round object of the admin API (memory votes/admin-api.md). Add the tally and turnout with withTally(). */
 export function roundObject(r: any) {
   const rules = r.rules ?? {}
   return {
@@ -124,6 +153,7 @@ export function roundObject(r: any) {
     cancelReason: r.cancel_reason,
     result: r.result,
     tally: null as Tally | null,
+    turnout: null as Turnout | null,
     protocol: r.result_sha256 ? { sha256: r.result_sha256 } : null,
     // The hovedbok snapshot (dc-39), null for every round outside an incentive model.
     ledger: r.ledger ?? null,
@@ -250,6 +280,18 @@ export interface Tally {
   turnout: number
 }
 
+/** How many have voted, never how: shown whenever the round has a roster. */
+export interface Turnout {
+  eligible: number
+  /** cast a ballot on time, any choice */
+  voted: number
+  turnout: number
+}
+
+export function turnoutOf(t: Tally): Turnout {
+  return { eligible: t.eligible, voted: t.yes + t.no + t.blank, turnout: t.turnout }
+}
+
 interface CountedBallot {
   person_id: string
   choice: string
@@ -340,7 +382,11 @@ export function resultOf(t: Tally): 'passed' | 'failed' | 'no_quorum' {
   return 3 * t.yes >= 2 * base ? 'passed' : 'failed'
 }
 
-/** The live tally of an open round, or the frozen one of a closed round. Null for drafts and backfills. */
+/**
+ * The live tally of an open round, or the frozen one of a closed round. Null for
+ * drafts and backfills. The whole count, for the server's own use: what leaves the
+ * server goes through withTally() / countsShown().
+ */
 export async function tallyOf(r: any): Promise<Tally | null> {
   if (r.status === 'closed' && r.result_snapshot?.tally) return r.result_snapshot.tally
   if (!Array.isArray(r.roster)) return null
@@ -348,15 +394,20 @@ export async function tallyOf(r: any): Promise<Tally | null> {
   return countRound(r.roster, current, late).tally
 }
 
+/** The round object with what may be seen of its count: turnout always, the counts per countsShown(). */
 export async function withTally(r: any) {
   const o = roundObject(r)
-  o.tally = await tallyOf(r)
+  const t = await tallyOf(r)
+  o.tally = t && countsShown(r) ? t : null
+  o.turnout = t ? turnoutOf(t) : null
   return o
 }
 
 /**
- * Open a draft: freeze the roster, start the 48 hours, log round_opened. The
- * deal-rounds job then sends the notices (POST /api/admin/rounds/:id/notify).
+ * Open a draft: freeze the roster, start the 48 hours, take the visibility switch
+ * (ROUND_RULES.ballot, so a draft made before a change follows it and an open vote
+ * never changes under its voters), log round_opened. The deal-rounds job then sends
+ * the notices (POST /api/admin/rounds/:id/notify).
  */
 export async function openRound(roundId: string, byPersonId: string) {
   const r = await loadRound(roundId)
@@ -370,6 +421,7 @@ export async function openRound(roundId: string, byPersonId: string) {
     sql`
       UPDATE deal_rounds
       SET status = 'open', roster = ${JSON.stringify(roster)}::jsonb, opened_at = NOW(),
+          rules = rules || jsonb_build_object('ballot', ${ROUND_RULES.ballot}::text),
           closes_at = NOW() + make_interval(hours => ${windowH}::int), opened_by = ${byPersonId}
       WHERE id = ${roundId} AND status = 'draft'
       RETURNING id
@@ -513,7 +565,7 @@ export async function registerBallot(roundId: string, body: Record<string, unkno
       SELECT id, person_id, choice, cast_at FROM deal_ballots WHERE round_id = ${roundId} AND source_ref = ${sourceRef}
     `) as any[]
     if (dup.length) {
-      return { ballot: ballotOut(dup[0], r), duplicate: true, tally: await tallyOf(r) }
+      return { ballot: ballotOut(dup[0], r), duplicate: true, ...(await shownCounts(r)) }
     }
   }
   const rows = (await sql`
@@ -522,7 +574,12 @@ export async function registerBallot(roundId: string, body: Record<string, unkno
             ${registeredBy}, ${castAt})
     RETURNING id, person_id, choice, cast_at
   `) as any[]
-  return { ballot: ballotOut(rows[0], r), duplicate: false, tally: await tallyOf(r) }
+  return { ballot: ballotOut(rows[0], r), duplicate: false, ...(await shownCounts(r)) }
+}
+
+async function shownCounts(r: any) {
+  const { tally, turnout } = await withTally(r)
+  return { tally, turnout }
 }
 
 function ballotOut(b: any, r: any) {
@@ -535,7 +592,10 @@ function ballotOut(b: any, r: any) {
   }
 }
 
-/** Everything the committee and the admin API see of a round: roster, named ballots, notices. */
+/**
+ * Everything the committee and the admin API see of a round: roster, every ballot
+ * by name (with its choice only where the round's rule names choices), notices.
+ */
 export async function roundDetail(roundId: string) {
   const r = await loadRound(roundId)
   if (!r) throw createError({ statusCode: 404, message: 'Round not found' })
@@ -553,6 +613,7 @@ export async function roundDetail(roundId: string) {
     `,
   ])
   const closesAt = r.closes_at ? new Date(r.closes_at).getTime() : null
+  const { namedChoices } = ballotVisibility(r.rules?.ballot)
   return {
     round: await withTally(r),
     roster: ((r.roster ?? []) as RosterEntry[]).map((m) => ({
@@ -565,7 +626,7 @@ export async function roundDetail(roundId: string) {
     ballots: (all as any[]).map((b) => ({
       personId: b.person_id,
       name: b.name,
-      choice: b.choice,
+      ...(namedChoices ? { choice: b.choice } : {}),
       method: b.method,
       castAt: b.cast_at,
       late: closesAt !== null && new Date(b.cast_at).getTime() > closesAt,
@@ -767,10 +828,19 @@ function noticeMail(
   const offer = p.amount ? `${nok(p.amount, p.currency ?? 'NOK')}, ${escapeHtml(String(p.instrument ?? ''))}` : ''
   const closes = escapeHtml(osloStamp(r.closes_at, lang))
   const hi = mailParagraph(nb ? `Hei ${firstNameHtml(to.name)},` : `Hi ${firstNameHtml(to.name)},`)
+  const live = ballotVisibility(r.rules?.ballot).liveCounts
   const rule = mailParagraph(
     nb
-      ? 'Forslaget vedtas med minst 2/3 ja av ja- og nei-stemmene. Blanke og de som ikke stemmer telles ikke. Underveis ser medlemmene antall stemmer, ikke hvem som stemte hva.'
-      : 'The proposal passes with at least 2/3 yes of the yes and no votes. Blank votes and members who do not vote are not counted. While it runs, members see the counts, not who voted what.',
+      ? `Forslaget vedtas med minst 2/3 ja av ja- og nei-stemmene. Blanke og de som ikke stemmer telles ikke. ${
+          live
+            ? 'Underveis ser medlemmene antall stemmer, ikke hvem som stemte hva.'
+            : 'Ingen ser hva andre har stemt. Antall stemmer vises når avstemningen er avsluttet.'
+        }`
+      : `The proposal passes with at least 2/3 yes of the yes and no votes. Blank votes and members who do not vote are not counted. ${
+          live
+            ? 'While it runs, members see the counts, not who voted what.'
+            : 'Nobody sees what others voted. The counts are shown once the vote has closed.'
+        }`,
     'color: #777; font-size: 14px;',
   )
   if (kind === 'open') {
@@ -942,11 +1012,12 @@ export async function recordNotices(roundId: string, body: Record<string, unknow
 // --- The case page's view of its rounds ----------------------------------------------
 
 /**
- * The rounds on a case as this viewer may see them. Everyone who can see the
- * case gets the counts (live while open). A roster member gets their own
- * ballot. The committee also gets drafts and the named list: every roster member with
- * what they voted, how and when (decision 2026-10-22 §3: names to the
- * committee only).
+ * The rounds on a case as this viewer may see them, per the round's rule
+ * (ballotVisibility). Everyone who can see the case gets the turnout, and the
+ * counts once the round is closed (live too where the rule allows it). A roster
+ * member gets their own ballot. The committee also gets drafts and the named list:
+ * every roster member, whether, how and when they voted, and what only where the
+ * rule names choices (komité 2026-11-03: who, not what).
  */
 export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
   const sql = useDatabase()
@@ -964,13 +1035,19 @@ export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
     rows.map(async (r) => {
       const roster: RosterEntry[] = Array.isArray(r.roster) ? r.roster : []
       const me = roster.find((m) => m.person_id === viewer.personId) ?? null
+      const visibility = ballotVisibility(r.rules?.ballot)
+      let full: Tally | null = null
       let tally: Tally | null = null
+      let turnout: Turnout | null = null
       let named: any[] | undefined
       let myBallot: { choice: string; castAt: string; method: string } | null = null
       if (roster.length) {
         const { current, late } = await loadBallots(r.id)
         const counted = countRound(roster, current, late)
-        tally = r.status === 'closed' && r.result_snapshot?.tally ? r.result_snapshot.tally : counted.tally
+        const whole: Tally = r.status === 'closed' && r.result_snapshot?.tally ? r.result_snapshot.tally : counted.tally
+        full = whole
+        tally = countsShown(r) ? whole : null
+        turnout = turnoutOf(whole)
         const mine = current.find((b) => b.person_id === viewer.personId)
         if (mine) myBallot = { choice: mine.choice, castAt: mine.cast_at, method: mine.method }
         if (viewer.isCommittee) {
@@ -982,7 +1059,9 @@ export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
           const now = new Map(nowRows.map((m) => [m.person_id, m.default_vote === 'blank' ? 'blank' : null]))
           named = counted.rows.map((x) => ({
             name: x.member.name,
-            counted: x.counted,
+            // Who, not what: a cast yes / no / blank is 'voted' unless the rule names choices.
+            counted:
+              visibility.namedChoices || x.counted === 'default_blank' || x.counted === 'none' ? x.counted : 'voted',
             method: x.ballot?.method ?? null,
             castAt: x.ballot?.cast_at ?? null,
             late: x.late,
@@ -1015,13 +1094,22 @@ export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
         result: r.result,
         proposal: r.source === 'portal' ? r.proposal : null,
         bundleSha256: r.bundle_sha256,
+        liveCounts: visibility.liveCounts,
         tally,
+        turnout,
         hasProtocol: Boolean(r.protocol_object_key),
         me: me
           ? { onRoster: true, defaultVote: me.default_vote, conflict: me.conflict, ballot: myBallot }
           : { onRoster: false, defaultVote: null, conflict: false, ballot: null },
         ...(viewer.isCommittee
-          ? { named, canOpen: r.status === 'draft' && viewer.isCommittee, close: await closeInfo(r, viewer, tally) }
+          ? {
+              named,
+              namedChoices: visibility.namedChoices,
+              canOpen: r.status === 'draft' && viewer.isCommittee,
+              // The close screen asks of the whole count (a passed CTORI4 vote needs its
+              // hovedbok people); only `missing` leaves the server, and only once it is due.
+              close: await closeInfo(r, viewer, full),
+            }
           : {}),
       }
     }),

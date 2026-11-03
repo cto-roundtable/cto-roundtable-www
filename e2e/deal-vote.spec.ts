@@ -11,6 +11,9 @@ import { cookiesFor, persona, RUN_DIR } from './support/run'
 // closes, the protocol PDF and the deal_events trail exist. And the CTORI4
 // hovedbok (hq 039): a passed invest-4 round needs a lead and a follow-up owner.
 // The gates are the deal's: the committee runs it, the board gets nothing extra.
+// Hidden ballots (komité 2026-11-03): while the vote runs nobody sees a count or
+// anyone else's choice, before or after voting; the committee sees WHO has voted,
+// never what, on the case page and in the admin API; the counts come after close.
 //
 // The preview server needs DEAL_DOCUMENTS_DIR (documents and the protocol are
 // written there instead of GCS). Run: e2e/preview.sh test e2e/deal-vote.spec.ts
@@ -77,7 +80,7 @@ test('ctr deals publish: a document version and a draft round with the server ru
     excluded: ['blank', 'none'],
     weighting: 'person',
     windowH: 48,
-    ballot: 'choices_board_only',
+    ballot: 'choices_hidden',
     mandate: null,
   })
   expect(bundle).toMatch(/^[0-9a-f]{64}$/)
@@ -92,29 +95,89 @@ test('the committee opens it; the board, not on the committee, cannot', async ()
   expect(Date.parse(r.closesAt) - Date.parse(r.openedAt)).toBe(48 * 3600 * 1000)
 })
 
-test('SPV members vote on the case page; members see counts, the committee names', async () => {
+const roundAs = async (k: string) =>
+  (await json(await api[k]!.get(`/api/member/deals/${slug}`))).rounds.find((r: { id: string }) => r.id === roundId)
+
+/** Nothing in this round view says how anyone voted, except the viewer's own ballot. */
+function expectNoChoices(view: any, own: string | null) {
+  expect(view.tally).toBeNull()
+  expect(view.liveCounts).toBe(false)
+  expect(view.me.ballot?.choice ?? null).toBe(own)
+  const { me: _me, ...rest } = view
+  expect(JSON.stringify(rest)).not.toMatch(/"(yes|no|blank|defaultBlank|choice)"\s*:/)
+}
+
+test('SPV members vote on the case page; nobody sees a count or another choice while it runs', async () => {
   const vote = (k: string, choice: string, attested = bundle) =>
     api[k]!.post(`/api/member/deals/${slug}/rounds/${roundId}/ballot`, {
       data: { choice, attested },
       failOnStatusCode: false,
     })
   expect((await vote('invest-3', 'yes', 'f'.repeat(64))).status()).toBe(409) // material changed
+  await json(await vote('board', 'yes'))
+  await json(await vote('committee-board', 'no')) // the first no: what others piled onto
+
+  // A voter who has NOT voted yet sees neither the no nor any count, only how many have voted.
+  const before = await roundAs('invest-3')
+  expectNoChoices(before, null)
+  expect(before.turnout).toMatchObject({ voted: 2 })
+  expect(before.named).toBeUndefined()
+
   await json(await vote('invest-3', 'no'))
   await json(await vote('invest-3', 'yes')) // a change: the latest counts
-  await json(await vote('board', 'yes'))
-  await json(await vote('committee-board', 'no'))
   expect((await vote('member', 'yes')).status()).toBe(404) // not in the SPV: no case at all
 
-  const asMember = await json(await api['invest-3']!.get(`/api/member/deals/${slug}`))
-  const mine = asMember.rounds.find((r: { id: string }) => r.id === roundId)
-  expect(mine.tally.yes).toBe(2)
-  expect(mine.tally.no).toBe(1)
-  expect(mine.named).toBeUndefined()
-  expect(mine.me.ballot.choice).toBe('yes')
-  const asCommittee = await json(await api['committee-board']!.get(`/api/member/deals/${slug}`))
-  expect(asCommittee.rounds.find((r: { id: string }) => r.id === roundId).named.length).toBeGreaterThan(2)
+  // ...nor after voting: own ballot, the turnout, nothing else.
+  const after = await roundAs('invest-3')
+  expectNoChoices(after, 'yes')
+  expect(after.turnout).toMatchObject({ voted: 3 })
+  expect(Object.keys(after.turnout).sort()).toEqual(['eligible', 'turnout', 'voted'])
+  expect(after.named).toBeUndefined()
   const banner = await json(await api['invest-3']!.get('/api/member/deals/open-votes'))
   expect(banner.votes.some((v: { roundId: string }) => v.roundId === roundId)).toBe(false) // already voted
+})
+
+test('the committee sees WHO has voted (turnout by name), never what, in the portal and the API', async () => {
+  const view = await roundAs('committee-board')
+  expectNoChoices(view, 'no')
+  expect(view.namedChoices).toBe(false)
+  const byName = new Map(view.named.map((n: { name: string; counted: string }) => [n.name, n.counted]))
+  for (const k of ['invest-3', 'board', 'committee-board']) expect(byName.get(persona(k).name)).toBe('voted')
+  expect(view.named.filter((n: { counted: string }) => n.counted === 'voted').length).toBe(3)
+  // Those who have not voted show as not voted (or standing blank), so the committee can chase them.
+  expect(view.named.every((n: { counted: string }) => ['voted', 'none', 'default_blank'].includes(n.counted))).toBe(
+    true,
+  )
+  expect(view.turnout.voted).toBe(3)
+
+  // The admin API (ctr rounds show / list): the same, every ballot by name without its choice.
+  const detail = await json(await admin.get(`/api/admin/rounds/${roundId}`))
+  expect(detail.round.tally).toBeNull()
+  expect(detail.round.turnout.voted).toBe(3)
+  expect(detail.round.rules.ballot).toBe('choices_hidden')
+  expect(detail.ballots.length).toBe(4) // invest-3 voted twice: every cast is a row
+  for (const b of detail.ballots) expect(b).not.toHaveProperty('choice')
+  const list = await json(await admin.get('/api/admin/rounds?status=open'))
+  expect(list.rounds.find((r: { id: string }) => r.id === roundId).tally).toBeNull()
+})
+
+test('page: the open vote as an SPV member and as the committee, no counts on screen', async ({ browser }) => {
+  for (const k of ['invest-3', 'committee-board']) {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 860 }, locale: 'nb-NO' })
+    await ctx.addCookies(cookiesFor(persona(k)))
+    const page = await ctx.newPage()
+    const errors: string[] = []
+    page.on('pageerror', (e) => errors.push(e.message))
+    await page.goto(`/member/caser/${slug}`)
+    await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {})
+    await page.screenshot({ path: `${RUN_DIR}/deal-vote/case-open-${k}.png`, fullPage: true })
+    const text = await page.locator('.round').first().innerText()
+    expect(text).toContain('Ingen ser hva andre har stemt')
+    expect(text).not.toMatch(/Ja \d+ · Nei \d+/)
+    if (k === 'committee-board') expect(text).toMatch(/hvem som har stemt/i) // the label is uppercased in CSS
+    expect(errors).toEqual([])
+    await ctx.close()
+  }
 })
 
 test('no early close: the 48 hours hold', async () => {
@@ -143,9 +206,21 @@ test('after the deadline the committee closes: 2/3 of yes + no, protocol, deal_e
     await api['committee-board']!.post(`/api/member/deals/${slug}/rounds/${roundId}/close`, { data: {} }),
   )
   expect(closed.result).toBe('passed')
-  const r = (await json(await admin.get(`/api/admin/rounds/${roundId}`))).round
+  const shown = await json(await admin.get(`/api/admin/rounds/${roundId}`))
+  const r = shown.round
   expect(r.status).toBe('closed')
   expect(r.ledger).toBeNull() // CTORI3 keeps no hovedbok
+  // After close the counts are the result, for everyone who sees the case; choices stay unnamed.
+  expect(r.tally).toMatchObject({ yes: 2, no: 1 })
+  for (const b of shown.ballots) expect(b).not.toHaveProperty('choice')
+  const asMember = await roundAs('invest-3')
+  expect(asMember.tally).toMatchObject({ yes: 2, no: 1 })
+  const asCommittee = await roundAs('committee-board')
+  expect(asCommittee.tally).toMatchObject({ yes: 2, no: 1 })
+  expect(asCommittee.named.some((n: { counted: string }) => ['yes', 'no', 'blank'].includes(n.counted))).toBe(false)
+  // The record keeps every choice by person: the count and the protocol never depend on the switch.
+  const [snap] = (await db()`SELECT result_snapshot FROM deal_rounds WHERE id = ${roundId}`) as any[]
+  expect(snap.result_snapshot.ballots.filter((x: { counted: string }) => x.counted === 'yes').length).toBe(2)
   expect(r.protocol.sha256).toMatch(/^[0-9a-f]{64}$/)
   const pdf = await api['invest-3']!.get(`/api/member/deals/${slug}/rounds/${roundId}/protocol`)
   expect(pdf.status()).toBe(200)

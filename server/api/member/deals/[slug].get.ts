@@ -1,6 +1,7 @@
 // GET /api/member/deals/:slug
 // One case: the deal, its current documents (raw inputs first, memo last), its
-// rounds with their counts (named ballots for the committee only), the Q&A as this
+// rounds with their turnout and, once closed, their counts (who has voted for the
+// committee only; server/utils/dealRounds.ts ballotVisibility), the Q&A as this
 // member may see it (server/utils/dealQuestions.ts), and
 // the comments: all with names for the committee, only their own for a member
 // (server/utils/dealComments.ts), and the digests of them (server/utils/dealDigests.ts).
