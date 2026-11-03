@@ -5,7 +5,7 @@
 // as /api/member/meetings (server/utils/generalMeetings.ts); see meetingsAdmin.ts.
 export default defineAdminRoute({
   GET: {
-    scope: 'meetings:read',
+    scope: null,
     handler: async (event, caller, audit) => {
       const { v } = await meetingCall(event, caller, audit, 'list')
       const out = await listMeetings(v)
@@ -14,7 +14,7 @@ export default defineAdminRoute({
     },
   },
   POST: {
-    scope: 'meetings:write',
+    scope: null,
     handler: async (event, caller, audit) => {
       const { v, body } = await meetingCall(event, caller, audit, 'create', [
         'kind',

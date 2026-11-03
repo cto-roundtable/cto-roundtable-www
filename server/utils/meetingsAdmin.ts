@@ -8,6 +8,9 @@ import type { AuditEntry } from './audit'
  * the member routes under /api/member/meetings/**: the same functions, so the same
  * guards and the same meeting_events rows, with the token's owner as the viewer
  * (meetingViewerForOwner: an active `styret` member, checked on every request).
+ * No scope: any valid token whose owner is in styret (`scope: null`), so the one
+ * `ctr login` a board member already has works here; the board role decides
+ * (Snorre, 2026-11-03). Committee, member and outsider owners get the 401.
  *
  * What the API does NOT do, on purpose: vote. No route casts a ballot, registers
  * one on someone's behalf, or checks the owner in; a secret ballot's choices are

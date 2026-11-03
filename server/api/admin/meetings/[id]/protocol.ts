@@ -2,7 +2,7 @@
 // counts (404 until a sak is closed). `ctr meetings protocol`.
 export default defineAdminRoute({
   GET: {
-    scope: 'meetings:read',
+    scope: null,
     handler: async (event, caller, audit) => {
       const { v, id } = await meetingCall(event, caller, audit, 'protocol')
       const pdf = await renderMeetingProtocolPdf(await meetingProtocolData(v, id))

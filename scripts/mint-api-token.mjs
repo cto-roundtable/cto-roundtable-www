@@ -42,8 +42,6 @@ const SCOPES = [
   'digests:write',
   'qa:read',
   'qa:write',
-  'meetings:read',
-  'meetings:write',
 ]
 const BOARD_GROUP = 'styret'
 const COMMITTEE_GROUP = 'current-komite'

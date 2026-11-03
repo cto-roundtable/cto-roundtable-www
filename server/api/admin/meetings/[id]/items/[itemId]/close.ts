@@ -2,7 +2,7 @@
 // its sha256, done. Final. `ctr meetings items close`.
 export default defineAdminRoute({
   POST: {
-    scope: 'meetings:write',
+    scope: null,
     handler: async (event, caller, audit) => {
       const { v, id, itemId } = await meetingCall(event, caller, audit, 'item_close', [])
       const out = await closeItem(v, id, itemId)

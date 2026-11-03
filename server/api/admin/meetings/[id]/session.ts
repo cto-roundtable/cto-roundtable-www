@@ -3,7 +3,7 @@
 // `ctr meetings session open|close`.
 export default defineAdminRoute({
   POST: {
-    scope: 'meetings:write',
+    scope: null,
     handler: async (event, caller, audit) => {
       const { v, id, body } = await meetingCall(event, caller, audit, 'session', ['action'])
       audit.summary.session = typeof body.action === 'string' ? body.action : null

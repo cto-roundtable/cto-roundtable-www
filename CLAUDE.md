@@ -163,8 +163,9 @@ browser session or the shared `INGEST_API_KEY`. Each agent has its own bearer to
 token's sha256 is stored (`api_tokens`, hq migration 026), so a request is a hash
 lookup. Scopes: `events:read`, `events:write`, `surveys:read`, `surveys:write`, and for
 deal votes `deals:read`, `deals:write`, `rounds:write`, `comments:read`, `digests:write`,
-`qa:read`, `qa:write` (hq migration 032), and for the general meeting `meetings:read`,
-`meetings:write` (hq migration 047).
+`qa:read`, `qa:write` (hq migration 032). The general meeting needs no scope (below):
+`meetings:read`/`meetings:write` from hq migration 047 are still allowed by the CHECK but
+unused, and no login can ask for them.
 
 - **The gate** is `requireApiToken` in `server/utils/apiTokens.ts`, checked on every
   request: not revoked, not expired, the owner an active `styret` member right now
@@ -468,13 +469,14 @@ ctori-4 memory `votes/meeting-votes-design.md`; rules from the vedtekter § 5 an
   `:id/items` (POST), `:id/items/:itemId` (PATCH), `.../withdraw`, `.../open`, `.../close`,
   `.../lot`, `:id/roster`, `:id/announce`, `:id/cancel`, `:id/session` `{action}`,
   `:id/attendance/:personId` `{present, reason}` (POST), `:id/protocol` (GET, the PDF).
-  GET needs `meetings:read`, the rest `meetings:write`. Each route is a thin caller of
+  No scope (`scope: null`): any valid token whose owner is in `styret` right now; the
+  board role decides, so the ordinary `ctr login` works (Snorre, 2026-11-03). Each route is a thin caller of
   the same generalMeetings.ts function as its member route, with the token's OWNER as the
   viewer (`meetingCall` in `server/utils/meetingsAdmin.ts`, which builds it with
   `meetingViewerForOwner`): `requireApiToken`
   already refuses an owner who is not an active `styret` member right now (401), and
-  the viewer checks the board again. `current-komite` gives nothing; a deal token
-  gets a 403. **Nothing votes through the API**: no route casts a ballot, registers
+  the viewer checks the board again. `current-komite`, members and outsiders get the
+  401 whatever their scopes. **Nothing votes through the API**: no route casts a ballot, registers
   one on someone's behalf or checks the owner in, and a secret ballot is as unreadable
   here as in the portal. `tests/unit/meetings-admin.test.ts` pins that in the source,
   `e2e/meeting-admin.spec.ts` runs the gate and a whole meeting on the e2e branch.

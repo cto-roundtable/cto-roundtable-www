@@ -3,7 +3,7 @@
 // action in the portal; nobody votes through this. `ctr meetings attend`.
 export default defineAdminRoute({
   POST: {
-    scope: 'meetings:write',
+    scope: null,
     handler: async (event, caller, audit) => {
       const { v, id, body } = await meetingCall(event, caller, audit, 'attendance', ['present', 'reason'])
       const personId = getRouterParam(event, 'personId')
