@@ -5,9 +5,10 @@ import { apiAs, branchApiToken, db } from './support/meeting'
 import { persona } from './support/run'
 
 // The general meeting through the ADMIN API (/api/admin/meetings/**, what `ctr
-// meetings` calls), on the e2e branch (needs hq migrations 045 and 047 there).
-// The gate: a token works only while its OWNER is in styret, and only with a
-// meetings scope; current-komite gives nothing; a deal token gets nothing. Then a
+// meetings` calls), on the e2e branch (needs hq migration 045 there).
+// The gate: any token works while its OWNER is in styret, whatever its scopes (no
+// meetings scope: the board role decides, Snorre 2026-11-03); current-komite,
+// members and outsiders get nothing, whatever their scopes. Then a
 // whole meeting run from a board token while members vote in the portal, and
 // what the API never does: vote, or show who voted what on a secret ballot.
 //
@@ -15,7 +16,8 @@ import { persona } from './support/run'
 
 test.describe.configure({ mode: 'serial', timeout: 180_000 })
 
-const MEETINGS = ['meetings:read', 'meetings:write']
+// What a plain `ctr login` asks for: nothing about meetings.
+const CTR_LOGIN = ['events:read', 'events:write', 'surveys:read', 'surveys:write']
 const tokens: Record<string, APIRequestContext> = {}
 type Member = Awaited<ReturnType<typeof apiAs>>
 const members: Record<string, Member> = {}
@@ -40,9 +42,8 @@ const memberPost = (who: string, path: string, data: object = {}) =>
   members[who]!.post(`/api/member/meetings/${meetingId}${path}`, { data, failOnStatusCode: false })
 
 test.beforeAll(async () => {
-  tokens.board = await bearer(await branchApiToken('board', MEETINGS))
-  tokens.boardRead = await bearer(await branchApiToken('board', ['meetings:read']))
-  // Every deal scope there is, on a board AND committee owner: still nothing here.
+  tokens.board = await bearer(await branchApiToken('board', CTR_LOGIN))
+  // Another styret owner (also on the committee) with deal scopes only: works too.
   tokens.dealsOnly = await bearer(
     await branchApiToken('committee-board', [
       'deals:read',
@@ -55,7 +56,7 @@ test.beforeAll(async () => {
     ]),
   )
   for (const k of ['committee-only', 'member', 'outsider', 'sweden']) {
-    tokens[k] = await bearer(await branchApiToken(k, MEETINGS))
+    tokens[k] = await bearer(await branchApiToken(k, CTR_LOGIN))
   }
   for (const k of ['member', 'invest-1', 'invest-2', 'invest-3', 'committee-only']) members[k] = await apiAs(k)
   // A board member who leaves the board mid-way (synthetic, this branch only).
@@ -70,7 +71,7 @@ test.beforeAll(async () => {
   const t = `ctr_${randomBytes(32).toString('base64url')}`
   await db()`
     INSERT INTO api_tokens (name, owner_person_id, token_hash, scopes, expires_at)
-    VALUES ('e2e board leaver', ${leaver}, ${createHash('sha256').update(t).digest('hex')}, ${MEETINGS},
+    VALUES ('e2e board leaver', ${leaver}, ${createHash('sha256').update(t).digest('hex')}, ${CTR_LOGIN},
             NOW() + interval '1 day')
   `
   tokens.leaver = await bearer(t)
@@ -80,15 +81,7 @@ test.afterAll(async () => {
   if (leaver) await db()`DELETE FROM memberships WHERE person_id = ${leaver}`
 })
 
-test('the scopes exist in the database (hq 047)', async () => {
-  const [{ ok }] = (await db()`
-    SELECT pg_get_constraintdef(oid) LIKE '%meetings:write%' AS ok
-    FROM pg_constraint WHERE conname = 'device_authorizations_scopes_check'
-  `) as { ok: boolean }[]
-  expect(ok).toBe(true)
-})
-
-test('gate: only a styret owner with a meetings scope gets in; committee, member, outsider do not', async () => {
+test('gate: any token whose owner is in styret gets in; committee, member, outsider do not', async () => {
   const before = (await db()`SELECT count(*)::int AS n FROM general_meetings`) as { n: number }[]
   // Owner not in styret: the token gate's 401 (any token problem is a 401, CLAUDE.md), reads and writes.
   for (const k of ['committee-only', 'member', 'outsider', 'sweden']) {
@@ -96,24 +89,17 @@ test('gate: only a styret owner with a meetings scope gets in; committee, member
     const res = await tokens[k]!.post(A(), { data: { kind: 'ordinary', title: 'x' }, failOnStatusCode: false })
     expect(res.status(), k).toBe(401)
   }
-  // In styret but no meetings scope: 403, even with every deal scope and the committee.
-  expect((await tokens.dealsOnly!.get(A(), { failOnStatusCode: false })).status()).toBe(403)
-  expect(
-    (await tokens.dealsOnly!.post(A(), { data: { kind: 'ordinary', title: 'x' }, failOnStatusCode: false })).status(),
-  ).toBe(403)
-  // Read scope reads, does not write.
-  await json(await tokens.boardRead!.get(A()))
-  expect(
-    (await tokens.boardRead!.post(A(), { data: { kind: 'ordinary', title: 'x' }, failOnStatusCode: false })).status(),
-  ).toBe(403)
   const after = (await db()`SELECT count(*)::int AS n FROM general_meetings`) as { n: number }[]
   expect(after[0]!.n).toBe(before[0]!.n)
-  // Every refusal is in the audit log, with why.
+  // In styret: the plain ctr login, or deal scopes only, both get in. No meetings scope needed.
+  await json(await tokens.board!.get(A()))
+  await json(await tokens.dealsOnly!.get(A()))
+  // Every refusal is in the audit log, with why: the owner, never a missing scope.
   const reasons = (await db()`
     SELECT DISTINCT summary->>'reason' AS r FROM api_audit_log
     WHERE path LIKE '/api/admin/meetings%' AND status IN (401, 403) AND at > NOW() - interval '10 minutes'
   `) as { r: string }[]
-  expect(reasons.map((x) => x.r).sort()).toEqual(expect.arrayContaining(['missing_scope', 'owner_not_board']))
+  expect(reasons.map((x) => x.r)).toEqual(['owner_not_board'])
 })
 
 test('gate: checked at request time, so leaving the board ends the token', async () => {
@@ -149,7 +135,7 @@ test('setup from the API: create, saker (add, edit), roster, announce', async ()
   const a = await json(await adminPost('board', '/announce'))
   expect(a.meeting.status).toBe('announced')
   // Show and list agree.
-  const list = await json(await tokens.boardRead!.get('/api/admin/meetings'))
+  const list = await json(await tokens.dealsOnly!.get('/api/admin/meetings'))
   expect(list.meetings.some((m: { id: string }) => m.id === meetingId)).toBe(true)
 })
 
@@ -179,7 +165,7 @@ test('the session: open, chair and referent, attendance on a member’s behalf',
   for (const k of ['member', 'invest-1', 'invest-3']) {
     expect((await memberPost(k, '/attendance', { present: true })).status(), k).toBe(200)
   }
-  const v = await json(await tokens.boardRead!.get(A()))
+  const v = await json(await tokens.dealsOnly!.get(A()))
   const present = v.roster.filter((r: { present: boolean }) => r.present).map((r: { personId: string }) => r.personId)
   expect(present.sort()).toEqual(['member', 'invest-1', 'invest-2', 'invest-3'].map((k) => persona(k).personId).sort())
 })
@@ -205,11 +191,9 @@ test('sak 1, open majority: members vote in the portal, the API closes it', asyn
   ] as const) {
     expect((await memberPost(k, `/items/${items[1]}/ballot`, { choice: c })).status(), k).toBe(200)
   }
-  const live = await json(await tokens.boardRead!.get(A()))
+  const live = await json(await tokens.dealsOnly!.get(A()))
   expect(live.items[0].progress).toEqual({ voted: 4, present: 4 })
   expect(live.items[0].counts).toBeNull()
-  // The read token cannot close.
-  expect((await tokens.boardRead!.post(A(`/items/${items[1]}/close`), { failOnStatusCode: false })).status()).toBe(403)
   const v = await json(await adminPost('board', `/items/${items[1]}/close`))
   expect(v.items[0].counts).toEqual({ yes: 3, no: 1, blank: 0, present: 4 })
   expect(v.items[0].finalOutcome).toBe('passed')
@@ -232,7 +216,7 @@ test('sak 2, secret 2/3: through the API there are no names on a secret ballot',
   expect(it.finalOutcome).toBe('passed') // 3 of 4 ≥ 2/3
   expect(it.named).toBeNull()
   expect(it.voters).toHaveLength(4) // who voted, never what
-  const shown = await json(await tokens.boardRead!.get(A()))
+  const shown = await json(await tokens.dealsOnly!.get(A()))
   const secret = shown.items[1]
   expect(secret.named).toBeNull()
   expect(JSON.stringify(secret)).not.toMatch(/"choice":"(yes|no|blank)"/)
@@ -260,7 +244,7 @@ test('sak 3, a tie: the session cannot end until the lot is entered, once', asyn
 })
 
 test('the protocol PDF, the session closes, and the trail names the token owner', async () => {
-  const pdf = await tokens.boardRead!.get(A('/protocol'))
+  const pdf = await tokens.dealsOnly!.get(A('/protocol'))
   expect(pdf.status()).toBe(200)
   expect(pdf.headers()['content-type']).toContain('application/pdf')
   expect((await pdf.body()).subarray(0, 5).toString()).toBe('%PDF-')

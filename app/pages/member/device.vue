@@ -170,8 +170,6 @@ const SCOPE_KEYS: Record<string, string> = {
   'events:write': 'eventsWrite',
   'surveys:read': 'surveysRead',
   'surveys:write': 'surveysWrite',
-  'meetings:read': 'meetingsRead',
-  'meetings:write': 'meetingsWrite',
 }
 
 function scopeLabel(scope: string): string {

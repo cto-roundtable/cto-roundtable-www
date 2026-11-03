@@ -3,7 +3,7 @@
 // never draws. `ctr meetings items lot`.
 export default defineAdminRoute({
   POST: {
-    scope: 'meetings:write',
+    scope: null,
     handler: async (event, caller, audit) => {
       const { v, id, itemId, body } = await meetingCall(event, caller, audit, 'lot', ['outcome', 'note'])
       audit.summary.outcome = typeof body.outcome === 'string' ? body.outcome : null

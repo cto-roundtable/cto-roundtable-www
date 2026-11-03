@@ -2,7 +2,7 @@
 // saksliste, before the session opens. `ctr meetings items add`.
 export default defineAdminRoute({
   POST: {
-    scope: 'meetings:write',
+    scope: null,
     handler: async (event, caller, audit) => {
       const { v, id, body } = await meetingCall(event, caller, audit, 'item_add', ['title', 'body', 'preset', 'ballot'])
       audit.summary.preset = typeof body.preset === 'string' ? body.preset : null

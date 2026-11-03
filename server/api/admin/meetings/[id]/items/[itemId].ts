@@ -2,7 +2,7 @@
 // a pending sak, before the session opens. `ctr meetings items edit`.
 export default defineAdminRoute({
   PATCH: {
-    scope: 'meetings:write',
+    scope: null,
     handler: async (event, caller, audit) => {
       const { v, id, itemId, body } = await meetingCall(event, caller, audit, 'item_update', [
         'title',

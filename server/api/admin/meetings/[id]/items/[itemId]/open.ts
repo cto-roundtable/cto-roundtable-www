@@ -2,7 +2,7 @@
 // (one at a time, in session only). `ctr meetings items open`.
 export default defineAdminRoute({
   POST: {
-    scope: 'meetings:write',
+    scope: null,
     handler: async (event, caller, audit) => {
       const { v, id, itemId } = await meetingCall(event, caller, audit, 'item_open', [])
       return openItem(v, id, itemId)

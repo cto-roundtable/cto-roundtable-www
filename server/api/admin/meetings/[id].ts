@@ -6,14 +6,14 @@
 //       `ctr meetings edit`, `ctr meetings chair`.
 export default defineAdminRoute({
   GET: {
-    scope: 'meetings:read',
+    scope: null,
     handler: async (event, caller, audit) => {
       const { v, id } = await meetingCall(event, caller, audit, 'show')
       return meetingView(v, id)
     },
   },
   PATCH: {
-    scope: 'meetings:write',
+    scope: null,
     handler: async (event, caller, audit) => {
       const { v, id, body } = await meetingCall(event, caller, audit, 'update', [
         'title',

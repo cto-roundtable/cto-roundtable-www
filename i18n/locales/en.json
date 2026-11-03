@@ -345,9 +345,7 @@
         "eventsRead": "read events",
         "eventsWrite": "create events and record attendance from Luma",
         "surveysRead": "read surveys and results",
-        "surveysWrite": "create, close and send out surveys",
-        "meetingsRead": "read general meetings: items, roster, attendance, results and protocol",
-        "meetingsWrite": "run general meetings as the board: items, roster, chair, the session and the votes (never voting)"
+        "surveysWrite": "create, close and send out surveys"
       },
       "tokenNote": "Approving gives this agent a token in your name for {days} days, with exactly this access. It stops working if you leave the board, and everything it does is logged.",
       "reauth": "For security reasons you can only approve right after signing in. Confirm it is you with a passkey and you can approve straight away. No passkey? Sign out and sign in again with the email link, then open the link from the terminal again.",

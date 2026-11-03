@@ -345,9 +345,7 @@
         "eventsRead": "lese arrangementer",
         "eventsWrite": "opprette arrangementer og registrere oppmøte fra Luma",
         "surveysRead": "lese undersøkelser og svar",
-        "surveysWrite": "opprette, lukke og sende ut undersøkelser",
-        "meetingsRead": "lese årsmøter: saker, manntall, oppmøte, resultater og protokoll",
-        "meetingsWrite": "kjøre årsmøter som styret: saker, manntall, møteleder, møtet og sakene (aldri stemme)"
+        "surveysWrite": "opprette, lukke og sende ut undersøkelser"
       },
       "tokenNote": "Godkjenner du, får agenten en nøkkel i ditt navn i {days} dager, med akkurat denne tilgangen. Den slutter å virke hvis du går ut av styret, og alt den gjør blir logget.",
       "reauth": "Av sikkerhetshensyn kan du bare godkjenne rett etter at du har logget inn. Bekreft at det er deg med en passkey, så kan du godkjenne med en gang. Har du ingen passkey, logg ut og inn igjen med e-postlenken, og åpne lenken fra terminalen på nytt etterpå.",
