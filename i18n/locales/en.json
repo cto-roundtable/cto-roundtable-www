@@ -729,14 +729,17 @@
       "countsDefault": "(+1 standing blank) | (+{count} standing blank)",
       "turnout": "Turnout {pct} of {n} who may vote.",
       "secret": "You see the counts, not who voted what. The committee sees the names. The proposal passes with at least 2/3 yes of the yes and no votes.",
+      "hidden": "Nobody sees what others voted while the vote runs, not even the committee. The committee sees who has voted. The yes, no and blank counts are shown once it has closed. The proposal passes with at least 2/3 yes of the yes and no votes.",
       "protocol": "The protocol (PDF)",
       "namedLabel": "Named ballots (committee only)",
+      "whoVotedLabel": "Who has voted (committee only)",
       "counted": {
         "yes": "Yes",
         "no": "No",
         "blank": "Blank",
         "default_blank": "Standing blank",
-        "none": "Not voted"
+        "none": "Not voted",
+        "voted": "Voted"
       },
       "method": {
         "portal": "in the portal",

@@ -89,7 +89,10 @@ add `invest-4`; if nobody is in it yet, make it synthetic.
   API publishes a document and a draft round, the committee opens it (the board cannot),
   SPV members vote with the bundle hash, no early close, the committee closes after the
   48 hours (fast-forwarded on the branch), protocol PDF, `deal_events`, and the CTORI4
-  hovedbok's 409 `ledger_incomplete`. Start the preview server with
+  hovedbok's 409 `ledger_incomplete`. Hidden ballots (komité 2026-11-03): while the vote
+  runs a voter sees no count and no other choice, before or after voting; the committee
+  sees who has voted, never what, on the case page and in the admin API; the counts come
+  after close and the snapshot keeps every choice. Start the preview server with
   `DEAL_DOCUMENTS_DIR` set (documents and protocols go to a folder instead of GCS).
 
 The run's files are in `e2e/.run/` (gitignored): `personas.json`,

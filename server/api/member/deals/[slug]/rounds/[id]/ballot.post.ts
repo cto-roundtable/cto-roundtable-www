@@ -1,7 +1,7 @@
 // POST /api/member/deals/:slug/rounds/:id/ballot {choice: yes|no|blank, attested}
 // A roster member votes, or changes their vote, until the deadline. `attested`
 // is the bundle hash the page showed; every cast is a new row (append-only) and
-// the latest one counts. The member gets back the counts, never anyone's name.
+// the latest one counts. The member gets back {ok} and nothing of anyone else's ballot.
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug')
   const id = getRouterParam(event, 'id')

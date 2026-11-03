@@ -105,15 +105,21 @@
 
     <v-alert v-if="error" type="warning" variant="outlined" density="compact" class="mt-3">{{ error }}</v-alert>
 
-    <template v-if="round.tally && round.status !== 'draft'">
-      <div class="bar mt-4" role="img" :aria-label="countsLine">
-        <span v-for="s in segments" :key="s.key" :class="`seg seg-${s.key}`" :style="{ width: `${s.pct}%` }" />
-      </div>
-      <p class="counts mt-2">{{ countsLine }}</p>
-      <p v-if="round.source !== 'backfill'" class="meta">
-        {{ t('deals.ballot.turnout', { pct: pct(round.tally.turnout), n: round.tally.eligible }) }}
+    <!-- The counts only once closed, unless the round's rule shows them live (ballotVisibility
+         in server/utils/dealRounds.ts). How many have voted is always shown, never how. -->
+    <template v-if="round.status !== 'draft'">
+      <template v-if="round.tally">
+        <div class="bar mt-4" role="img" :aria-label="countsLine">
+          <span v-for="s in segments" :key="s.key" :class="`seg seg-${s.key}`" :style="{ width: `${s.pct}%` }" />
+        </div>
+        <p class="counts mt-2">{{ countsLine }}</p>
+      </template>
+      <p v-if="round.turnout && round.source !== 'backfill'" class="meta" :class="{ 'mt-4': !round.tally }">
+        {{ t('deals.ballot.turnout', { pct: pct(round.turnout.turnout), n: round.turnout.eligible }) }}
       </p>
-      <p v-if="round.status === 'open'" class="meta mt-1">{{ t('deals.ballot.secret') }}</p>
+      <p v-if="round.status === 'open'" class="meta mt-1">
+        {{ t(round.liveCounts ? 'deals.ballot.secret' : 'deals.ballot.hidden') }}
+      </p>
     </template>
 
     <a
@@ -126,9 +132,10 @@
       <v-icon size="16" class="mr-2">mdi-file-pdf-box</v-icon>{{ t('deals.ballot.protocol') }}
     </a>
 
-    <!-- Committee only: who voted what and each member's standing vote (decision 2026-10-22 §3, dc-59 H3). -->
+    <!-- Committee only: who has voted (and what, where the rule names choices) and each
+         member's standing vote (decision 2026-10-22 §3, dc-59 H3, komité 2026-11-03). -->
     <div v-if="round.named && round.named.length" class="named mt-4">
-      <p class="named-label mb-2">{{ t('deals.ballot.namedLabel') }}</p>
+      <p class="named-label mb-2">{{ t(round.namedChoices ? 'deals.ballot.namedLabel' : 'deals.ballot.whoVotedLabel') }}</p>
       <div v-for="(row, i) in round.named" :key="i" class="named-row">
         <span class="named-name">{{ row.name }}</span>
         <span class="named-choice" :class="`c-${row.counted}`">{{ t(`deals.ballot.counted.${row.counted}`) }}</span>
@@ -144,9 +151,10 @@
 </template>
 
 <script setup lang="ts">
-// One decision round on a case. Members see the counts live and their own ballot;
-// the committee also sees the named list. A ballot is one tap, and "no" weighs the
-// same as "yes". Rules and visibility: server/utils/dealRounds.ts.
+// One decision round on a case. Members see their own ballot, how many have voted,
+// and the counts once the vote has closed; the committee also sees who has voted. A
+// ballot is one tap, and "no" weighs the same as "yes". Rules and visibility (one
+// switch, ROUND_RULES.ballot): server/utils/dealRounds.ts.
 interface Tally {
   eligible: number
   yes: number
@@ -155,6 +163,11 @@ interface Tally {
   defaultBlank: number
   notVoted: number
   late: number
+  turnout: number
+}
+interface Turnout {
+  eligible: number
+  voted: number
   turnout: number
 }
 interface CaseRoundView {
@@ -168,7 +181,11 @@ interface CaseRoundView {
   result: string | null
   proposal: { amount?: number; currency?: string; instrument?: string; cap?: number | null } | null
   bundleSha256: string | null
+  /** the counts are shown while the round is open (the round's rule) */
+  liveCounts: boolean
+  /** the counts: once closed, or live where liveCounts */
   tally: Tally | null
+  turnout: Turnout | null
   hasProtocol: boolean
   me: {
     onRoster: boolean
@@ -176,6 +193,8 @@ interface CaseRoundView {
     conflict: boolean
     ballot: { choice: string; castAt: string } | null
   }
+  /** committee only: the named list carries each choice ('voted' otherwise) */
+  namedChoices?: boolean
   named?: {
     name: string
     counted: string
@@ -483,6 +502,9 @@ async function open() {
 }
 .c-no {
   color: #e57373;
+}
+.c-voted {
+  color: #fff;
 }
 .c-blank,
 .c-default_blank {
