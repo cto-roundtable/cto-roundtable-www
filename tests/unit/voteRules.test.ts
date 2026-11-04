@@ -44,6 +44,11 @@ describe('majority (§ 5.5): more than half of the votes cast', () => {
   test('all blank with blanks counted is a failed proposal, not a tie', () => {
     assert.equal(outcome(at(0, 0, 4), 'majority', 'yes+no+blank'), 'failed')
   })
+  test('with blanks counted as cast, exactly half yes is not more than half: failed, not a tie', () => {
+    assert.equal(outcome(at(2, 1, 1), 'majority', 'yes+no+blank'), 'failed')
+    assert.equal(outcome(at(3, 1, 2), 'majority', 'yes+no+blank'), 'failed')
+    assert.equal(outcome(at(3, 0, 2), 'majority', 'yes+no+blank'), 'passed')
+  })
 })
 
 describe('two_thirds (§ 9): at least 2/3 of the votes cast', () => {
@@ -109,6 +114,11 @@ describe('the boundary, exhaustively', () => {
       }
     })
   }
+  test('a base of 0 needs nothing: null, not 0 or 1', () => {
+    for (const preset of ['majority', 'two_thirds', 'three_quarters', 'three_quarters_present'] as Preset[]) {
+      assert.equal(neededFor(0, preset), null, preset)
+    }
+  })
   test('only majority can tie', () => {
     for (const preset of ['two_thirds', 'three_quarters', 'three_quarters_present'] as Preset[]) {
       for (let n = 1; n <= 40; n++) assert.notEqual(outcome(at(n, n), preset), 'tie')

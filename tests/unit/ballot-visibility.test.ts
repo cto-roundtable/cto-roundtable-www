@@ -54,6 +54,14 @@ describe('turnout: how many, never how', () => {
     assert.deepEqual(t, { eligible: 4, voted: 2, turnout: 0.5 })
     assert.deepEqual(Object.keys(t).sort(), ['eligible', 'turnout', 'voted'])
   })
+  test('a blank is a vote cast: it counts in voted and turnout', () => {
+    const roster = [member('a'), member('b'), member('c'), member('d')]
+    const t = turnoutOf(countRound(roster, [b('a', 'yes'), b('b', 'no'), b('c', 'blank')], []).tally)
+    assert.deepEqual(t, { eligible: 4, voted: 3, turnout: 0.75 })
+  })
+  test('an empty roster has turnout 0, not a division by zero', () => {
+    assert.equal(countRound([], [], []).tally.turnout, 0)
+  })
   test('a yes and a no give the same turnout', () => {
     const roster = [member('a'), member('b')]
     const yes = turnoutOf(countRound(roster, [b('a', 'yes')], []).tally)
