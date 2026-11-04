@@ -45,6 +45,27 @@ merging anything that changes who can see what, and add a persona to
 `e2e/support/personas.ts` when the code starts checking a new group (a new
 `invest-N`, a new role). Never point it at production: the guard refuses.
 
+### Mutation gate (the pure rules)
+
+When a change touches a pure, unit-tested file (`server/utils/voteRules.ts`, the
+pure functions in `server/utils/dealRounds.ts`), run Uncle Bob's mutator on it
+before the PR: it plants small bugs (`>` to `>=`, `+` to `-`) and reports each one
+the tests did not catch. The `ub-mode` skill in the cto-roundtable plugin installs
+the tools at pinned commits; with them in `~/.cache/ub-tools`:
+
+```bash
+COV='mkdir -p coverage && node --test --experimental-strip-types --experimental-test-coverage --test-reporter=lcov --test-reporter-destination=coverage/lcov.info tests/unit/*.test.ts'
+~/.cache/ub-tools/crapper/crapper --coverage-command "$COV" server/utils/voteRules.ts
+~/.cache/ub-tools/mutator/mutator --use-existing-coverage --test-command "npm run -s test:unit" server/utils/voteRules.ts
+```
+
+A survivor is a missing test unless it is equivalent (cannot change behaviour).
+Known equivalent ones, so nobody forces a test for them: `voteRules.ts`
+`lot ?? 'tie'` and the `present: 0` initial counts; `dealRounds.ts` `b ?? null`
+and the `turnout: 0` initial tally. Both files run in about 5 seconds the first
+time and 1 to 2 after (it is differential). `.metrics/`, `target/` and
+`coverage/` are ignored.
+
 ## Architecture
 
 ### Server API routes (`server/`)

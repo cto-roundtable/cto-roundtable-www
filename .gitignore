@@ -24,3 +24,8 @@ dist
 *.swp
 infrastructure/tofu/.terraform/
 e2e/.run/
+
+# Mutation and CRAP tools (ub-mode: crapper, mutator, dryer)
+.metrics/
+target/
+coverage/
