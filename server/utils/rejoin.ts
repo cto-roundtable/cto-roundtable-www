@@ -65,38 +65,46 @@ export async function notifyBoardOfRejoin(
     WHERE ng.slug = ${BOARD_GROUP} AND p.status = 'active'
     ORDER BY p.name
   `) as { id: string }[]
-  const contact = applicant.email
-    ? `<a href="mailto:${escapeHtml(applicant.email)}" style="color: #111;">${escapeHtml(applicant.email)}</a>`
-    : 'ingen e-post registrert'
   let sent = 0
   for (const b of board) {
     const target = await personMailTarget(b.id)
     if (!target) continue
     try {
-      await sendMail({
-        to: target.email,
-        subject: `${applicant.name} vil bli aktivt medlem igjen`,
-        html: mailLayout([
-          mailParagraph(`Hei ${firstNameHtml(target.name)},`),
-          mailParagraph(
-            `<strong>${escapeHtml(applicant.name)}</strong> er pensjonert og har søkt om å bli aktivt medlem igjen, fra medlemsportalen. Det er styret som avgjør.`,
-          ),
-          mailParagraph(`Hvorfor de vil tilbake:`),
-          mailParagraph(
-            escapeHtml(why).replace(/\n/g, '<br>'),
-            'color: #111; font-size: 16px; border-left: 3px solid #ccc; padding-left: 12px;',
-          ),
-          mailParagraph(`Svar dem direkte: ${contact}`),
-          mailParagraph(
-            'Sier styret ja: sett personen til <code>active</code> og søknaden (join_requests) til <code>accepted</code>. Søknaden står også på listen til neste styremøte.',
-            'color: #999; font-size: 13px; margin-top: 24px;',
-          ),
-        ]),
-      })
+      await sendMail({ to: target.email, ...rejoinBoardMail(target.name, applicant, why) })
       sent++
     } catch (err) {
       console.error('[rejoin] board mail failed', { boardMember: b.id, err })
     }
   }
   return sent
+}
+
+/** The board mail for one board member. Pure (the mail helpers only), so it can be rendered on its own. */
+export function rejoinBoardMail(
+  boardMemberName: string,
+  applicant: { name: string; email: string | null },
+  why: string,
+): { subject: string; html: string } {
+  const contact = applicant.email
+    ? `<a href="mailto:${escapeHtml(applicant.email)}" style="color: #111;">${escapeHtml(applicant.email)}</a>`
+    : 'ingen e-post registrert'
+  return {
+    subject: `${applicant.name} vil bli aktivt medlem igjen`,
+    html: mailLayout([
+      mailParagraph(`Hei ${firstNameHtml(boardMemberName)},`),
+      mailParagraph(
+        `<strong>${escapeHtml(applicant.name)}</strong> er pensjonert og har søkt om å bli aktivt medlem igjen, fra medlemsportalen. Det er styret som avgjør.`,
+      ),
+      mailParagraph('Hvorfor de vil tilbake:'),
+      mailParagraph(
+        escapeHtml(why).replace(/\n/g, '<br>'),
+        'color: #111; font-size: 16px; border-left: 3px solid #ccc; padding-left: 12px;',
+      ),
+      mailParagraph(`Svar dem direkte: ${contact}`),
+      mailParagraph(
+        'Sier styret ja: sett personen til <code>active</code> og søknaden (join_requests) til <code>accepted</code>. Søknaden står også på listen til neste styremøte.',
+        'color: #999; font-size: 13px; margin-top: 24px;',
+      ),
+    ]),
+  }
 }
