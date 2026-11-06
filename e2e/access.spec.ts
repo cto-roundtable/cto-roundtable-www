@@ -124,10 +124,11 @@ test.beforeAll(async () => {
 })
 
 // The path exactly as written, no URL normalisation (fetch would read `//api` as a host).
-function rawStatus(path: string): Promise<number> {
+function rawStatus(path: string, cookie?: string): Promise<number> {
   const { hostname, port } = new URL(e2eEnv().baseUrl)
   return new Promise((resolve, reject) => {
-    const req = rawRequest({ hostname, port, path, method: 'GET' }, (res) => {
+    const headers = cookie ? { cookie } : {}
+    const req = rawRequest({ hostname, port, path, method: 'GET', headers }, (res) => {
       res.resume()
       resolve(res.statusCode ?? 0)
     })
@@ -247,20 +248,17 @@ for (const spec of PERSONAS) {
         '/api/member/surveys/events',
       ])
         expect.soft(s(path), `${p.key} ${path}`).toBe(403)
-      // Other spellings of a refused route never reach it either.
-      const api3 = await apiFor(p)
+      // Other spellings of a refused route never reach it either, with their cookie.
       for (const path of [
         '//api/member/discounts',
         '/API/member/discounts',
         '/api/member//discounts',
+        '/api/%6Dember/discounts',
         '/api/MEMBER/board/members',
         '/api/member/deals/../discounts',
         '/api/member/deals/%2e%2e/discounts',
-      ]) {
-        const status = (await probe(api3, path)).status
-        expect.soft(status, `${p.key} ${path}`).not.toBe(200)
-      }
-      await api3.dispose()
+      ])
+        expect.soft(await rawStatus(path, cookieHeader(p)), `${p.key} ${path}`).not.toBe(200)
     } else {
       // Board-only routes.
       for (const path of [

@@ -197,7 +197,9 @@
               {{ t('layout.passkeyNudge.body') }}
               <NuxtLink to="/member/security" style="color: inherit; font-weight: 600;">{{ t('layout.passkeyNudge.link') }}</NuxtLink>
             </v-alert>
-            <slot />
+            <!-- Not mounted at all outside the invest part for an investor: the page would
+                 fetch (and get 403s) before the guard below moves them to the overview. -->
+            <slot v-if="mayOpenPage" />
           </div>
         </v-container>
       </v-main>
@@ -277,8 +279,9 @@ function investorMayOpen(path: string): boolean {
 }
 // A typed or bookmarked URL outside the invest part goes to the overview instead of a
 // page full of 403s.
+const mayOpenPage = computed(() => !investorOnly.value || investorMayOpen(route.path))
 watchEffect(() => {
-  if (investorOnly.value && !investorMayOpen(route.path)) navigateTo('/member', { replace: true })
+  if (!mayOpenPage.value) navigateTo('/member', { replace: true })
 })
 
 // Only in the Swedish chapter (not also in the Norwegian one): the Swedish area.

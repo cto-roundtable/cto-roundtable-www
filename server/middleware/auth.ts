@@ -1,11 +1,16 @@
 export default defineEventHandler(async (event) => {
   // Only protect member-specific API routes. The /member page itself handles
   // auth client-side; this middleware attaches session data for server routes.
-  // The path as a router could read it: any case, repeated slashes as one. A spelling
-  // that skipped this check must not reach a member route with no gate in front.
-  const path = getRequestURL(event)
-    .pathname.toLowerCase()
-    .replace(/\/{2,}/g, '/')
+  // The path as a router could read it: percent-escapes decoded (decodeURI keeps an
+  // escaped `/`), any case, repeated slashes as one. A spelling that skipped this check
+  // must not reach a member route with no gate in front.
+  // A malformed escape is checked as written (this runs for every request, public pages too).
+  const raw = getRequestURL(event).pathname
+  let decoded = raw
+  try {
+    decoded = decodeURI(raw)
+  } catch {}
+  const path = decoded.toLowerCase().replace(/\/{2,}/g, '/')
   if (!path.startsWith('/api/member/')) return
 
   const session = verifySession(event)
