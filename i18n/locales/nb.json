@@ -521,6 +521,17 @@
       },
       "hostChapter": "Hvilken avdeling er tilbudet for?",
       "hostChapterSummary": "Avdeling"
+    },
+    "rejoin": {
+      "heading": "Bli aktiv igjen",
+      "intro": "Du er pensjonert. Vil du tilbake i nettverket? Fortell styret hvorfor, og hva du har kapasitet til nå. Styret tar kontakt.",
+      "label": "Hvorfor vil du tilbake?",
+      "placeholder": "F.eks. ny CTO-rolle, mer tid, hva du vil bidra med",
+      "submit": "Send søknad til styret",
+      "minHint": "Skriv minst {n} tegn.",
+      "pendingTitle": "Søknaden er sendt",
+      "pendingBody": "Du søkte {date}. Styret ser på den og tar kontakt.",
+      "error": "Noe gikk galt. Prøv igjen, eller ta kontakt med styret."
     }
   },
   "deals": {

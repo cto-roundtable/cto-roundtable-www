@@ -63,9 +63,9 @@ test('a draft is the board only', async () => {
     expect((await api[k]!.get(`/api/member/meetings/${meetingId}`)).status(), k).toBe(404)
   }
   await view('committee-board')
-  for (const k of ['retired', 'outsider']) {
-    expect((await api[k]!.get(`/api/member/meetings/${meetingId}`)).status(), k).toBe(401)
-  }
+  // A pensjonist signs in to their profile only (portalAccess.ts): refused, not unknown.
+  expect((await api.retired!.get(`/api/member/meetings/${meetingId}`)).status(), 'retired').toBe(403)
+  expect((await api.outsider!.get(`/api/member/meetings/${meetingId}`)).status(), 'outsider').toBe(401)
   expect((await anon.get(`/api/member/meetings/${meetingId}`)).status()).toBe(401)
 })
 

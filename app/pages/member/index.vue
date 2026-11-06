@@ -8,13 +8,13 @@
     </header>
 
     <!-- The open CTORI offering, until the member has answered (/member/invest) -->
-    <InvestOfferingBanner />
+    <InvestOfferingBanner v-if="session.access !== 'retired'" />
 
     <!-- Open deal votes the member has not voted in yet (/member/caser) -->
-    <DealsOpenVoteBanner />
+    <DealsOpenVoteBanner v-if="session.access !== 'retired'" />
 
     <!-- An announced or live general meeting the member votes in (/member/arsmote) -->
-    <MeetingsBanner v-if="!investorOnly" />
+    <MeetingsBanner v-if="!limited" />
 
     <!-- Open surveys the member has not answered yet (/member/surveys) -->
     <NuxtLink
@@ -49,6 +49,9 @@
         </v-chip>
       </div>
     </section>
+
+    <!-- A pensjonist can ask the board to become active again -->
+    <RejoinCard v-if="memberInfo.status === 'retired'" />
 
     <section class="mb-8">
       <h2 class="section-title">{{ t('member.overview.membershipsHeading') }}</h2>
@@ -107,8 +110,9 @@ const { session, checked } = useAuthSession()
 const memberInfo = ref<any>(null)
 const surveys = ref<any[]>([])
 
-// A pensjonist in an SPV sees the invest part only: no årsmøte, no surveys (portalAccess.ts).
-const investorOnly = computed(() => session.value.access === 'investor')
+// A pensjonist sees a limited portal: no årsmøte, no surveys, and the invest part only
+// when they are in an SPV (portalAccess.ts).
+const limited = computed(() => session.value.access === 'investor' || session.value.access === 'retired')
 const pendingSurveys = computed(() => surveys.value.filter((s) => s.isOpen && s.eligible && !s.answered))
 
 watchEffect(async () => {
@@ -119,7 +123,7 @@ watchEffect(async () => {
 
 // The survey banner is a nudge, so a failure here must not break the overview.
 watchEffect(() => {
-  if (checked.value && session.value.authenticated && !investorOnly.value) {
+  if (checked.value && session.value.authenticated && !limited.value) {
     $fetch<{ surveys: any[] }>('/api/member/surveys')
       .then((data) => {
         surveys.value = data.surveys

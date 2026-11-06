@@ -17,6 +17,7 @@ test.describe.configure({ timeout: 180_000 })
 
 const PROBES = [
   '/api/member/info',
+  '/api/member/rejoin',
   '/api/member/chapter',
   '/api/member/deals',
   '/api/member/deals/open-votes',
@@ -209,7 +210,13 @@ for (const spec of PERSONAS) {
 
     expect.soft(truth.leads.length, 'the branch has a lead to probe (global setup makes one)').toBeGreaterThan(0)
     for (const slug of truth.leads) {
-      const [page, move] = !p.member ? [401, 401] : isCommittee(p) ? [200, 400] : [404, 403]
+      const [page, move] = !p.member
+        ? [401, 401]
+        : p.level === 'retired'
+          ? [403, 403]
+          : isCommittee(p)
+            ? [200, 400]
+            : [404, 403]
       expect.soft(row.cases[slug], `${p.key} opens lead ${slug}`).toBe(page)
       expect.soft(row.leadMoves[slug], `${p.key} moves lead ${slug}`).toBe(move)
     }
@@ -229,12 +236,14 @@ for (const spec of PERSONAS) {
 
     expect.soft(s('/api/member/info'), 'a member reads their own info').toBe(200)
 
-    if (p.investorOnly) {
-      // A pensjonist in an SPV: the invest part of the API, 403 on everything else,
-      // whatever groups they are still in (portalAccess.ts, Snorre 2026-11-06).
+    if (p.level) {
+      // A pensjonist: their profile and the rejoin application; in an SPV (`investor`) also
+      // the invest part of the API; 403 on everything else, whatever groups they are still
+      // in (portalAccess.ts, Snorre 2026-11-06).
+      expect.soft(s('/api/member/rejoin'), `${p.key} rejoin`).toBe(200)
       const investPart = ['/api/member/deals', '/api/member/deals/open-votes', '/api/member/deals?declined=1']
-      for (const path of investPart) expect.soft(s(path), `${p.key} ${path}`).toBe(200)
-      expect.soft(s('/api/member/updates'), `${p.key} investor updates`).toBe(200)
+      for (const path of [...investPart, '/api/member/updates'])
+        expect.soft(s(path), `${p.key} ${path}`).toBe(p.level === 'investor' ? 200 : 403)
       for (const path of [
         '/api/member/chapter',
         '/api/member/discounts',
@@ -284,10 +293,13 @@ for (const spec of PERSONAS) {
     const ctori4 = truth.ctori4
     const seesCtori4 =
       ['interest', 'committing'].includes(ctori4.status ?? '') || (ctori4.status === 'draft' && isCommittee(p))
-    expect.soft(s('/api/member/invest/ctori-4'), `${p.key} ctori-4 (${ctori4.status})`).toBe(seesCtori4 ? 200 : 404)
+    const retired = p.level === 'retired' // nothing of the invest part: the middleware's 403
+    expect
+      .soft(s('/api/member/invest/ctori-4'), `${p.key} ctori-4 (${ctori4.status})`)
+      .toBe(retired ? 403 : seesCtori4 ? 200 : 404)
     expect
       .soft(s('/api/member/invest/ctori-4/documents/deck/comments'), `${p.key} ctori-4 deck comments`)
-      .toBe(seesCtori4 && ctori4.hasDeck ? 200 : 404)
+      .toBe(retired ? 403 : seesCtori4 && ctori4.hasDeck ? 200 : 404)
 
     // Cases: for a member the overview (declined included) and the case page agree, and
     // nobody opens a case the committee cannot. The committee's own list is the member
@@ -341,10 +353,10 @@ for (const spec of PERSONAS) {
     for (const [slug, status] of Object.entries(row.updates))
       expect
         .soft(status, `${p.key} updates for ${slug}: funded by own group=${fundedByOwn(slug)}`)
-        .toBe(fundedByOwn(slug) ? 200 : 404)
+        .toBe(retired ? 403 : fundedByOwn(slug) ? 200 : 404)
     for (const [slug, status] of Object.entries(row.updateById))
       expect
         .soft(status, `${p.key} an update of ${slug}: funded by own group=${fundedByOwn(slug)}`)
-        .toBe(fundedByOwn(slug) ? 200 : 404)
+        .toBe(retired ? 403 : fundedByOwn(slug) ? 200 : 404)
   })
 }

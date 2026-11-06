@@ -521,6 +521,17 @@
       },
       "hostChapter": "Vilken avdelning gäller erbjudandet?",
       "hostChapterSummary": "Avdelning"
+    },
+    "rejoin": {
+      "heading": "Bli aktiv igen",
+      "intro": "Du är pensionerad. Vill du tillbaka till nätverket? Berätta för styrelsen varför, och vad du har kapacitet för nu. Styrelsen hör av sig.",
+      "label": "Varför vill du tillbaka?",
+      "placeholder": "T.ex. en ny CTO-roll, mer tid, vad du vill bidra med",
+      "submit": "Skicka ansökan till styrelsen",
+      "minHint": "Skriv minst {n} tecken.",
+      "pendingTitle": "Ansökan är skickad",
+      "pendingBody": "Du ansökte {date}. Styrelsen tittar på den och hör av sig.",
+      "error": "Något gick fel. Försök igen, eller kontakta styrelsen."
     }
   },
   "deals": {

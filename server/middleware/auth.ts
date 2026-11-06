@@ -31,15 +31,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Unauthorized' })
   }
 
-  // Attach session and chapters to event context for downstream handlers. An
-  // investor-only session (a pensjonist in an SPV, portalAccess.ts) is in no chapter here:
-  // its chapters pick a language, never a chapter's pages.
+  // Attach session and chapters to event context for downstream handlers. A pensjonist
+  // (investor or retired, portalAccess.ts) is in no chapter here: their chapters pick a
+  // language, never a chapter's pages.
   event.context.session = session
   event.context.portalLevel = access.level
+  event.context.portalAccess = access
   event.context.chapters = access.level === 'member' ? access.chapters : []
 
-  // The investor level gets the invest part of the API and nothing else: deny by default.
-  if (access.level === 'investor' && !investorMayCall(path)) {
+  // A pensjonist gets their level's part of the API and nothing else: deny by default.
+  if (!levelMayCall(access.level, path)) {
     throw createError({ statusCode: 403, message: 'Not available for your membership' })
   }
 
