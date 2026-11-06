@@ -19,20 +19,22 @@ export interface PersonaSpec {
   status?: 'active' | 'retired'
   groups: string[]
   synthetic?: boolean
-  /** May sign in at all (an active member, or a pensjonist in an SPV). */
+  /** May sign in at all (an active member, or a pensjonist from a chapter or an SPV). */
   member: boolean
-  /** Signs in to the invest part only (server/utils/portalAccess.ts): a pensjonist in an SPV. */
-  investorOnly?: boolean
+  /** A limited portal (server/utils/portalAccess.ts): `investor` is a pensjonist in an SPV
+   *  (the invest part), `retired` any other pensjonist (profile and the rejoin application). */
+  level?: 'investor' | 'retired'
 }
 
 export const PERSONAS: PersonaSpec[] = [
   { key: 'outsider', label: 'Active person, no network group', groups: [], member: false },
   {
     key: 'retired',
-    label: 'Retired member (pensjonist)',
+    label: 'Retired member (pensjonist), no SPV',
     status: 'retired',
     groups: ['cto-roundtable'],
-    member: false,
+    member: true,
+    level: 'retired',
   },
   {
     key: 'retired-investor-3',
@@ -40,7 +42,7 @@ export const PERSONAS: PersonaSpec[] = [
     status: 'retired',
     groups: ['cto-roundtable', 'invest-3'],
     member: true,
-    investorOnly: true,
+    level: 'investor',
   },
   {
     key: 'retired-investor-1',
@@ -48,7 +50,7 @@ export const PERSONAS: PersonaSpec[] = [
     status: 'retired',
     groups: ['cto-roundtable', 'invest-1'],
     member: true,
-    investorOnly: true,
+    level: 'investor',
   },
   { key: 'member', label: 'Member, Norway, no SPV', groups: ['cto-roundtable'], member: true },
   { key: 'sweden', label: 'Member, Sweden only', groups: ['roundtable-sweden'], member: true },

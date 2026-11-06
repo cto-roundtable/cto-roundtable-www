@@ -10,11 +10,14 @@ import { type Chapter, chaptersOfSlugs } from './chapter.ts'
 //             SPV or a seat in the next one, and the deal votes and the CTORI signup
 //             live in the portal. Jonas Dammen was locked out of both the day after
 //             digital voting went live.
+//   retired   any other pensjonist who was in a chapter: their own profile and an
+//             application to become active again, which goes to the board (Snorre,
+//             2026-11-06). An investor can apply the same way.
 //
-// The investor level is enforced on the server (INVESTOR_API_PREFIXES, in the
+// Every level below `member` is enforced on the server (LEVEL_API_PREFIXES, in the
 // /api/member/ middleware), deny by default. Hiding menu items is only UX.
 
-export type PortalLevel = 'member' | 'investor'
+export type PortalLevel = 'member' | 'investor' | 'retired'
 
 export interface PortalAccess {
   level: PortalLevel
@@ -31,23 +34,35 @@ export interface GroupRef {
 export function portalAccessOf(status: string, groups: GroupRef[]): PortalAccess | null {
   const chapters = chaptersOfSlugs(groups.map((g) => g.slug))
   if (status === 'active') return chapters.length ? { level: 'member', chapters } : null
-  if (status === 'retired' && groups.some((g) => g.investPhase)) return { level: 'investor', chapters }
-  return null
+  if (status !== 'retired') return null
+  if (groups.some((g) => g.investPhase)) return { level: 'investor', chapters }
+  return chapters.length ? { level: 'retired', chapters } : null
 }
 
+/** What every pensjonist may call: their own profile, and the application to come back. */
+const RETIRED_API_PREFIXES = [
+  '/api/member/info', // their own profile: status, groups, standing vote
+  '/api/member/rejoin', // apply to become active again (the board decides)
+]
+
 /**
- * The member API an investor-only session may call. Everything else under
+ * The member API each level below `member` may call. Everything else under
  * /api/member/ is 403. Committee and board actions under these prefixes are
  * gated on their own (isCommitteeMember / isBoardMember, which require `active`).
  */
-export const INVESTOR_API_PREFIXES = [
-  '/api/member/info', // their own profile: status, groups, standing vote
-  '/api/member/default-vote',
-  '/api/member/deals', // cases and votes, the case gate decides which
-  '/api/member/invest', // the CTORI offering
-  '/api/member/updates', // investor updates, for companies their SPV funded
-]
+export const LEVEL_API_PREFIXES: Record<Exclude<PortalLevel, 'member'>, string[]> = {
+  retired: RETIRED_API_PREFIXES,
+  investor: [
+    ...RETIRED_API_PREFIXES,
+    '/api/member/default-vote',
+    '/api/member/deals', // cases and votes, the case gate decides which
+    '/api/member/invest', // the CTORI offering
+    '/api/member/updates', // investor updates, for companies their SPV funded
+  ],
+}
 
-export function investorMayCall(pathname: string): boolean {
-  return INVESTOR_API_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+/** Whether a session at this level may call this /api/member/ path. */
+export function levelMayCall(level: PortalLevel, pathname: string): boolean {
+  if (level === 'member') return true
+  return LEVEL_API_PREFIXES[level].some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
 }

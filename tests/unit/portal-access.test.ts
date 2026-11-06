@@ -1,9 +1,10 @@
 // Who may sign in to the portal, and how much they get (server/utils/portalAccess.ts):
 // an active person in a chapter is a member, a pensjonist in an SPV is an investor
-// (the invest part only, Snorre 2026-11-06), anyone else stays out. Run: npm run test:unit.
+// (the invest part only), any other pensjonist from a chapter is retired (their profile
+// and the rejoin application), anyone else stays out (Snorre 2026-11-06). Run: npm run test:unit.
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { investorMayCall, portalAccessOf } from '../../server/utils/portalAccess.ts'
+import { levelMayCall, portalAccessOf } from '../../server/utils/portalAccess.ts'
 
 const no = { slug: 'cto-roundtable', investPhase: null }
 const se = { slug: 'roundtable-sweden', investPhase: null }
@@ -38,10 +39,15 @@ describe('portalAccessOf', () => {
     assert.deepEqual(portalAccessOf('retired', [no, invest3, styret, komite]), { level: 'investor', chapters: ['no'] })
   })
 
-  test('a pensjonist in no SPV stays out', () => {
-    assert.equal(portalAccessOf('retired', [no]), null)
-    assert.equal(portalAccessOf('retired', [no, styret]), null)
+  test('a pensjonist from a chapter, in no SPV, is retired: profile and rejoin only', () => {
+    assert.deepEqual(portalAccessOf('retired', [no]), { level: 'retired', chapters: ['no'] })
+    assert.deepEqual(portalAccessOf('retired', [se]), { level: 'retired', chapters: ['se'] })
+    assert.deepEqual(portalAccessOf('retired', [no, styret, komite]), { level: 'retired', chapters: ['no'] })
+  })
+
+  test('a pensjonist in no chapter and no SPV stays out', () => {
     assert.equal(portalAccessOf('retired', []), null)
+    assert.equal(portalAccessOf('retired', [styret]), null)
   })
 
   test('any other status stays out, SPV or not', () => {
@@ -51,42 +57,48 @@ describe('portalAccessOf', () => {
   })
 })
 
-describe('investorMayCall', () => {
-  test('the invest part of the member API', () => {
-    for (const path of [
-      '/api/member/info',
-      '/api/member/default-vote',
-      '/api/member/deals',
-      '/api/member/deals/open-votes',
-      '/api/member/deals/acme/rounds/1/ballot',
-      '/api/member/invest/current',
-      '/api/member/invest/ctori-4',
-      '/api/member/updates',
-      '/api/member/updates/acme/1',
-    ]) {
-      assert.equal(investorMayCall(path), true, path)
-    }
+describe('levelMayCall', () => {
+  const profile = ['/api/member/info', '/api/member/rejoin']
+  const investPart = [
+    '/api/member/default-vote',
+    '/api/member/deals',
+    '/api/member/deals/open-votes',
+    '/api/member/deals/acme/rounds/1/ballot',
+    '/api/member/invest/current',
+    '/api/member/invest/ctori-4',
+    '/api/member/updates',
+    '/api/member/updates/acme/1',
+  ]
+  const neither = [
+    '/api/member/chapter',
+    '/api/member/surveys',
+    '/api/member/discounts',
+    '/api/member/onboarding',
+    '/api/member/open-to-work/list',
+    '/api/member/host/volunteer',
+    '/api/member/meetings',
+    '/api/member/board/members',
+    '/api/member/committee/overview',
+    '/api/member/activity/x',
+    '/api/member/infox',
+    '/api/member/rejoins',
+    '/api/member/dealsx',
+    '/api/member/investor',
+    '/api/member/updates-all',
+    '/api/member/',
+  ]
+
+  test('a member calls anything (the routes gate themselves)', () => {
+    for (const path of [...profile, ...investPart, ...neither]) assert.equal(levelMayCall('member', path), true, path)
   })
 
-  test('nothing else, and no prefix look-alikes', () => {
-    for (const path of [
-      '/api/member/chapter',
-      '/api/member/surveys',
-      '/api/member/discounts',
-      '/api/member/onboarding',
-      '/api/member/open-to-work/list',
-      '/api/member/host/volunteer',
-      '/api/member/meetings',
-      '/api/member/board/members',
-      '/api/member/committee/overview',
-      '/api/member/activity/x',
-      '/api/member/infox',
-      '/api/member/dealsx',
-      '/api/member/investor',
-      '/api/member/updates-all',
-      '/api/member/',
-    ]) {
-      assert.equal(investorMayCall(path), false, path)
-    }
+  test('an investor: their profile, the rejoin application and the invest part', () => {
+    for (const path of [...profile, ...investPart]) assert.equal(levelMayCall('investor', path), true, path)
+    for (const path of neither) assert.equal(levelMayCall('investor', path), false, path)
+  })
+
+  test('retired: their profile and the rejoin application, nothing of the invest part', () => {
+    for (const path of profile) assert.equal(levelMayCall('retired', path), true, path)
+    for (const path of [...investPart, ...neither]) assert.equal(levelMayCall('retired', path), false, path)
   })
 })

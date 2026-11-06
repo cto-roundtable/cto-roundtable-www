@@ -521,6 +521,17 @@
       },
       "hostChapter": "Which chapter is the offer for?",
       "hostChapterSummary": "Chapter"
+    },
+    "rejoin": {
+      "heading": "Become active again",
+      "intro": "You are retired. Want to come back to the network? Tell the board why, and what you have capacity for now. The board will get in touch.",
+      "label": "Why do you want to come back?",
+      "placeholder": "E.g. a new CTO role, more time, what you want to contribute",
+      "submit": "Send application to the board",
+      "minHint": "Write at least {n} characters.",
+      "pendingTitle": "Application sent",
+      "pendingBody": "You applied on {date}. The board is looking at it and will get in touch.",
+      "error": "Something went wrong. Try again, or contact the board."
     }
   },
   "deals": {

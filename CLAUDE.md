@@ -132,10 +132,18 @@ existed count as old.
 - `investor`: a pensjonist (`retired`) in an SPV (a group with an `invest_phase`), Snorre
   2026-11-06. The invest part only: overview (own status, groups, standing vote), Caser and
   votes, the CTORI offering, investor updates, passkeys. The `/api/member/` middleware
-  refuses every other member route with 403 (`INVESTOR_API_PREFIXES`, deny by default);
+  refuses every other member route with 403 (`LEVEL_API_PREFIXES`, deny by default);
   the nav and a page guard in `layouts/member.vue` only follow. `isBoardMember` and
   `isCommitteeMember` require `active`, so a group left over after retiring grants nothing.
   SPV vote rosters and pipeline digests include `retired` members.
+- `retired`: any other pensjonist who was in a chapter: the overview and Innlogging only,
+  nothing of the invest part (the session never sets its flags).
+- Every pensjonist (`investor` or `retired`) can apply to become active again from the
+  overview (`RejoinCard`, `/api/member/rejoin`, `server/utils/rejoin.ts`): a pending
+  `join_requests` row to their chapter group (`internal_notes` starts `Rejoin:`), and a mail
+  to every active `styret` member. One open application at a time. The board decides and
+  accepts by hand (person `active`, request `accepted`); styremøte prep reads new
+  join_requests, so it is on the agenda too. e2e: `e2e/rejoin.spec.ts`.
 Every way in uses the gate: the magic-link request, passkey login, the
 `/api/member/` middleware on every request, and `/api/auth/session` (a session
 that fails the gate is reported as signed out). So a session lives exactly as long
