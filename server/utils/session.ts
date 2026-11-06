@@ -41,7 +41,7 @@ const SESSION_MAX_AGE = 30 * 24 * 60 * 60 // 30 days, in seconds
  * Sign the member in: set the session cookie and its HMAC cookie. Every way in
  * (magic link, passkey) ends here, so a session looks the same however it was
  * obtained. The caller must already have applied the login gate
- * (isPortalMember / findPortalMemberByEmail).
+ * (isPortalMember / findSignInPerson).
  */
 export function issueSession(event: any, personId: string, name: string): void {
   const config = useRuntimeConfig()

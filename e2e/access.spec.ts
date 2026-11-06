@@ -124,10 +124,11 @@ test.beforeAll(async () => {
 })
 
 // The path exactly as written, no URL normalisation (fetch would read `//api` as a host).
-function rawStatus(path: string): Promise<number> {
+function rawStatus(path: string, cookie?: string): Promise<number> {
   const { hostname, port } = new URL(e2eEnv().baseUrl)
   return new Promise((resolve, reject) => {
-    const req = rawRequest({ hostname, port, path, method: 'GET' }, (res) => {
+    const headers = cookie ? { cookie } : {}
+    const req = rawRequest({ hostname, port, path, method: 'GET', headers }, (res) => {
       res.resume()
       resolve(res.statusCode ?? 0)
     })
@@ -228,23 +229,55 @@ for (const spec of PERSONAS) {
 
     expect.soft(s('/api/member/info'), 'a member reads their own info').toBe(200)
 
-    // Board-only routes.
-    for (const path of [
-      '/api/member/board/members',
-      '/api/member/board/meetings',
-      '/api/member/board/activity',
-      '/api/member/surveys/events',
-    ]) {
-      expect.soft(s(path), `${p.key} ${path}`).toBe(has(p, 'styret') ? 200 : 403)
+    if (p.investorOnly) {
+      // A pensjonist in an SPV: the invest part of the API, 403 on everything else,
+      // whatever groups they are still in (portalAccess.ts, Snorre 2026-11-06).
+      const investPart = ['/api/member/deals', '/api/member/deals/open-votes', '/api/member/deals?declined=1']
+      for (const path of investPart) expect.soft(s(path), `${p.key} ${path}`).toBe(200)
+      expect.soft(s('/api/member/updates'), `${p.key} investor updates`).toBe(200)
+      for (const path of [
+        '/api/member/chapter',
+        '/api/member/discounts',
+        '/api/member/surveys',
+        '/api/member/onboarding',
+        '/api/member/open-to-work/list',
+        '/api/member/committee/overview',
+        '/api/member/board/members',
+        '/api/member/board/meetings',
+        '/api/member/board/activity',
+        '/api/member/surveys/events',
+      ])
+        expect.soft(s(path), `${p.key} ${path}`).toBe(403)
+      // Other spellings of a refused route never reach it either, with their cookie.
+      for (const path of [
+        '//api/member/discounts',
+        '/API/member/discounts',
+        '/api/member//discounts',
+        '/api/%6Dember/discounts',
+        '/api/MEMBER/board/members',
+        '/api/member/deals/../discounts',
+        '/api/member/deals/%2e%2e/discounts',
+      ])
+        expect.soft(await rawStatus(path, cookieHeader(p)), `${p.key} ${path}`).not.toBe(200)
+    } else {
+      // Board-only routes.
+      for (const path of [
+        '/api/member/board/members',
+        '/api/member/board/meetings',
+        '/api/member/board/activity',
+        '/api/member/surveys/events',
+      ]) {
+        expect.soft(s(path), `${p.key} ${path}`).toBe(has(p, 'styret') ? 200 : 403)
+      }
+      // Committee only (#74: the board sees cases as a member does).
+      expect.soft(s('/api/member/committee/overview'), `${p.key} committee overview`).toBe(isCommittee(p) ? 200 : 403)
+      // Investors or board.
+      expect
+        .soft(s('/api/member/open-to-work/list'), `${p.key} open-to-work list`)
+        .toBe(isInvestor(p) || has(p, 'styret') ? 200 : 403)
+      // Norway-only.
+      expect.soft(s('/api/member/onboarding'), `${p.key} onboarding`).toBe(has(p, 'cto-roundtable') ? 200 : 403)
     }
-    // Committee only (#74: the board sees cases as a member does).
-    expect.soft(s('/api/member/committee/overview'), `${p.key} committee overview`).toBe(isCommittee(p) ? 200 : 403)
-    // Investors or board.
-    expect
-      .soft(s('/api/member/open-to-work/list'), `${p.key} open-to-work list`)
-      .toBe(isInvestor(p) || has(p, 'styret') ? 200 : 403)
-    // Norway-only.
-    expect.soft(s('/api/member/onboarding'), `${p.key} onboarding`).toBe(has(p, 'cto-roundtable') ? 200 : 403)
     // CTORI4: every member in either chapter once it is open (interest or committing); while
     // it is a draft only the committee, as a preview (the board is network only, Snorre
     // 2026-10-29); otherwise the same 404 as an offering that does not exist.

@@ -27,14 +27,17 @@ export async function requireBoard(event: H3Event): Promise<string> {
   return session.personId
 }
 
-/** Non-throwing board check, for endpoints that vary output by role. */
+/** Non-throwing board check, for endpoints that vary output by role.
+ *  Active people only: a pensjonist signs in as an investor (portalAccess.ts) and
+ *  holds no role, even if nobody took them out of the group. */
 export async function isBoardMember(personId: string): Promise<boolean> {
   const sql = useDatabase()
   const rows = await sql`
     SELECT 1
     FROM memberships m
     JOIN network_groups ng ON ng.id = m.group_id
-    WHERE m.person_id = ${personId} AND ng.slug = ${BOARD_GROUP}
+    JOIN persons p ON p.id = m.person_id
+    WHERE m.person_id = ${personId} AND ng.slug = ${BOARD_GROUP} AND p.status = 'active'
     LIMIT 1
   `
   return rows.length > 0

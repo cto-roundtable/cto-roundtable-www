@@ -37,7 +37,8 @@ async function json(res: Awaited<ReturnType<Api['get']>>, want = 200) {
 }
 
 test.beforeAll(async () => {
-  for (const k of ['committee-board', 'board', 'invest-3', 'member', 'committee-only']) api[k] = await apiAs(k)
+  for (const k of ['committee-board', 'board', 'invest-3', 'member', 'committee-only', 'retired-investor-3'])
+    api[k] = await apiAs(k)
   const token = await branchApiToken('committee-board', ['deals:read', 'deals:write', 'rounds:write'])
   admin = await request.newContext({
     baseURL: e2eEnv().baseUrl,
@@ -122,6 +123,11 @@ test('SPV members vote on the case page; nobody sees a count or another choice w
   expectNoChoices(before, null)
   expect(before.turnout).toMatchObject({ voted: 2 })
   expect(before.named).toBeUndefined()
+  // A pensjonist in the SPV keeps their seat (portalAccess.ts, 2026-11-06): on the roster,
+  // sees the vote like any voter, no count.
+  const retired = await roundAs('retired-investor-3')
+  expect(retired.me.onRoster).toBe(true)
+  expectNoChoices(retired, null)
 
   await json(await vote('invest-3', 'no'))
   await json(await vote('invest-3', 'yes')) // a change: the latest counts

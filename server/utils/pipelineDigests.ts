@@ -255,12 +255,13 @@ export async function rejectPipelineDigest(personId: string, id: string, body: R
   return { digest: await getPipelineDigest(id) }
 }
 
-/** The members a digest goes to: active people in the group. */
+/** The members a digest goes to: the SPV's active and retired people (the same as its
+ *  vote roster, dealRounds.ts: a pensjonist keeps their seat in an SPV). */
 async function recipients(groupId: string) {
   const sql = useDatabase()
   return (await sql`
     SELECT p.id FROM memberships m JOIN persons p ON p.id = m.person_id
-    WHERE m.group_id = ${groupId} AND p.status = 'active'
+    WHERE m.group_id = ${groupId} AND p.status IN ('active', 'retired')
     ORDER BY p.name
   `) as { id: string }[]
 }
@@ -331,7 +332,7 @@ export async function sendPipelineDigest(id: string, opts: { dryRun: boolean; si
       continue
     }
     try {
-      const lang = (await getChapters(p.id)).includes('no') ? 'nb' : 'en'
+      const lang = await mailLanguageOf(p.id)
       const mail = digestMail(lang, d, target, link)
       await sendMail({ to: target.email, subject: mail.subject, html: mail.html })
       sent.push(p.id)

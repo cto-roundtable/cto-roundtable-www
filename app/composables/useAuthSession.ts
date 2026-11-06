@@ -11,6 +11,9 @@ interface Session {
   isCommittee?: boolean
   // The CTORI offering open for interest or tegning (a draft for the committee), or null.
   investOffering?: { slug: string; name: string } | null
+  // `member`: the whole portal. `investor`: a pensjonist in an SPV, who gets the invest
+  // part only (server/utils/portalAccess.ts; the server refuses the rest).
+  access?: 'member' | 'investor'
   // Chapter codes (`no`, `se`) the member belongs to (server/utils/chapter.ts). They pick
   // the nav (the Swedish area for a Swedish-only member) and the default language.
   chapters?: ('no' | 'se')[]

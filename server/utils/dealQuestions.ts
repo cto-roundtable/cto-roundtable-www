@@ -302,15 +302,10 @@ function siteUrl(event: Parameters<typeof getRequestURL>[0] | null): string {
   return config.siteUrl || (event ? getRequestURL(event).origin : 'https://www.ctoroundtable.no')
 }
 
-/** Norwegian for members of the Norwegian chapter, English for everyone else. */
-async function mailLanguage(personId: string): Promise<'nb' | 'en'> {
-  return (await getChapters(personId)).includes('no') ? 'nb' : 'en'
-}
-
 async function notifyAskerAnswered(event: Parameters<typeof getRequestURL>[0] | null, q: QuestionRow): Promise<void> {
   const to = await personMailTarget(q.askedBy)
   if (!to) return
-  const lang = await mailLanguage(q.askedBy)
+  const lang = await mailLanguageOf(q.askedBy)
   const link = `${siteUrl(event)}/member/caser/${q.slug}#q-${q.id}`
   const company = escapeHtml(q.dealName)
   const nb = lang === 'nb'
