@@ -263,6 +263,24 @@ const swedenNavItems = [
   { to: '/member/sweden/faq', key: 'nav.faq', icon: 'mdi-help-circle-outline', exact: false },
 ]
 
+// A pensjonist in an SPV (server/utils/portalAccess.ts): the invest part only. The
+// overview (their own status, groups and standing vote) and sign-in settings; Caser,
+// the CTORI offering and investor updates join from the session flags below, like for
+// anyone. The server refuses every other member API to them, so this is only the menu.
+const investorOnly = computed(() => session.value.access === 'investor')
+const signInNavItem = { to: '/member/security', key: 'nav.signIn', icon: 'mdi-fingerprint', exact: false }
+const investorNavItems = [{ to: '/member', key: 'nav.overview', icon: 'mdi-view-dashboard-outline', exact: true }]
+const INVESTOR_PAGES = ['/member/caser', '/member/invest', '/member/updates', '/member/security']
+function investorMayOpen(path: string): boolean {
+  const p = path.replace(/\/+$/, '') || '/'
+  return p === '/member' || INVESTOR_PAGES.some((prefix) => p === prefix || p.startsWith(`${prefix}/`))
+}
+// A typed or bookmarked URL outside the invest part goes to the overview instead of a
+// page full of 403s.
+watchEffect(() => {
+  if (investorOnly.value && !investorMayOpen(route.path)) navigateTo('/member', { replace: true })
+})
+
 // Only in the Swedish chapter (not also in the Norwegian one): the Swedish area.
 const swedenOnly = computed(() => {
   const chapters = session.value.chapters ?? []
@@ -271,9 +289,13 @@ const swedenOnly = computed(() => {
 
 const navItems = computed(() => {
   const chapters = session.value.chapters ?? []
-  const items: NavItem[] = swedenOnly.value ? [...swedenNavItems] : [...baseNavItems]
+  const items: NavItem[] = investorOnly.value
+    ? [...investorNavItems]
+    : swedenOnly.value
+      ? [...swedenNavItems]
+      : [...baseNavItems]
   // In both chapters (the Stockholm host): the Norwegian portal plus the Swedish area.
-  if (!swedenOnly.value && chapters.includes('se')) {
+  if (!investorOnly.value && !swedenOnly.value && chapters.includes('se')) {
     items.splice(1, 0, { to: '/member/sweden', key: 'nav.sweden', icon: 'mdi-map-marker-outline', exact: false })
   }
   // Cases (deal votes): an SPV member who can see a case, or the committee. Caser always
@@ -303,13 +325,15 @@ const navItems = computed(() => {
   }
   // General meetings (årsmøte): the board runs them; members get there from the
   // /member banner once one is announced, and the page is open to every Norwegian member.
-  if (session.value.isBoard || route.path.startsWith('/member/arsmote')) {
+  if (session.value.isBoard || (!investorOnly.value && route.path.startsWith('/member/arsmote'))) {
     items.push({ to: '/member/arsmote', key: 'nav.generalMeeting', icon: 'mdi-account-group-outline', exact: false })
   }
   if (session.value.isBoard) {
     items.push({ to: '/member/board', key: 'nav.boardMeetings', icon: 'mdi-gavel', exact: false })
     items.push({ to: '/member/activity', key: 'nav.boardActivity', icon: 'mdi-pulse', exact: false })
   }
+  // The investor nav ends on their own sign-in settings, after the invest items.
+  if (investorOnly.value) items.push(signInNavItem)
   return items.map(({ key, children, ...item }: NavItem) => ({
     ...item,
     key,

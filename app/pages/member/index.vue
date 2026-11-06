@@ -14,7 +14,7 @@
     <DealsOpenVoteBanner />
 
     <!-- An announced or live general meeting the member votes in (/member/arsmote) -->
-    <MeetingsBanner />
+    <MeetingsBanner v-if="!investorOnly" />
 
     <!-- Open surveys the member has not answered yet (/member/surveys) -->
     <NuxtLink
@@ -107,6 +107,8 @@ const { session, checked } = useAuthSession()
 const memberInfo = ref<any>(null)
 const surveys = ref<any[]>([])
 
+// A pensjonist in an SPV sees the invest part only: no årsmøte, no surveys (portalAccess.ts).
+const investorOnly = computed(() => session.value.access === 'investor')
 const pendingSurveys = computed(() => surveys.value.filter((s) => s.isOpen && s.eligible && !s.answered))
 
 watchEffect(async () => {
@@ -117,7 +119,7 @@ watchEffect(async () => {
 
 // The survey banner is a nudge, so a failure here must not break the overview.
 watchEffect(() => {
-  if (checked.value && session.value.authenticated) {
+  if (checked.value && session.value.authenticated && !investorOnly.value) {
     $fetch<{ surveys: any[] }>('/api/member/surveys')
       .then((data) => {
         surveys.value = data.surveys

@@ -7,14 +7,17 @@ import type { H3Event } from 'h3'
 // who wrote a comment (decision 2026-10-22, vote model, in the ctori-4 project).
 export const COMMITTEE_GROUP = 'current-komite'
 
-/** Non-throwing committee check, for endpoints that vary output by role. */
+/** Non-throwing committee check, for endpoints that vary output by role.
+ *  Active people only: a pensjonist signs in as an investor (portalAccess.ts) and
+ *  holds no role, even if nobody took them out of the group. */
 export async function isCommitteeMember(personId: string): Promise<boolean> {
   const sql = useDatabase()
   const rows = await sql`
     SELECT 1
     FROM memberships m
     JOIN network_groups ng ON ng.id = m.group_id
-    WHERE m.person_id = ${personId} AND ng.slug = ${COMMITTEE_GROUP}
+    JOIN persons p ON p.id = m.person_id
+    WHERE m.person_id = ${personId} AND ng.slug = ${COMMITTEE_GROUP} AND p.status = 'active'
     LIMIT 1
   `
   return rows.length > 0

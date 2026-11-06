@@ -125,13 +125,24 @@ existed count as old.
     hold person and credential row ids only, and Cloud Logging keeps them.
   - Losing a device costs a mail: sign in by link, then delete the passkey.
 
-**The login gate is `server/utils/membership.ts`**: `isPortalMember(personId)` and
-`findPortalMemberByEmail(email)`: "active person in a chapter group" (`PORTAL_GROUPS`,
-see Chapters below). Every way in uses it: the magic-link request, passkey login, the
+**The login gate is `server/utils/membership.ts`**: `getPortalAccess(personId)`,
+`isPortalMember(personId)` and `findSignInPerson(email)`, over the pure rule in
+`server/utils/portalAccess.ts` (pinned by `tests/unit/portal-access.test.ts`). Two levels:
+- `member`: an active person in a chapter group (see Chapters below). The whole portal.
+- `investor`: a pensjonist (`retired`) in an SPV (a group with an `invest_phase`), Snorre
+  2026-11-06. The invest part only: overview (own status, groups, standing vote), Caser and
+  votes, the CTORI offering, investor updates, passkeys. The `/api/member/` middleware
+  refuses every other member route with 403 (`INVESTOR_API_PREFIXES`, deny by default);
+  the nav and a page guard in `layouts/member.vue` only follow. `isBoardMember` and
+  `isCommitteeMember` require `active`, so a group left over after retiring grants nothing.
+  SPV vote rosters and pipeline digests include `retired` members.
+Every way in uses the gate: the magic-link request, passkey login, the
 `/api/member/` middleware on every request, and `/api/auth/session` (a session
 that fails the gate is reported as signed out). So a session lives exactly as long
-as its holder could get a new one. Widening who may sign in is a change to that
-file only. Routes under `/api/auth/` are outside the middleware and must call the
+as its holder could get a new one. Widening who may sign in is a change to
+`portalAccess.ts` only. A sign-in request from a known person the gate refuses logs
+`{"audit":"signin","action":"refused","personId","status"}` (the page answers the same
+either way, so this is the only trace). Routes under `/api/auth/` are outside the middleware and must call the
 gate themselves (`requirePortalSession` in `server/utils/passkeys.ts`).
 
 **Known gaps (follow-ups, from the passkeys security review, 2026-10-15):**
@@ -165,7 +176,7 @@ The member portal (`/member/**`) speaks Norwegian (`nb`, default), English (`en`
 
 The network has two chapters, and a chapter is a group, not a column (`server/utils/chapter.ts`): `no` = `cto-roundtable`, `se` = `roundtable-sweden`. They run separately (board vedtak 6, 2026-08-20); offers and the investment side are shared. Decision: `decisions/sweden-portal-scope.md` in the members-portal project; research: `ctoroundtable-hq/expansion/sweden/portal-segregation.md`.
 
-- **Who gets in**: an active person in either chapter group (`isPortalMember` is "has a chapter"). Swedes become `active` when Snorre says so; while they are `prospect` nothing changes.
+- **Who gets in**: an active person in either chapter group, plus pensjonister in an SPV at the investor level (see the login gate above). Swedes become `active` when Snorre says so; while they are `prospect` nothing changes.
 - **Never add a Swede to `cto-roundtable`.** The public directory (`/api/members`), the `alle@` alias, the `#roundtable` Slack sync and the `/sweden` "sitting CTOs" count key on that group and must stay Norwegian.
 - **The session** carries `chapters`. The `/api/member/` middleware puts them on `event.context.chapters` and refuses `NORWAY_ONLY_API_PREFIXES` (AI onboarding) to a session without `no`.
 - **A Swedish-only member** gets the Swedish nav and `/member/sweden` (overview: the chapter's evenings by `events.group_id`, its surveys, its channel) and `/member/sweden/faq`; `/member`, `/member/faq` and `/member/onboarding` redirect there. A member in both chapters gets the Norwegian portal plus a "Sverige" entry.

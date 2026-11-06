@@ -300,8 +300,9 @@ interface CountedBallot {
   registered_by: string | null
 }
 
-/** The roster of an SPV group right now: active members, primary email, standing
- *  default, and each member's declared §9 conflict on this deal (deal_conflicts). */
+/** The roster of an SPV group right now: its active and retired members (a pensjonist
+ *  keeps their seat in an SPV, portalAccess.ts), primary email, standing default, and
+ *  each member's declared §9 conflict on this deal (deal_conflicts). */
 async function freezeRoster(groupId: string, dealId: string): Promise<RosterEntry[]> {
   const sql = useDatabase()
   const conflicted = await conflictedPersonIds(dealId)
@@ -312,7 +313,7 @@ async function freezeRoster(groupId: string, dealId: string): Promise<RosterEntr
             ORDER BY ci.is_primary DESC LIMIT 1) AS email
     FROM memberships m
     JOIN persons p ON p.id = m.person_id
-    WHERE m.group_id = ${groupId} AND p.status = 'active'
+    WHERE m.group_id = ${groupId} AND p.status IN ('active', 'retired')
     ORDER BY p.name
   `
   return (rows as any[]).map((r) => ({
@@ -960,7 +961,7 @@ export async function notifyRound(roundId: string, kind: unknown, opts: { dryRun
       continue
     }
     try {
-      const lang = (await getChapters(m.person_id)).includes('no') ? 'nb' : 'en'
+      const lang = await mailLanguageOf(m.person_id)
       const mail = noticeMail(k, lang, r, target, link, tally)
       const { id } = await sendMail({
         to: target.email,

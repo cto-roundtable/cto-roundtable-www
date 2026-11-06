@@ -9,15 +9,20 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Email is required' })
   }
 
-  // The login gate (server/utils/membership.ts): active person in cto-roundtable.
-  const member = await findPortalMemberByEmail(email)
+  // The login gate (server/utils/membership.ts): who owns the address, and may they sign in.
+  const person = await findSignInPerson(email)
 
   // Always return same response to prevent user enumeration. The member path's
   // database work and mail run AFTER we answer (not awaited), so a member and a
   // non-member get the same response in the same time: no timing oracle. The
   // instance stays warm (min-instances 1), so the work still completes.
-  if (member) {
-    sendMagicLink(event, member, email).catch((err) => console.error('[auth/request] magic link failed', err))
+  if (person?.access) {
+    sendMagicLink(event, person, email).catch((err) => console.error('[auth/request] magic link failed', err))
+  } else if (person) {
+    // Someone we know asked and got nothing: the page says "check your email" either way,
+    // so this line is the only trace (Jonas Dammen, 2026-11-06, retired the week before).
+    // Person id and status only, like the passkey audit lines: never the address.
+    console.log(JSON.stringify({ audit: 'signin', action: 'refused', personId: person.id, status: person.status }))
   }
 
   return { ok: true }

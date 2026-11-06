@@ -3,8 +3,8 @@ export default defineEventHandler(async (event) => {
 
   // Same gate as every /api/member/ request: a session whose holder is no longer
   // a portal member is reported as signed out.
-  const chapters = session ? await getChapters(session.personId) : []
-  if (!session || chapters.length === 0) {
+  const access = session ? await getPortalAccess(session.personId) : null
+  if (!session || !access) {
     return { authenticated: false }
   }
 
@@ -31,7 +31,10 @@ export default defineEventHandler(async (event) => {
     isCommittee: await isCommitteeMember(session.personId),
     // The CTORI offering to point at (/member/invest/<slug>), or null. Any chapter.
     investOffering: await currentInvestOffering(session.personId),
+    // `member`: the whole portal. `investor`: a pensjonist in an SPV, the invest part only
+    // (server/utils/portalAccess.ts), which picks the nav.
+    access: access.level,
     // Chapters (`no`, `se`) pick the nav and the default language.
-    chapters,
+    chapters: access.chapters,
   }
 })

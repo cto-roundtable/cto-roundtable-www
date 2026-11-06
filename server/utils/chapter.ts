@@ -29,6 +29,12 @@ export function chapterOfSlug(slug: string | null | undefined): Chapter | null {
   return slug ? (CHAPTER_BY_SLUG[slug] ?? null) : null
 }
 
+/** The chapters a set of group slugs stands for, Norway first. Pure. */
+export function chaptersOfSlugs(slugs: string[]): Chapter[] {
+  const found = new Set(slugs.map((slug) => chapterOfSlug(slug)))
+  return (Object.keys(CHAPTER_GROUPS) as Chapter[]).filter((chapter) => found.has(chapter))
+}
+
 export function isChapter(value: unknown): value is Chapter {
   return typeof value === 'string' && value in CHAPTER_GROUPS
 }
@@ -54,8 +60,22 @@ export async function getChapters(personId: string): Promise<Chapter[]> {
       AND p.status = 'active'
       AND ng.slug = ANY(${CHAPTER_SLUGS})
   `
-  const found = new Set(rows.map((r: any) => chapterOfSlug(r.slug)))
-  return (Object.keys(CHAPTER_GROUPS) as Chapter[]).filter((chapter) => found.has(chapter))
+  return chaptersOfSlugs(rows.map((r: any) => r.slug))
+}
+
+/**
+ * The language of a mail to this person: Norwegian for the Norwegian chapter, English
+ * for everyone else. Any status, unlike getChapters: a pensjonist in an SPV still gets
+ * the deal mails, in the language of the chapter they were in.
+ */
+export async function mailLanguageOf(personId: string): Promise<'nb' | 'en'> {
+  const sql = useDatabase()
+  const rows = await sql`
+    SELECT 1 FROM memberships m JOIN network_groups ng ON ng.id = m.group_id
+    WHERE m.person_id = ${personId} AND ng.slug = ${CHAPTER_GROUPS.no}
+    LIMIT 1
+  `
+  return rows.length ? 'nb' : 'en'
 }
 
 /**

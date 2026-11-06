@@ -19,8 +19,10 @@ export interface PersonaSpec {
   status?: 'active' | 'retired'
   groups: string[]
   synthetic?: boolean
-  /** May sign in at all (has a chapter and is active). */
+  /** May sign in at all (an active member, or a pensjonist in an SPV). */
   member: boolean
+  /** Signs in to the invest part only (server/utils/portalAccess.ts): a pensjonist in an SPV. */
+  investorOnly?: boolean
 }
 
 export const PERSONAS: PersonaSpec[] = [
@@ -31,6 +33,22 @@ export const PERSONAS: PersonaSpec[] = [
     status: 'retired',
     groups: ['cto-roundtable'],
     member: false,
+  },
+  {
+    key: 'retired-investor-3',
+    label: 'Retired member in CTORI 3 (pensjonist, deploying SPV)',
+    status: 'retired',
+    groups: ['cto-roundtable', 'invest-3'],
+    member: true,
+    investorOnly: true,
+  },
+  {
+    key: 'retired-investor-1',
+    label: 'Retired member in CTORI 1 (pensjonist, completed SPV)',
+    status: 'retired',
+    groups: ['cto-roundtable', 'invest-1'],
+    member: true,
+    investorOnly: true,
   },
   { key: 'member', label: 'Member, Norway, no SPV', groups: ['cto-roundtable'], member: true },
   { key: 'sweden', label: 'Member, Sweden only', groups: ['roundtable-sweden'], member: true },
