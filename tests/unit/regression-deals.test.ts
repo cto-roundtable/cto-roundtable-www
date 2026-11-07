@@ -20,7 +20,8 @@ const tally = (yes: number, no: number, blank = 0, defaultBlank = 0, notVoted = 
 })
 
 describe('deal rule: unchanged', () => {
-  // `ballot` changed on purpose: komité 2026-11-03 hid the choices (tests/unit/ballot-visibility.test.ts).
+  // `ballot` changed on purpose: komité 2026-11-03 hid the choices from members, dc-95 H1 gave the
+  // committee them (tests/unit/ballot-visibility.test.ts).
   test('ROUND_RULES is exactly the 2026-10-22 vote model (A+, 48 h, 2/3 of yes + no), choices hidden', () => {
     assert.deepEqual(ROUND_RULES, {
       threshold: '2/3',
@@ -28,7 +29,7 @@ describe('deal rule: unchanged', () => {
       excluded: ['blank', 'none'],
       weighting: 'person',
       window_h: 48,
-      ballot: 'choices_hidden',
+      ballot: 'choices_committee',
       mandate: null,
     })
   })

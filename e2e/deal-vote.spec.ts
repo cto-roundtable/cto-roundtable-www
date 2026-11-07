@@ -11,9 +11,10 @@ import { cookiesFor, persona, RUN_DIR } from './support/run'
 // closes, the protocol PDF and the deal_events trail exist. And the CTORI4
 // hovedbok (hq 039): a passed invest-4 round needs a lead and a follow-up owner.
 // The gates are the deal's: the committee runs it, the board gets nothing extra.
-// Hidden ballots (komité 2026-11-03): while the vote runs nobody sees a count or
-// anyone else's choice, before or after voting; the committee sees WHO has voted,
-// never what, on the case page and in the admin API; the counts come after close.
+// Hidden ballots (komité 2026-11-03): while the vote runs no member sees a count or
+// anyone else's choice, before or after voting; the committee sees every choice by
+// name and the counts, live, on the case page and in the admin API (dc-95 H1, Snorre
+// 2026-11-07); members get the counts after close.
 //
 // The preview server needs DEAL_DOCUMENTS_DIR (documents and the protocol are
 // written there instead of GCS). Run: e2e/preview.sh test e2e/deal-vote.spec.ts
@@ -81,7 +82,7 @@ test('ctr deals publish: a document version and a draft round with the server ru
     excluded: ['blank', 'none'],
     weighting: 'person',
     windowH: 48,
-    ballot: 'choices_hidden',
+    ballot: 'choices_committee',
     mandate: null,
   })
   expect(bundle).toMatch(/^[0-9a-f]{64}$/)
@@ -108,7 +109,7 @@ function expectNoChoices(view: any, own: string | null) {
   expect(JSON.stringify(rest)).not.toMatch(/"(yes|no|blank|defaultBlank|choice)"\s*:/)
 }
 
-test('SPV members vote on the case page; nobody sees a count or another choice while it runs', async () => {
+test('SPV members vote on the case page; no member sees a count or another choice while it runs', async () => {
   const vote = (k: string, choice: string, attested = bundle) =>
     api[k]!.post(`/api/member/deals/${slug}/rounds/${roundId}/ballot`, {
       data: { choice, attested },
@@ -143,31 +144,31 @@ test('SPV members vote on the case page; nobody sees a count or another choice w
   expect(banner.votes.some((v: { roundId: string }) => v.roundId === roundId)).toBe(false) // already voted
 })
 
-test('the committee sees WHO has voted (turnout by name), never what, in the portal and the API', async () => {
+test('the committee sees who voted what, and the counts, live, in the portal and the API', async () => {
   const view = await roundAs('committee-board')
-  expectNoChoices(view, 'no')
-  expect(view.namedChoices).toBe(false)
+  expect(view.liveCounts).toBe(false) // members get no live counts...
+  expect(view.namedChoices).toBe(true) // ...the committee gets the choices
+  expect(view.tally).toMatchObject({ yes: 2, no: 1 })
   const byName = new Map(view.named.map((n: { name: string; counted: string }) => [n.name, n.counted]))
-  for (const k of ['invest-3', 'board', 'committee-board']) expect(byName.get(persona(k).name)).toBe('voted')
-  expect(view.named.filter((n: { counted: string }) => n.counted === 'voted').length).toBe(3)
+  expect(byName.get(persona('invest-3').name)).toBe('yes') // the latest ballot counts
+  expect(byName.get(persona('board').name)).toBe('yes')
+  expect(byName.get(persona('committee-board').name)).toBe('no')
   // Those who have not voted show as not voted (or standing blank), so the committee can chase them.
-  expect(view.named.every((n: { counted: string }) => ['voted', 'none', 'default_blank'].includes(n.counted))).toBe(
-    true,
-  )
+  expect(view.named.filter((n: { counted: string }) => ['yes', 'no', 'blank'].includes(n.counted)).length).toBe(3)
   expect(view.turnout.voted).toBe(3)
 
-  // The admin API (ctr rounds show / list): the same, every ballot by name without its choice.
+  // The admin API (ctr rounds show / list, deals:read: the committee): the same.
   const detail = await json(await admin.get(`/api/admin/rounds/${roundId}`))
-  expect(detail.round.tally).toBeNull()
+  expect(detail.round.tally).toMatchObject({ yes: 2, no: 1 })
   expect(detail.round.turnout.voted).toBe(3)
-  expect(detail.round.rules.ballot).toBe('choices_hidden')
+  expect(detail.round.rules.ballot).toBe('choices_committee')
   expect(detail.ballots.length).toBe(4) // invest-3 voted twice: every cast is a row
-  for (const b of detail.ballots) expect(b).not.toHaveProperty('choice')
+  expect(detail.ballots.map((b: { choice: string }) => b.choice).sort()).toEqual(['no', 'no', 'yes', 'yes'])
   const list = await json(await admin.get('/api/admin/rounds?status=open'))
-  expect(list.rounds.find((r: { id: string }) => r.id === roundId).tally).toBeNull()
+  expect(list.rounds.find((r: { id: string }) => r.id === roundId).tally).toMatchObject({ yes: 2, no: 1 })
 })
 
-test('page: the open vote as an SPV member and as the committee, no counts on screen', async ({ browser }) => {
+test('page: the open vote as an SPV member (no counts) and as the committee (counts, names)', async ({ browser }) => {
   for (const k of ['invest-3', 'committee-board']) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 860 }, locale: 'nb-NO' })
     await ctx.addCookies(cookiesFor(persona(k)))
@@ -178,9 +179,14 @@ test('page: the open vote as an SPV member and as the committee, no counts on sc
     await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => {})
     await page.screenshot({ path: `${RUN_DIR}/deal-vote/case-open-${k}.png`, fullPage: true })
     const text = await page.locator('.round').first().innerText()
-    expect(text).toContain('Ingen ser hva andre har stemt')
-    expect(text).not.toMatch(/Ja \d+ · Nei \d+/)
-    if (k === 'committee-board') expect(text).toMatch(/hvem som har stemt/i) // the label is uppercased in CSS
+    expect(text).toContain('Medlemmene ser ikke hva andre har stemt')
+    if (k === 'committee-board') {
+      expect(text).toMatch(/Ja 2 · Nei 1/)
+      expect(text).toMatch(/navngitte stemmer/i) // the label is uppercased in CSS
+    } else {
+      expect(text).not.toMatch(/Ja \d+ · Nei \d+/)
+      expect(text).not.toMatch(/navngitte stemmer/i)
+    }
     expect(errors).toEqual([])
     await ctx.close()
   }
@@ -216,14 +222,14 @@ test('after the deadline the committee closes: 2/3 of yes + no, protocol, deal_e
   const r = shown.round
   expect(r.status).toBe('closed')
   expect(r.ledger).toBeNull() // CTORI3 keeps no hovedbok
-  // After close the counts are the result, for everyone who sees the case; choices stay unnamed.
+  // After close the counts are the result, for everyone who sees the case; names stay the committee's.
   expect(r.tally).toMatchObject({ yes: 2, no: 1 })
-  for (const b of shown.ballots) expect(b).not.toHaveProperty('choice')
   const asMember = await roundAs('invest-3')
   expect(asMember.tally).toMatchObject({ yes: 2, no: 1 })
+  expect(asMember.named).toBeUndefined()
   const asCommittee = await roundAs('committee-board')
   expect(asCommittee.tally).toMatchObject({ yes: 2, no: 1 })
-  expect(asCommittee.named.some((n: { counted: string }) => ['yes', 'no', 'blank'].includes(n.counted))).toBe(false)
+  expect(asCommittee.named.filter((n: { counted: string }) => n.counted === 'yes').length).toBe(2)
   // The record keeps every choice by person: the count and the protocol never depend on the switch.
   const [snap] = (await db()`SELECT result_snapshot FROM deal_rounds WHERE id = ${roundId}`) as any[]
   expect(snap.result_snapshot.ballots.filter((x: { counted: string }) => x.counted === 'yes').length).toBe(2)
@@ -272,11 +278,14 @@ test('CTORI4 hovedbok (hq 039): a passed invest-4 round needs a lead and a follo
   const detail = await json(await admin.get(`/api/admin/rounds/${id}`))
   const someone = detail.roster[0]
   expect(someone).toBeTruthy()
-  await json(
+  const registered = await json(
     await admin.post(`/api/admin/rounds/${id}/ballots`, {
       data: { person: someone.personId, choice: 'yes', method: 'on_behalf', reason: 'e2e on the branch' },
     }),
   )
+  // A rounds:write response may go to a board-only owner: no live count there (withTally's default).
+  expect(registered.tally).toBeNull()
+  expect(registered.turnout.voted).toBe(1)
   await db()`
     UPDATE deal_rounds SET opened_at = NOW() - interval '48 hours', closes_at = NOW() + interval '2 seconds'
     WHERE id = ${id}

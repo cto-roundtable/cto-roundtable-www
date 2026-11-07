@@ -106,7 +106,8 @@
     <v-alert v-if="error" type="warning" variant="outlined" density="compact" class="mt-3">{{ error }}</v-alert>
 
     <!-- The counts only once closed, unless the round's rule shows them live (ballotVisibility
-         in server/utils/dealRounds.ts). How many have voted is always shown, never how. -->
+         in server/utils/dealRounds.ts; the committee gets them live where it sees the choices).
+         How many have voted is always shown. -->
     <template v-if="round.status !== 'draft'">
       <template v-if="round.tally">
         <div class="bar mt-4" role="img" :aria-label="countsLine">
@@ -118,7 +119,7 @@
         {{ t('deals.ballot.turnout', { pct: pct(round.turnout.turnout), n: round.turnout.eligible }) }}
       </p>
       <p v-if="round.status === 'open'" class="meta mt-1">
-        {{ t(round.liveCounts ? 'deals.ballot.secret' : 'deals.ballot.hidden') }}
+        {{ t(round.liveCounts ? 'deals.ballot.secret' : round.namedChoices ? 'deals.ballot.hiddenCommittee' : 'deals.ballot.hidden') }}
       </p>
     </template>
 
@@ -152,7 +153,8 @@
 
 <script setup lang="ts">
 // One decision round on a case. Members see their own ballot, how many have voted,
-// and the counts once the vote has closed; the committee also sees who has voted. A
+// and the counts once the vote has closed; the committee also sees who has voted, and
+// (under 'choices_committee', the switch today) what, live. A
 // ballot is one tap, and "no" weighs the same as "yes". Rules and visibility (one
 // switch, ROUND_RULES.ballot): server/utils/dealRounds.ts.
 interface Tally {
@@ -193,8 +195,8 @@ interface CaseRoundView {
     conflict: boolean
     ballot: { choice: string; castAt: string } | null
   }
-  /** committee only: the named list carries each choice ('voted' otherwise) */
-  namedChoices?: boolean
+  /** the round's rule names choices to the committee (the named list carries each choice, 'voted' otherwise) */
+  namedChoices: boolean
   named?: {
     name: string
     counted: string

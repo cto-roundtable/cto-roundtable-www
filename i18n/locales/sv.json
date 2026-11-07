@@ -739,6 +739,7 @@
       "turnout": "Deltagande {pct} av {n} röstberättigade.",
       "secret": "Du ser antalet röster, inte vem som röstade vad. Kommittén ser namnen. Förslaget antas med minst 2/3 ja av ja- och nej-rösterna.",
       "hidden": "Ingen ser vad andra har röstat medan omröstningen pågår, inte heller kommittén. Kommittén ser vem som har röstat. Antalet ja, nej och blankt visas när den är avslutad. Förslaget antas med minst 2/3 ja av ja- och nej-rösterna.",
+      "hiddenCommittee": "Medlemmarna ser inte vad andra har röstat medan omröstningen pågår. Kommittén ser vem som röstade vad. Antalet ja, nej och blankt visas för alla när den är avslutad. Förslaget antas med minst 2/3 ja av ja- och nej-rösterna.",
       "protocol": "Protokollet (PDF)",
       "namedLabel": "Namngivna röster (bara kommittén)",
       "whoVotedLabel": "Vem som har röstat (bara kommittén)",
