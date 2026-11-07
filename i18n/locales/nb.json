@@ -739,6 +739,7 @@
       "turnout": "Oppslutning {pct} av {n} stemmeberettigede.",
       "secret": "Du ser antall stemmer, ikke hvem som stemte hva. Komiteen ser navnene. Forslaget vedtas med minst 2/3 ja av ja- og nei-stemmene.",
       "hidden": "Ingen ser hva andre har stemt mens avstemningen pågår, heller ikke komiteen. Komiteen ser hvem som har stemt. Antall ja, nei og blankt vises når den er avsluttet. Forslaget vedtas med minst 2/3 ja av ja- og nei-stemmene.",
+      "hiddenCommittee": "Medlemmene ser ikke hva andre har stemt mens avstemningen pågår. Komiteen ser hvem som stemte hva. Antall ja, nei og blankt vises for alle når den er avsluttet. Forslaget vedtas med minst 2/3 ja av ja- og nei-stemmene.",
       "protocol": "Protokollen (PDF)",
       "namedLabel": "Navngitte stemmer (bare komiteen)",
       "whoVotedLabel": "Hvem som har stemt (bare komiteen)",

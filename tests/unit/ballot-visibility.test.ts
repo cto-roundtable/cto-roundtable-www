@@ -1,6 +1,7 @@
 // Who sees what of a deal vote (komité 2026-11-03, ctori-4 item hide-votes): a voter
-// never sees how anyone else voted while it runs, the committee sees who voted, not
-// what, and it is ONE switch (ROUND_RULES.ballot). Run: npm run test:unit.
+// never sees how anyone else voted while it runs, the committee sees every choice by
+// name, live (dc-95 H1, Snorre 2026-11-07), and it is ONE switch (ROUND_RULES.ballot).
+// Run: npm run test:unit.
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { describe, test } from 'node:test'
@@ -22,9 +23,12 @@ const b = (id: string, choice: string) => ({
 })
 
 describe('the switch', () => {
-  test('today: choices hidden, no live counts, no named choices', () => {
-    assert.equal(ROUND_RULES.ballot, 'choices_hidden')
-    assert.deepEqual(ballotVisibility(ROUND_RULES.ballot), { liveCounts: false, namedChoices: false })
+  test('today: no live counts to members, named choices to the committee', () => {
+    assert.equal(ROUND_RULES.ballot, 'choices_committee')
+    assert.deepEqual(ballotVisibility(ROUND_RULES.ballot), { liveCounts: false, namedChoices: true })
+  })
+  test('the strictest setting hides the choices from the committee too', () => {
+    assert.deepEqual(ballotVisibility('choices_hidden'), { liveCounts: false, namedChoices: false })
   })
   test('opening it up again is the old rule: live counts, named choices to the committee', () => {
     assert.deepEqual(ballotVisibility('choices_board_only'), { liveCounts: true, namedChoices: true })
@@ -43,6 +47,15 @@ describe('the switch', () => {
     assert.equal(countsShown({ status: 'closed', rules: hidden }), true)
     assert.equal(countsShown({ status: 'open', rules: { ballot: 'choices_board_only' } }), true)
     assert.equal(countsShown({ status: 'open', rules: null }), false)
+  })
+  test('the committee gets the counts live exactly where it gets the named choices', () => {
+    const committee = { ballot: 'choices_committee' }
+    assert.equal(countsShown({ status: 'open', rules: committee }), false) // a member
+    assert.equal(countsShown({ status: 'open', rules: committee }, true), true) // the committee
+    assert.equal(countsShown({ status: 'draft', rules: committee }, true), true)
+    assert.equal(countsShown({ status: 'open', rules: { ballot: 'choices_hidden' } }, true), false)
+    assert.equal(countsShown({ status: 'open', rules: null }, true), false)
+    assert.equal(countsShown({ status: 'closed', rules: committee }), true)
   })
 })
 

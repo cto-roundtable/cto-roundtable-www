@@ -18,18 +18,20 @@ export const ROUND_RULES = {
   excluded: ['blank', 'none'],
   weighting: 'person',
   window_h: 48,
-  // THE visibility switch (komité 2026-11-03, ctori-4 item hide-votes). 'choices_hidden':
-  // nobody sees the counts while the vote runs, the committee sees who has voted but
-  // never what. Set it back to 'choices_board_only' (live counts to members, named
-  // choices to the committee) to open it up again. A round takes the switch when it opens.
-  ballot: 'choices_hidden',
+  // THE visibility switch (komité 2026-11-03, ctori-4 item hide-votes; dc-95 H1, Snorre
+  // 2026-11-07). 'choices_committee': members see no count and no other choice while the
+  // vote runs; the committee sees every choice by name, live. 'choices_hidden' hides the
+  // choices from the committee too (who voted, never what). 'choices_board_only' opens it
+  // up again (live counts to members as well). A round takes the switch when it opens.
+  ballot: 'choices_committee',
   mandate: null,
 } as const
 
 export interface BallotVisibility {
-  /** the yes / no / blank counts while the round is open; after close everyone who sees the case gets them */
+  /** the yes / no / blank counts to members while the round is open; after close everyone who sees the case gets them */
   liveCounts: boolean
-  /** each roster member's choice by name, to the committee and the admin API (otherwise only that they voted) */
+  /** each roster member's choice by name, live, to the committee and the admin API (and so the
+   *  counts too); otherwise only that they voted */
   namedChoices: boolean
 }
 
@@ -42,13 +44,20 @@ export interface BallotVisibility {
 export function ballotVisibility(rule: unknown): BallotVisibility {
   // 'open' is the email era (reply-all), 'choices_board_only' the portal until 2026-11-03.
   if (rule === 'choices_board_only' || rule === 'open') return { liveCounts: true, namedChoices: true }
+  if (rule === 'choices_committee') return { liveCounts: false, namedChoices: true }
   // 'choices_hidden', and anything unknown: the strictest.
   return { liveCounts: false, namedChoices: false }
 }
 
-/** The counts may leave the server: once the round is closed, or live where its rule says so. */
-export function countsShown(r: { status: string; rules?: { ballot?: unknown } | null }): boolean {
-  return r.status === 'closed' || ballotVisibility(r.rules?.ballot).liveCounts
+/**
+ * The counts may leave the server: once the round is closed, or live where its rule
+ * says so. `asCommittee`: the viewer is the committee (the case page's committee view,
+ * a `deals:read` token), which gets them live wherever it gets the named choices.
+ */
+export function countsShown(r: { status: string; rules?: { ballot?: unknown } | null }, asCommittee = false): boolean {
+  if (r.status === 'closed') return true
+  const v = ballotVisibility(r.rules?.ballot)
+  return v.liveCounts || (asCommittee && v.namedChoices)
 }
 
 const PROPOSAL_KEYS = ['amount', 'currency', 'instrument', 'cap', 'termsSummary']
@@ -395,11 +404,15 @@ export async function tallyOf(r: any): Promise<Tally | null> {
   return countRound(r.roster, current, late).tally
 }
 
-/** The round object with what may be seen of its count: turnout always, the counts per countsShown(). */
-export async function withTally(r: any) {
+/**
+ * The round object with what may be seen of its count: turnout always, the counts per
+ * countsShown(). `asCommittee` only where the caller is known to be the committee (the
+ * `deals:read` routes); the `rounds:write` responses may go to a board-only owner.
+ */
+export async function withTally(r: any, asCommittee = false) {
   const o = roundObject(r)
   const t = await tallyOf(r)
-  o.tally = t && countsShown(r) ? t : null
+  o.tally = t && countsShown(r, asCommittee) ? t : null
   o.turnout = t ? turnoutOf(t) : null
   return o
 }
@@ -616,7 +629,7 @@ export async function roundDetail(roundId: string) {
   const closesAt = r.closes_at ? new Date(r.closes_at).getTime() : null
   const { namedChoices } = ballotVisibility(r.rules?.ballot)
   return {
-    round: await withTally(r),
+    round: await withTally(r, true),
     roster: ((r.roster ?? []) as RosterEntry[]).map((m) => ({
       personId: m.person_id,
       name: m.name,
@@ -658,7 +671,7 @@ export async function listRounds(status: string | null) {
     ORDER BY r.created_at DESC
     LIMIT 100
   `
-  return Promise.all((rows as any[]).map(withTally))
+  return Promise.all((rows as any[]).map((r) => withTally(r, true)))
 }
 
 /**
@@ -829,19 +842,22 @@ function noticeMail(
   const offer = p.amount ? `${nok(p.amount, p.currency ?? 'NOK')}, ${escapeHtml(String(p.instrument ?? ''))}` : ''
   const closes = escapeHtml(osloStamp(r.closes_at, lang))
   const hi = mailParagraph(nb ? `Hei ${firstNameHtml(to.name)},` : `Hi ${firstNameHtml(to.name)},`)
-  const live = ballotVisibility(r.rules?.ballot).liveCounts
+  const v = ballotVisibility(r.rules?.ballot)
+  const seen = nb
+    ? v.liveCounts
+      ? 'Underveis ser medlemmene antall stemmer, ikke hvem som stemte hva.'
+      : v.namedChoices
+        ? 'Medlemmene ser ikke hva andre har stemt før avstemningen er avsluttet. Komiteen ser stemmene.'
+        : 'Ingen ser hva andre har stemt. Antall stemmer vises når avstemningen er avsluttet.'
+    : v.liveCounts
+      ? 'While it runs, members see the counts, not who voted what.'
+      : v.namedChoices
+        ? 'Members do not see what others voted until the vote has closed. The committee sees the votes.'
+        : 'Nobody sees what others voted. The counts are shown once the vote has closed.'
   const rule = mailParagraph(
     nb
-      ? `Forslaget vedtas med minst 2/3 ja av ja- og nei-stemmene. Blanke og de som ikke stemmer telles ikke. ${
-          live
-            ? 'Underveis ser medlemmene antall stemmer, ikke hvem som stemte hva.'
-            : 'Ingen ser hva andre har stemt. Antall stemmer vises når avstemningen er avsluttet.'
-        }`
-      : `The proposal passes with at least 2/3 yes of the yes and no votes. Blank votes and members who do not vote are not counted. ${
-          live
-            ? 'While it runs, members see the counts, not who voted what.'
-            : 'Nobody sees what others voted. The counts are shown once the vote has closed.'
-        }`,
+      ? `Forslaget vedtas med minst 2/3 ja av ja- og nei-stemmene. Blanke og de som ikke stemmer telles ikke. ${seen}`
+      : `The proposal passes with at least 2/3 yes of the yes and no votes. Blank votes and members who do not vote are not counted. ${seen}`,
     'color: #777; font-size: 14px;',
   )
   if (kind === 'open') {
@@ -1017,8 +1033,8 @@ export async function recordNotices(roundId: string, body: Record<string, unknow
  * (ballotVisibility). Everyone who can see the case gets the turnout, and the
  * counts once the round is closed (live too where the rule allows it). A roster
  * member gets their own ballot. The committee also gets drafts and the named list:
- * every roster member, whether, how and when they voted, and what only where the
- * rule names choices (komité 2026-11-03: who, not what).
+ * every roster member, whether, how and when they voted, and what (with the live
+ * counts) where the rule names choices (dc-95 H1: the committee sees them all the time).
  */
 export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
   const sql = useDatabase()
@@ -1047,7 +1063,7 @@ export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
         const counted = countRound(roster, current, late)
         const whole: Tally = r.status === 'closed' && r.result_snapshot?.tally ? r.result_snapshot.tally : counted.tally
         full = whole
-        tally = countsShown(r) ? whole : null
+        tally = countsShown(r, viewer.isCommittee) ? whole : null
         turnout = turnoutOf(whole)
         const mine = current.find((b) => b.person_id === viewer.personId)
         if (mine) myBallot = { choice: mine.choice, castAt: mine.cast_at, method: mine.method }
@@ -1096,6 +1112,7 @@ export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
         proposal: r.source === 'portal' ? r.proposal : null,
         bundleSha256: r.bundle_sha256,
         liveCounts: visibility.liveCounts,
+        namedChoices: visibility.namedChoices,
         tally,
         turnout,
         hasProtocol: Boolean(r.protocol_object_key),
@@ -1105,7 +1122,6 @@ export async function caseRoundsView(viewer: CaseViewer, dealId: string) {
         ...(viewer.isCommittee
           ? {
               named,
-              namedChoices: visibility.namedChoices,
               canOpen: r.status === 'draft' && viewer.isCommittee,
               // The close screen asks of the whole count (a passed CTORI4 vote needs its
               // hovedbok people); only `missing` leaves the server, and only once it is due.
