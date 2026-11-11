@@ -16,6 +16,7 @@ const PAGES = (
   [
     '/member',
     '/member/caser',
+    '/member/caser/nei',
     '/member/updates',
     '/member/komite',
     '/member/board',

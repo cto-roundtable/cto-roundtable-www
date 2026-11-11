@@ -22,6 +22,7 @@ const PROBES = [
   '/api/member/deals',
   '/api/member/deals/open-votes',
   '/api/member/deals?declined=1',
+  '/api/member/deals/declined',
   '/api/member/updates',
   '/api/member/discounts',
   '/api/member/surveys',
@@ -37,6 +38,9 @@ const PROBES = [
   '/api/member/invest/ctori-4',
   '/api/member/invest/ctori-4/documents/deck/comments',
 ]
+
+/** What a no row may carry (DeclinedRow): never a blurb, a round or the committee's notes. */
+const NO_ROW_KEYS = ['category', 'coLeads', 'decidedKnown', 'decidedOn', 'name', 'owner', 'reason', 'slug', 'status']
 
 interface Probe {
   status: number
@@ -95,6 +99,13 @@ async function dataTruth() {
   const leads = (await sql`
     SELECT slug FROM pipeline_deals WHERE slug IS NOT NULL AND status = 'incoming' ORDER BY slug
   `) as { slug: string }[]
+  // Every no (hq 048, /member/caser/nei): rejected or missed, never invested, with or without a slug.
+  const noes = (await sql`
+    SELECT count(*)::int AS n FROM pipeline_deals pd
+    WHERE pd.status IN ('rejected', 'missed') AND NOT EXISTS (SELECT 1 FROM investments i WHERE i.deal_id = pd.id)
+  `) as { n: number }[]
+  // Whether the persona is in the SPV deploying now: who sees the working pipeline and the noes.
+  const deploying = (await sql`SELECT slug FROM network_groups WHERE invest_phase = 'deploying'`) as { slug: string }[]
   const offering = (await sql`SELECT status FROM invest_offerings WHERE slug = 'ctori-4'`) as { status: string }[]
   const hasDeck = (await sql`
     SELECT 1 FROM invest_offering_documents d JOIN invest_offerings o ON o.id = d.offering_id
@@ -106,6 +117,8 @@ async function dataTruth() {
     updateIds,
     spvDigests: spvDigests.map((r) => r.slug),
     leads: leads.map((r) => r.slug),
+    noes: noes[0].n,
+    deploying: deploying.map((r) => r.slug),
     ctori4: { status: offering[0]?.status ?? null, hasDeck: hasDeck.length > 0 },
   }
 }
@@ -241,7 +254,12 @@ for (const spec of PERSONAS) {
       // the invest part of the API; 403 on everything else, whatever groups they are still
       // in (portalAccess.ts, Snorre 2026-11-06).
       expect.soft(s('/api/member/rejoin'), `${p.key} rejoin`).toBe(200)
-      const investPart = ['/api/member/deals', '/api/member/deals/open-votes', '/api/member/deals?declined=1']
+      const investPart = [
+        '/api/member/deals',
+        '/api/member/deals/open-votes',
+        '/api/member/deals?declined=1',
+        '/api/member/deals/declined',
+      ]
       for (const path of [...investPart, '/api/member/updates'])
         expect.soft(s(path), `${p.key} ${path}`).toBe(p.level === 'investor' ? 200 : 403)
       for (const path of [
@@ -301,7 +319,7 @@ for (const spec of PERSONAS) {
       .soft(s('/api/member/invest/ctori-4/documents/deck/comments'), `${p.key} ctori-4 deck comments`)
       .toBe(retired ? 403 : seesCtori4 && ctori4.hasDeck ? 200 : 404)
 
-    // Cases: for a member the overview (declined included) and the case page agree, and
+    // Cases: for a member the overview and the no list (/member/caser/nei) and the case page agree, and
     // nobody opens a case the committee cannot. The committee's own list is the member
     // view by design, while its case page opens everything, so it is left out of the first rule.
     const listed = new Set<string>()
@@ -310,13 +328,22 @@ for (const spec of PERSONAS) {
       const api2 = await apiFor(p)
       overview = await (await api2.get('/api/member/deals?declined=1')).json()
       for (const slug of overviewSlugs(overview)) listed.add(slug)
+      // Every no (/member/caser/nei): for the SPV deploying now, all of them, and the overview
+      // shows its newest five. A row links (has a slug) exactly when the case page opens it.
+      const noes = await (await api2.get('/api/member/deals/declined')).json()
       await api2.dispose()
-      // A declined company the viewer may not open: name, stage and date, nothing more.
-      for (const c of (overview.declined ?? []) as Record<string, unknown>[]) {
-        if (c.canOpen !== false) continue
-        expect
-          .soft({ blurb: c.blurb, owner: c.owner, round: c.round }, `${p.key} declined ${c.slug} it may not open`)
-          .toEqual({ blurb: null, owner: null, round: null })
+      const working = p.groups.some((g) => truth.deploying.includes(g))
+      if (working) {
+        expect.soft(noes.rows.length, `${p.key} sees every no`).toBe(truth.noes)
+        expect.soft(overview.declinedTotal, `${p.key} "Se alle (N)"`).toBe(truth.noes)
+        expect.soft(overview.declined, `${p.key} overview: the newest five noes`).toEqual(noes.rows.slice(0, 5))
+        for (const c of noes.rows) {
+          if (c.slug) listed.add(c.slug)
+          expect.soft(Object.keys(c).sort(), `${p.key} no ${c.name}: these fields only`).toEqual(NO_ROW_KEYS)
+        }
+      } else {
+        expect.soft(noes.rows, `${p.key} is not in the SPV deploying now, yet sees the noes`).toBeNull()
+        expect.soft(overview.declined, `${p.key} overview declined`).toBeNull()
       }
     }
     // Invested companies: exactly what the persona's own SPVs invested in (investments x

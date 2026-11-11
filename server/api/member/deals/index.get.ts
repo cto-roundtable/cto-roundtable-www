@@ -2,8 +2,9 @@
 // The cases overview, always as a MEMBER sees it (Snorre, 2026-10-29: everyone lands
 // on the member view; the committee's extras are on /member/komite): decided cases,
 // cases under review now, inactive ones, and what the member's own SPVs invested in
-// (server/utils/deals.ts, listCaseOverview). With ?declined=1 also the companies the
-// committee said no to. There is no "see as another role" (Snorre, 2026-10-30).
+// (server/utils/deals.ts, listCaseOverview). With ?declined=1 also the newest noes and
+// how many there are (all of them: /api/member/deals/declined). There is no "see as
+// another role" (Snorre, 2026-10-30).
 export default defineEventHandler(async (event) => {
   const viewer = await caseViewer(event.context.session.personId)
   const declined = getQuery(event).declined === '1'

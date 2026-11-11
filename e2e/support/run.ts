@@ -33,14 +33,14 @@ export const isCommittee = (p: Persona) => has(p, 'current-komite')
 
 /**
  * The case slugs a GET /api/member/deals overview offers to OPEN, across its sections. A
- * declined company the viewer may not open is listed with canOpen: false and no link.
+ * no the viewer may not open is listed with slug null and no link.
  */
 export function overviewSlugs(body: Record<string, unknown>): string[] {
   const sections = ['decided', 'active', 'inactive', 'invested', 'declined']
   return sections.flatMap((k) =>
-    ((body[k] as { slug: string; canOpen?: boolean }[] | null) ?? [])
-      .filter((c) => c.canOpen !== false)
-      .map((c) => c.slug),
+    ((body[k] as { slug: string | null; canOpen?: boolean }[] | null) ?? [])
+      .filter((c) => c.slug && c.canOpen !== false)
+      .map((c) => c.slug as string),
   )
 }
 
