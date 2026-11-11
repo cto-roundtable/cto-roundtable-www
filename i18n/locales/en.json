@@ -557,8 +557,9 @@
       "invested": "Invested by your SPV",
       "showDeclined": "Show the ones we said no to",
       "declined": "Said no to",
-      "declinedIntro": "Companies the committee reviewed and said no to, and votes that did not end in an investment.",
+      "declinedIntro": "The newest companies we said no to, and the ones that said no to us.",
       "declinedEmpty": "Nothing to show.",
+      "seeAllDeclined": "See all ({n})",
       "investedIntro": "The memo and the pitch deck are on the case once the committee has shared them.",
       "spvFilter": "Filter by SPV",
       "allSpvs": "All",
@@ -569,6 +570,27 @@
         "name": "Name"
       },
       "investedMany": "Invested by your SPVs"
+    },
+    "noes": {
+      "intro": "Every company we said no to, and the ones that said no to us or whose round closed before we got in. Newest first, with why it ended. Where the answer was about the size of the ticket, it says so clearly.",
+      "notForYou": "This list is for the members of the SPV investing now.",
+      "searchLabel": "Search",
+      "searchPlaceholder": "Search names and reasons",
+      "yearLabel": "Year",
+      "allYears": "All years",
+      "categoryLabel": "Show by why it ended",
+      "allCategories": "All",
+      "shown": "Showing {shown} of {total}",
+      "noMatch": "Nothing found. Try another word, or remove a filter.",
+      "cameIn": "Came in {year}",
+      "category": {
+        "ticket_size": "Ticket size",
+        "they_declined": "They said no to us",
+        "missed_round": "Round closed",
+        "not_a_fit": "Not right for us",
+        "company_dead": "Company shut down",
+        "none": "No category"
+      }
     },
     "status": {
       "incoming": "New",

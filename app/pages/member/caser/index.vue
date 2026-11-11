@@ -77,18 +77,22 @@
         </div>
       </section>
 
-      <!-- Declined companies, only on request (dc-33 H1): name, stage and date, no actions. -->
+      <!-- The newest noes, only on request (dc-33 H1); every one is on /member/caser/nei. -->
       <section v-if="working" class="group">
         <button v-if="declined === null" type="button" class="more" :disabled="loadingDeclined" @click="loadDeclined">
           {{ t('deals.overview.showDeclined') }}
         </button>
         <template v-else>
-          <h2 class="group-title">{{ t('deals.overview.declined') }} <span class="count">{{ declined.length }}</span></h2>
+          <h2 class="group-title">{{ t('deals.overview.declined') }} <span class="count">{{ declinedTotal }}</span></h2>
           <p class="group-intro">{{ t('deals.overview.declinedIntro') }}</p>
           <div v-if="declined.length" class="rows">
-            <DealsCaseRow v-for="c in declined" :key="c.slug" :c="c" quiet />
+            <DealsNoRow v-for="c in declined" :key="`${c.name}-${c.decidedOn}`" :c="c" />
           </div>
           <p v-else class="empty">{{ t('deals.overview.declinedEmpty') }}</p>
+          <NuxtLink v-if="declined.length" to="/member/caser/nei" class="see-all">
+            {{ t('deals.overview.seeAllDeclined', { n: declinedTotal }) }}
+            <v-icon size="16" aria-hidden="true">mdi-chevron-right</v-icon>
+          </NuxtLink>
         </template>
       </section>
     </template>
@@ -100,6 +104,8 @@
 // on top, then what is under review now, the quiet ones folded away, and what the
 // member's own SPVs invested in, each tagged with its SPV. The committee's view is
 // /member/komite. Nobody can look at it as another role (Snorre, 2026-10-30).
+import type { NoRow } from '~/utils/noList'
+
 definePageMeta({ layout: 'member' })
 
 interface Row {
@@ -129,7 +135,8 @@ interface Overview {
   active: Row[]
   inactive: Row[]
   invested: Row[]
-  declined: Row[] | null
+  declined: NoRow[] | null
+  declinedTotal: number | null
   inactiveAfterDays: number
   latestDigest: { periodStart: string; bodyMd: string } | null
 }
@@ -140,7 +147,8 @@ const { session, checked } = useAuthSession()
 const { $posthog } = useNuxtApp()
 const loading = ref(true)
 const data = ref<Overview | null>(null)
-const declined = ref<Row[] | null>(null)
+const declined = ref<NoRow[] | null>(null)
+const declinedTotal = ref(0)
 const loadingDeclined = ref(false)
 
 watch(
@@ -198,7 +206,8 @@ async function loadDeclined() {
   try {
     const res = await $fetch<Overview>('/api/member/deals', { query: { declined: '1' } })
     declined.value = res.declined ?? []
-    $posthog?.capture?.('deal_pipeline_declined_viewed', { declined: declined.value.length })
+    declinedTotal.value = res.declinedTotal ?? declined.value.length
+    $posthog?.capture?.('deal_pipeline_declined_viewed', { declined: declinedTotal.value })
   } finally {
     loadingDeclined.value = false
   }
@@ -299,6 +308,20 @@ async function loadDeclined() {
 .more:hover,
 .more:focus-visible {
   background: rgba(255, 255, 255, 0.08);
+}
+.see-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 10px;
+  min-height: 40px;
+  font-size: 14px;
+  color: #fff;
+  text-decoration: none;
+}
+.see-all:hover,
+.see-all:focus-visible {
+  text-decoration: underline;
 }
 .invested-tools {
   display: flex;

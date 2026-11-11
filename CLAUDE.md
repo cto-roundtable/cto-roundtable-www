@@ -324,8 +324,9 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   (`listLeads`: ansvarlig, contacted_how and the company contact, created, last activity
   and note, the first deal_event, the Slack channel). The committee moves one out of
   `incoming` there or on the case page through `POST /api/member/committee/leads/:slug`
-  (`moveLead`): to reviewing, waiting or `passed` ("Si nei": no, founder not told yet, so it stays out
-  of the members' declined list and digest; the visible flag is dropped; dc-64), with an
+  (`moveLead`): to reviewing, waiting or `rejected` ("Si nei": on the members' no list at once,
+  `declined_at` = today, the visible flag dropped; Snorre 2026-11-11 replaced dc-64's `passed`:
+  whether the founder knows is `founder_told_at`, never a status), with an
   optional note to `last_activity_note`, a `status_change` event, and
   `setActor(sql, 'portal:<person id>')` (`app.changed_by`) in the same transaction so
   `audit_pipeline_deals` names the person. Only from `incoming`; 403 for anyone off the
@@ -383,10 +384,23 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   `last_activity_at`, else `updated_at`); inactive (folded); what the member's own SPVs
   invested in (`investments` joined to their memberships, one tag per SPV, newest
   `investments.invested_at` first, sortable by last activity or name, filterable by
-  SPV, each row linking to `/member/updates/<slug>`); the declined ones on request
-  (name, stage and date). `/member/pipeline` redirects here. The actions (ask, object,
+  SPV, each row linking to `/member/updates/<slug>`); on request the newest
+  `DECLINED_OVERVIEW_ROWS` (5) noes and "Se alle (N)". `/member/pipeline` redirects here. The actions (ask, object,
   "I know them", "Jeg er inhabil") live on the case page, in their sections, never on
   the list.
+- **Every no** (`/member/caser/nei`, `listDeclined` in `server/utils/deals.ts`,
+  `GET /api/member/deals/declined`, Snorre 2026-11-11): every deal in `DECLINED_STATUSES`
+  (`rejected`: we said no; `missed`: they did, or the round closed) that no SPV invested in,
+  with or without a slug, newest first by `declined_at`, else `created_at` ("Kom inn <år>").
+  Name, status, category, reason, year, ansvarlig. Columns from hq migration 048:
+  `decline_category` (`ticket_size`, `they_declined`, `missed_round`, `not_a_fit`,
+  `company_dead`; a ticket-size row is marked so it cannot be missed), `decline_reason` (one
+  member-safe line), `declined_at`, `founder_told_at` (not shown). Search on name and
+  reason, filter by year and category, in the browser (`app/utils/noList.ts`, pure, pinned
+  by `tests/unit/no-list.test.ts`). Who sees it: the same people as the overview's "Sagt
+  nei til", a member of the SPV deploying now (as a member, the committee too); anyone else
+  gets `rows: null`. A row links only when the case rule opens it for the viewer; the
+  others are listed, not linked, and never carry a blurb or a round.
 - **Follow-up page**: the case page of an invested company (status `invested`, or an
   `investments` row) follows up instead of reviewing: a link to its investor updates,
   no vote, no "Jeg er inhabil", no objection chips. Q&A becomes "Spørsmål om status"

@@ -557,8 +557,9 @@
       "invested": "Investerat av ditt SPV",
       "showDeclined": "Visa de vi har sagt nej till",
       "declined": "Sagt nej till",
-      "declinedIntro": "Bolag kommittén har utvärderat och sagt nej till, och omröstningar som inte slutade i en investering.",
+      "declinedIntro": "De senaste bolagen vi har sagt nej till, och de som sa nej till oss.",
       "declinedEmpty": "Inget att visa.",
+      "seeAllDeclined": "Se alla ({n})",
       "investedIntro": "Memo och presentation finns på caset när kommittén har delat dem.",
       "spvFilter": "Filtrera efter SPV",
       "allSpvs": "Alla",
@@ -569,6 +570,27 @@
         "name": "Namn"
       },
       "investedMany": "Investerat av dina SPV:er"
+    },
+    "noes": {
+      "intro": "Alla bolag vi har sagt nej till, och de som sa nej till oss eller där rundan stängde innan vi kom med. Senaste först, med varför det tog slut. Där svaret handlade om biljettens storlek står det tydligt.",
+      "notForYou": "Listan är för medlemmarna i den SPV som investerar nu.",
+      "searchLabel": "Sök",
+      "searchPlaceholder": "Sök i namn och motivering",
+      "yearLabel": "År",
+      "allYears": "Alla år",
+      "categoryLabel": "Visa efter varför det tog slut",
+      "allCategories": "Alla",
+      "shown": "Visar {shown} av {total}",
+      "noMatch": "Inga träffar. Prova ett annat ord, eller ta bort ett filter.",
+      "cameIn": "Kom in {year}",
+      "category": {
+        "ticket_size": "Biljettstorlek",
+        "they_declined": "De sa nej till oss",
+        "missed_round": "Rundan stängde",
+        "not_a_fit": "Passade inte oss",
+        "company_dead": "Bolaget lades ned",
+        "none": "Utan kategori"
+      }
     },
     "status": {
       "incoming": "Ny",

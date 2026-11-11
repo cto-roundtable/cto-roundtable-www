@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { DECLINE_CATEGORIES, type DeclineCategory } from './declineCategories'
 
 /**
  * Cases ("caser"): a deal as the SPV members see it before and during a vote.
@@ -40,8 +41,11 @@ export const ACTIVE_STATUSES = ['reviewing', 'waiting', 'to_be_voted', 'pending_
 /** A new lead, not yet reviewed: the committee's only, never a member's, whatever the
  *  visible flag, a round or an SPV says (Snorre, 2026-10-30). */
 export const LEAD_STATUS = 'incoming'
-/** Declined: shown on the feed only on request. 'passed' stays out until the founder is told ('rejected'). */
-export const DECLINED_STATUSES = ['rejected']
+/** Every no members see (/member/caser/nei, and the newest on the overview): 'rejected' is
+ *  ours, 'missed' theirs or the round's ("those who said no to us is an important signal",
+ *  Snorre 2026-11-11). Whether the founder has been told is founder_told_at (hq 048), never
+ *  a status: 'passed' no longer keeps a no off the list. */
+export const DECLINED_STATUSES = ['rejected', 'missed']
 
 export interface CaseViewer {
   personId: string
@@ -555,8 +559,8 @@ export interface CaseRow {
   spvs: { slug: string; name: string }[]
   /** when the latest of those SPVs invested (investments.invested_at; null if unknown) */
   investedAt: string | null
-  /** the case page opens for this viewer (always, except some declined rows, which
-   *  then carry no blurb, owner or round) */
+  /** the case page opens for this viewer: always here (every row passed caseVisibleSql);
+   *  the no list (DeclinedRow) is where a row may be listed and not linked */
   canOpen: boolean
 }
 
@@ -581,23 +585,19 @@ function caseRowColumns(sql: ReturnType<typeof useDatabase>, viewer: CaseViewer)
 }
 
 function caseRowOut(r: any): CaseRow {
-  // A declined company this viewer may not open is listed by name, stage and date
-  // only: the owner, the blurb (shared once any round opened, whichever SPV it was
-  // for) and that round would tell more than the case page itself, which is a 404.
-  const canOpen = r.can_open ?? true
   return {
     slug: r.slug,
     name: r.name,
     status: r.status,
-    blurb: canOpen ? r.investor_blurb : null,
-    owner: canOpen ? r.owner_name : null,
-    coLeads: canOpen ? (r.co_leads ?? []).map((p: Person) => p.name) : [],
+    blurb: r.investor_blurb,
+    owner: r.owner_name,
+    coLeads: (r.co_leads ?? []).map((p: Person) => p.name),
     lastActivityAt: r.last_activity_at,
-    round: canOpen ? r.round : null,
+    round: r.round,
     ours: r.ours,
     spvs: r.spvs ?? [],
     investedAt: r.invested_at,
-    canOpen,
+    canOpen: true,
   }
 }
 
@@ -623,19 +623,24 @@ export interface CaseOverview {
   inactive: CaseRow[]
   /** what this viewer's SPVs invested in */
   invested: CaseRow[]
-  /** on request: the companies we said no to, and votes that ended without an investment */
-  declined: CaseRow[] | null
+  /** on request: the newest DECLINED_OVERVIEW_ROWS noes (listDeclined), the rest on /member/caser/nei */
+  declined: DeclinedRow[] | null
+  /** how many noes the whole list has (the "Se alle (N)" link), with `declined` */
+  declinedTotal: number | null
   inactiveAfterDays: number
 }
+
+/** How many of the newest noes the overview shows; the rest are on /member/caser/nei. */
+export const DECLINED_OVERVIEW_ROWS = 5
 
 /**
  * The one cases overview (decision 2026-10-22 §6, dc-33 2026-10-23, Snorre's
  * feedback 2026-10-29): the ACTIVE SPV sees all active work, in three sections
  * (decided, under review now, inactive); a COMPLETED SPV sees only the companies it
  * invested in. Which deals count is the case rule (caseVisibleSql), so the overview,
- * the case page and its actions never disagree. With `declined`, also the companies
- * the committee said no to (on request, dc-33 H1), for the same people who see the
- * working pipeline.
+ * the case page and its actions never disagree. With `declined`, also the newest noes
+ * (on request, dc-33 H1) and how many there are, for the same people who see the
+ * working pipeline (listDeclined).
  */
 export async function listCaseOverview(
   viewer: CaseViewer,
@@ -655,18 +660,7 @@ export async function listCaseOverview(
       ${dealOwnerJoin(sql)}
       WHERE pd.slug IS NOT NULL AND ${caseVisibleSql(sql, viewer)}
     ` as Promise<any[]>,
-    opts.declined && activeGroups.length
-      ? (sql`
-          SELECT ${caseRowColumns(sql, viewer)}, ${caseVisibleSql(sql, viewer)} AS can_open
-          FROM pipeline_deals pd
-          JOIN organizations o ON o.id = pd.organization_id
-          ${dealOwnerJoin(sql)}
-          WHERE pd.slug IS NOT NULL AND pd.status = ANY(${DECLINED_STATUSES})
-            AND NOT EXISTS (SELECT 1 FROM investments i0 WHERE i0.deal_id = pd.id)
-          ORDER BY pd.last_activity_at DESC NULLS LAST, o.name
-          LIMIT 100
-        ` as Promise<any[]>)
-      : Promise.resolve(null),
+    opts.declined && activeGroups.length ? declinedRowsFor(viewer) : Promise.resolve(null),
   ])
   const out: CaseOverview = {
     audience: activeGroups.map((g) => g.name),
@@ -674,11 +668,12 @@ export async function listCaseOverview(
     active: [],
     inactive: [],
     invested: [],
-    declined: null,
+    declined: declinedRows ? declinedRows.slice(0, DECLINED_OVERVIEW_ROWS) : null,
+    declinedTotal: declinedRows ? declinedRows.length : null,
     inactiveAfterDays: INACTIVE_AFTER_DAYS,
   }
-  // Visible, not invested, not current work: a vote that ended without an investment.
-  const ended: CaseRow[] = []
+  // Visible, not invested, not current work (a vote that ended, 'monitoring'): no section.
+  // A no is in `declined` by its status; the rest is not a no (Snorre 2026-11-11).
   for (const r of rows) {
     const row = caseRowOut(r)
     if (r.invested) {
@@ -689,7 +684,6 @@ export async function listCaseOverview(
     }
     const section = caseSection(row)
     if (section) out[section].push(row)
-    else ended.push(row)
   }
   for (const list of [out.decided, out.active, out.inactive]) list.sort(byUrgency)
   // Newest investment first (Snorre, 2026-10-30); an unknown date last, never guessed.
@@ -698,11 +692,79 @@ export async function listCaseOverview(
       (b.investedAt ? new Date(b.investedAt).getTime() : -Infinity) -
         (a.investedAt ? new Date(a.investedAt).getTime() : -Infinity) || a.name.localeCompare(b.name, 'nb'),
   )
-  if (declinedRows) {
-    const seen = new Set(declinedRows.map((r) => r.slug))
-    out.declined = [...declinedRows.map(caseRowOut), ...ended.filter((r) => !seen.has(r.slug))]
-  }
   return out
+}
+
+// --- Every no (/member/caser/nei) ---------------------------------------------------
+
+export interface DeclinedRow {
+  /** set only when this viewer can open the case page (caseVisibleSql); else listed, not linked */
+  slug: string | null
+  name: string
+  /** 'rejected' (we said no) or 'missed' (they did, or the round closed) */
+  status: string
+  category: DeclineCategory | null
+  /** one member-safe line (decline_reason) */
+  reason: string | null
+  /** YYYY-MM-DD in Oslo: declined_at, else when the deal came in (created_at) */
+  decidedOn: string
+  /** decidedOn is the real decision date (declined_at), not the created_at fallback */
+  decidedKnown: boolean
+  /** ansvarlig: the current lead, then the co-leads (deal_people) */
+  owner: string | null
+  coLeads: string[]
+}
+
+/**
+ * Every no, newest first: a deal in DECLINED_STATUSES that no SPV invested in, with or
+ * without a slug (most of the history from Coda has none). Callers decide who may see
+ * the list; whether a row links is the case rule, per row.
+ */
+async function declinedRowsFor(viewer: CaseViewer): Promise<DeclinedRow[]> {
+  const sql = useDatabase()
+  const rows = (await sql`
+    SELECT o.name, pd.status, pd.decline_category, pd.decline_reason,
+           CASE WHEN pd.slug IS NOT NULL AND ${caseVisibleSql(sql, viewer)} THEN pd.slug END AS slug,
+           to_char(COALESCE(pd.declined_at, (pd.created_at AT TIME ZONE 'Europe/Oslo')::date), 'YYYY-MM-DD') AS decided_on,
+           pd.declined_at IS NOT NULL AS decided_known,
+           owner.name AS owner_name, owner.co_leads
+    FROM pipeline_deals pd
+    JOIN organizations o ON o.id = pd.organization_id
+    ${dealOwnerJoin(sql)}
+    WHERE pd.status = ANY(${DECLINED_STATUSES})
+      AND NOT EXISTS (SELECT 1 FROM investments i0 WHERE i0.deal_id = pd.id)
+    ORDER BY decided_on DESC, o.name
+  `) as any[]
+  return rows.map((r) => ({
+    slug: r.slug,
+    name: r.name,
+    status: r.status,
+    category: (DECLINE_CATEGORIES as readonly string[]).includes(r.decline_category) ? r.decline_category : null,
+    reason: r.decline_reason,
+    decidedOn: r.decided_on,
+    decidedKnown: r.decided_known,
+    owner: r.owner_name,
+    coLeads: (r.co_leads ?? []).map((p: Person) => p.name),
+  }))
+}
+
+/**
+ * GET /api/member/deals/declined: every no, for the people who see the working pipeline
+ * (a member of the SPV deploying now), the same rule as the overview's "Sagt nei til"
+ * (dc-33 H1). Anyone else gets `rows: null`. Always the member view: the committee's own
+ * memberships decide, as on the overview.
+ */
+export async function listDeclined(viewer: CaseViewer): Promise<{ audience: string[]; rows: DeclinedRow[] | null }> {
+  const sql = useDatabase()
+  const activeGroups = (await sql`
+    SELECT g.name FROM network_groups g
+    WHERE g.invest_phase = 'deploying' AND g.id = ANY(${viewer.groupIds}::uuid[])
+    ORDER BY g.name
+  `) as any[]
+  return {
+    audience: activeGroups.map((g) => g.name),
+    rows: activeGroups.length ? await declinedRowsFor(viewer) : null,
+  }
 }
 
 // --- New leads (/member/komite, committee only) --------------------------------------
@@ -790,14 +852,14 @@ export async function listLeads(slug: string | null = null): Promise<LeadRow[]> 
 /**
  * What the committee can do with a lead, and the status each one moves it to. Only
  * from 'incoming'; anything else goes through the investments skill as before. "Si nei"
- * is 'passed' (no, the founder is not told yet), not 'rejected': a lead the members never
- * saw stays out of their "Sagt nei til" list and digest until someone has told the
- * founder and sets 'rejected' (Snorre, dc-64 H1 2026-10-30).
+ * is 'rejected' straight away, dated (declined_at): it shows on the members' "Sagt nei
+ * til" list at once. Whether the founder has been told is founder_told_at (hq 048), not a
+ * status (Snorre 2026-11-11, replacing dc-64 H1's 'passed').
  */
 export const LEAD_TRANSITIONS = {
   review: 'reviewing',
   waiting: 'waiting',
-  decline: 'passed',
+  decline: 'rejected',
 } as const
 export type LeadAction = keyof typeof LEAD_TRANSITIONS
 export const MAX_LEAD_NOTE = 280
@@ -841,7 +903,9 @@ export async function moveLead(viewer: CaseViewer, slug: string, action: unknown
         UPDATE pipeline_deals
         SET status = ${to}, last_activity_at = NOW(), last_activity_note = ${line},
             -- A no also drops the visible flag, so the flag alone cannot open it to members later.
-            investor_visible = CASE WHEN ${a === 'decline'}::boolean THEN false ELSE investor_visible END
+            investor_visible = CASE WHEN ${a === 'decline'}::boolean THEN false ELSE investor_visible END,
+            -- ...and is dated: the decision is today (Oslo), whatever the no list sorts on.
+            declined_at = CASE WHEN ${a === 'decline'}::boolean THEN ${today}::date ELSE declined_at END
         WHERE slug = ${slug} AND status = ${LEAD_STATUS}
         RETURNING id
       )

@@ -557,8 +557,9 @@
       "invested": "Investert av SPV-en din",
       "showDeclined": "Vis de vi har sagt nei til",
       "declined": "Sagt nei til",
-      "declinedIntro": "Selskaper komiteen har vurdert og sagt nei til, og avstemninger som ikke endte med investering.",
+      "declinedIntro": "De nyeste selskapene vi har sagt nei til, og de som sa nei til oss.",
       "declinedEmpty": "Ingen å vise.",
+      "seeAllDeclined": "Se alle ({n})",
       "investedIntro": "Memo og presentasjon ligger på casen når komiteen har delt dem.",
       "spvFilter": "Vis etter SPV",
       "allSpvs": "Alle",
@@ -569,6 +570,27 @@
         "name": "Navn"
       },
       "investedMany": "Investert av SPV-ene dine"
+    },
+    "noes": {
+      "intro": "Alle selskapene vi har sagt nei til, og de som sa nei til oss eller der runden lukket før vi kom med. Nyeste først, med hvorfor det endte. Der svaret handlet om størrelsen på billetten, står det tydelig.",
+      "notForYou": "Listen er for medlemmene i SPV-en som investerer nå.",
+      "searchLabel": "Søk",
+      "searchPlaceholder": "Søk i navn og begrunnelse",
+      "yearLabel": "År",
+      "allYears": "Alle år",
+      "categoryLabel": "Vis etter hvorfor det endte",
+      "allCategories": "Alle",
+      "shown": "Viser {shown} av {total}",
+      "noMatch": "Ingen treff. Prøv et annet ord, eller fjern et filter.",
+      "cameIn": "Kom inn {year}",
+      "category": {
+        "ticket_size": "Billettstørrelse",
+        "they_declined": "De sa nei til oss",
+        "missed_round": "Runden lukket",
+        "not_a_fit": "Ikke riktig for oss",
+        "company_dead": "Selskapet la ned",
+        "none": "Uten kategori"
+      }
     },
     "status": {
       "incoming": "Ny",

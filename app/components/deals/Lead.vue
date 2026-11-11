@@ -97,7 +97,7 @@ interface Lead {
 }
 const ACTIONS = ['review', 'waiting', 'decline'] as const
 type Action = (typeof ACTIONS)[number]
-const TO: Record<Action, string> = { review: 'reviewing', waiting: 'waiting', decline: 'passed' }
+const TO: Record<Action, string> = { review: 'reviewing', waiting: 'waiting', decline: 'rejected' }
 const MAX_NOTE = 280
 
 const props = defineProps<{ lead: Lead; onPage?: boolean }>()
