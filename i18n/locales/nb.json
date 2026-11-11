@@ -984,7 +984,7 @@
     "banner": {
       "title": "{name}: er du med?",
       "titlePreview": "{name} (forhåndsvisning for komiteen)",
-      "body": "Se presentasjonen og si om du er med. Ikke bindende.",
+      "body": "Se presentasjonen og si om du er med, eller meld deg på et nettmøte først. Ikke bindende.",
       "cta": "Svar"
     },
     "errors": {
@@ -1075,6 +1075,46 @@
         "close": "Lukk",
         "cancel": "Avbryt",
         "sent": "Sendt."
+      }
+    },
+    "session": {
+      "heading": "Vil du høre mer først?",
+      "intro": "Ikke forpliktende, og ikke det samme som å melde interesse for å investere. Vi finner en tid sammen med alle som melder seg.",
+      "noteLabel": "Når passer best? (valgfritt)",
+      "notePlaceholder": "For eksempel: formiddag, lunsj, tirsdager",
+      "signUp": "Ja, jeg vil være med på et nettmøte",
+      "signedUp": "Du er med. Vi tar kontakt når vi har funnet en tid.",
+      "signedUpAt": "Påmeldt {date}",
+      "yourNote": "Notatet ditt: {note}",
+      "addNote": "Si gjerne når det passer best",
+      "editNote": "Endre notatet",
+      "saveNote": "Lagre notatet",
+      "keep": "Avbryt",
+      "cancel": "Meld meg av",
+      "removed": "Du er meldt av nettmøtet. Du kan melde deg på igjen når du vil.",
+      "errors": {
+        "note": "Notatet må være tekst.",
+        "tooLong": "Notatet kan være på høyst {max} tegn.",
+        "closed": "Påmeldingen til nettmøtet er stengt."
+      },
+      "list": {
+        "heading": "Påmeldt nettmøte ({n})",
+        "intro": "Bare komiteen ser denne listen. Medlemmene ser bare sin egen påmelding.",
+        "empty": "Ingen har meldt seg på ennå.",
+        "emailsLabel": "E-postadresser ({n})",
+        "copy": "Kopier e-postadressene",
+        "copied": "Kopierte {n} adresser.",
+        "copyFailed": "Kunne ikke kopiere. Trykk i feltet og kopier adressene derfra.",
+        "noEmail": "{n} uten e-postadresse i registeret.",
+        "missingEmail": "Ingen e-postadresse",
+        "signedUpAt": "Påmeldt {date}",
+        "answer": {
+          "yes": "Svart: ja",
+          "maybe": "Svart: kanskje",
+          "no": "Svart: nei",
+          "committed": "Har tegnet",
+          "none": "Ikke svart"
+        }
       }
     }
   },

@@ -984,7 +984,7 @@
     "banner": {
       "title": "{name}: är du med?",
       "titlePreview": "{name} (förhandsvisning för kommittén)",
-      "body": "Se presentationen och säg om du är med. Inte bindande.",
+      "body": "Se presentationen och säg om du är med, eller anmäl dig till ett onlinemöte först. Inte bindande.",
       "cta": "Svara"
     },
     "errors": {
@@ -1075,6 +1075,46 @@
         "close": "Stäng",
         "cancel": "Avbryt",
         "sent": "Skickat."
+      }
+    },
+    "session": {
+      "heading": "Vill du höra mer först?",
+      "intro": "Inget åtagande, och skilt från ditt investeringssvar. Vi hittar en tid tillsammans med alla som anmäler sig.",
+      "noteLabel": "När passar det bäst? (valfritt)",
+      "notePlaceholder": "Till exempel: förmiddag, lunch, tisdagar",
+      "signUp": "Jag vill vara med på ett onlinemöte",
+      "signedUp": "Du är med. Vi hör av oss när vi har hittat en tid.",
+      "signedUpAt": "Anmäld {date}",
+      "yourNote": "Din anteckning: {note}",
+      "addNote": "Säg gärna när det passar bäst",
+      "editNote": "Ändra anteckningen",
+      "saveNote": "Spara anteckningen",
+      "keep": "Avbryt",
+      "cancel": "Avanmäl mig",
+      "removed": "Du är avanmäld från onlinemötet. Du kan anmäla dig igen när du vill.",
+      "errors": {
+        "note": "Anteckningen måste vara text.",
+        "tooLong": "Anteckningen får vara högst {max} tecken.",
+        "closed": "Anmälan till onlinemötet är stängd."
+      },
+      "list": {
+        "heading": "Anmälda till onlinemötet ({n})",
+        "intro": "Bara kommittén ser den här listan. Medlemmarna ser bara sin egen anmälan.",
+        "empty": "Ingen har anmält sig ännu.",
+        "emailsLabel": "E-postadresser ({n})",
+        "copy": "Kopiera e-postadresserna",
+        "copied": "Kopierade {n} adresser.",
+        "copyFailed": "Kunde inte kopiera. Tryck i fältet och kopiera adresserna därifrån.",
+        "noEmail": "{n} utan e-postadress i registret.",
+        "missingEmail": "Ingen e-postadress",
+        "signedUpAt": "Anmäld {date}",
+        "answer": {
+          "yes": "Svarat: ja",
+          "maybe": "Svarat: kanske",
+          "no": "Svarat: nej",
+          "committed": "Har tecknat",
+          "none": "Inte svarat"
+        }
       }
     }
   },

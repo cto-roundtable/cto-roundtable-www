@@ -984,7 +984,7 @@
     "banner": {
       "title": "{name}: are you in?",
       "titlePreview": "{name} (committee preview)",
-      "body": "See the presentation and tell us whether you are in. Not binding.",
+      "body": "See the presentation and tell us whether you are in, or sign up for an online meeting first. Not binding.",
       "cta": "Answer"
     },
     "errors": {
@@ -1075,6 +1075,46 @@
         "close": "Close",
         "cancel": "Cancel",
         "sent": "Sent."
+      }
+    },
+    "session": {
+      "heading": "Want to hear more first?",
+      "intro": "No commitment, and separate from your investment answer. We find a time with everyone who signs up.",
+      "noteLabel": "What time suits you best? (optional)",
+      "notePlaceholder": "For example: mornings, lunch, Tuesdays",
+      "signUp": "I want to join an online session",
+      "signedUp": "You are in. We will get in touch once we have a time.",
+      "signedUpAt": "Signed up {date}",
+      "yourNote": "Your note: {note}",
+      "addNote": "Tell us what time suits you",
+      "editNote": "Change the note",
+      "saveNote": "Save the note",
+      "keep": "Cancel",
+      "cancel": "Take me off the list",
+      "removed": "You are off the list for the online meeting. You can sign up again any time.",
+      "errors": {
+        "note": "The note must be text.",
+        "tooLong": "The note can be at most {max} characters.",
+        "closed": "Sign-up for the online meeting is closed."
+      },
+      "list": {
+        "heading": "Signed up for the online meeting ({n})",
+        "intro": "Only the committee sees this list. Members see only their own sign-up.",
+        "empty": "Nobody has signed up yet.",
+        "emailsLabel": "Email addresses ({n})",
+        "copy": "Copy the email addresses",
+        "copied": "Copied {n} addresses.",
+        "copyFailed": "Could not copy. Tap the field and copy the addresses from there.",
+        "noEmail": "{n} without an email address on file.",
+        "missingEmail": "No email address",
+        "signedUpAt": "Signed up {date}",
+        "answer": {
+          "yes": "Answered: yes",
+          "maybe": "Answered: maybe",
+          "no": "Answered: no",
+          "committed": "Has subscribed",
+          "none": "Not answered"
+        }
       }
     }
   },

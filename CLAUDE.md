@@ -556,7 +556,7 @@ ctori-4 memory `votes/meeting-votes-design.md`; rules from the vedtekter § 5 an
 
 A CTORI cohort is an **offering** (`invest_offerings`: `ctori-1` … `ctori-4`) and a
 member's answer to it is one `invest_subscriptions` row per offering and person, moving
-interest → committed → signed → paid (or declined). Schema: hq migrations 031, 041 and 043.
+interest → committed → signed → paid (or declined). Schema: hq migrations 031, 041, 043 and 049.
 Design and plan: `research/portal-signup-mapping.md` in the ctori-4 project (huddle).
 Built so far: step 3, the **interest** phase ("er du med, og omtrent hvor mye"), which
 binds nobody.
@@ -622,6 +622,19 @@ binds nobody.
   selected words get a "Kommenter" chip. On: a tap on a block comments on it. A marker
   opens the thread beside the deck (a bottom sheet on a phone). Every new comment starts
   at "bare komiteen", whatever was chosen last.
+- **Online info session sign-up** (hq migration 049, `invest_session_signups`; all SQL in
+  `server/utils/investSessions.ts`, UI `InvestSessionSignup` first on the page and
+  `InvestSessionSignupList` last). There is no fixed info meeting: a member asks for one
+  ("Ja, jeg vil være med på et nettmøte"), and Snorre finds a time with everyone who signed
+  up (2026-11-11). It is NOT an answer to the offering: a member who has not answered, or
+  said yes, maybe or no, can sign up, and nothing here writes `invest_subscriptions` (a row
+  there means "has answered"; `wants_info` stays the yes-only "vil vite mer før tegningen").
+  One row per offering and person, an optional note (at most 280, "når passer best"), undo
+  deletes it (audit_log keeps it). Open while the offering is `interest` or `committing`,
+  and in `draft` for the committee preview. A member sees only their own; the committee
+  (`current-komite`, never `styret`) gets `sessionSignups` on `GET /api/member/invest/:slug`:
+  name, e-mail, when, the note, and what they answered, plus a copyable line of e-mails.
+  No times are shown or stored.
 - **The answer is said back**: a saved yes gets a green success callout at the top of the
   form (Vuetify `type="success"`, tonal), a maybe a softer one (outlined).
 - **Entry points**: `InvestOfferingBanner` on `/member` and `/member/sweden` until the

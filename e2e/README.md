@@ -85,6 +85,13 @@ add `invest-4`; if nobody is in it yet, make it synthetic.
   exists, a secret sak shows no names, a tie needs its lot before the session ends, the
   protocol PDF, every `meeting_events` row names the token's owner, and the audit log
   holds no title, reason or note.
+- `session-signup.spec.ts`: the online info session sign-up on `/member/invest/ctori-4`,
+  needs hq migration 049 on the branch. Sets ctori-4's status ON THE BRANCH (draft, then
+  interest) and puts it back. The card is first on the page and on a phone screen without
+  scrolling; a member who has not answered and one who said no can sign up, and
+  `invest_subscriptions` is unchanged by it; a member sees only their own; the committee
+  gets the list with e-mails, the board alone gets nothing; undo deletes the row. Phone
+  screens in `.run/session-signup/` (the committee list with e-mails masked).
 - `deal-vote.spec.ts`: REGRESSION for the deal vote, end to end on the branch: the admin
   API publishes a document and a draft round, the committee opens it (the board cannot),
   SPV members vote with the bundle hash, no early close, the committee closes after the
