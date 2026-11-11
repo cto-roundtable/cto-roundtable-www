@@ -10,6 +10,15 @@
         <p class="intro">{{ t('invest.intro') }}</p>
       </header>
 
+      <!-- First thing on the page: ask for an online session, apart from the answer below
+           (no fixed meeting; Snorre finds a time with everyone who signs up, 2026-11-11) -->
+      <InvestSessionSignup
+        :slug="data.offering.slug"
+        :open="data.sessionOpen"
+        :initial="data.session"
+        @changed="refreshSignups"
+      />
+
       <v-alert v-if="data.preview" type="info" variant="outlined" class="mb-6 text-left">
         {{ t('invest.preview') }}
       </v-alert>
@@ -185,6 +194,9 @@
           </p>
         </v-card>
       </section>
+
+      <!-- The committee only: who wants the info session, to invite them -->
+      <InvestSessionSignupList v-if="data.sessionSignups" :rows="data.sessionSignups" />
     </template>
   </div>
 </template>
@@ -220,6 +232,17 @@ interface InvestPage {
     notes: string | null
     updatedAt: string
   } | null
+  // The member's own sign-up for an online info session, and whether it can change now
+  session: { note: string | null; signedUpAt: string; updatedAt: string } | null
+  sessionOpen: boolean
+  // Everyone signed up for the info session (committee only)
+  sessionSignups?: {
+    name: string
+    email: string | null
+    signedUpAt: string
+    note: string | null
+    answer: 'yes' | 'maybe' | 'no' | 'committed' | null
+  }[]
   lastTime: { offering: string; amountNok: number | null; vehicle: Vehicle; holding: string | null } | null
   holdings: string[]
   aggregate: { yes: number; maybe: number; yesNok: number } | null
@@ -334,6 +357,17 @@ async function load() {
     loadError.value = true
   } finally {
     loading.value = false
+  }
+}
+
+// A sign-up changed: the committee's list may now include (or lose) the caller.
+async function refreshSignups() {
+  if (!data.value?.sessionSignups) return
+  try {
+    const page = await $fetch<InvestPage>(`/api/member/invest/${data.value.offering.slug}`)
+    data.value.sessionSignups = page.sessionSignups
+  } catch {
+    // The list stays as it was; a reload shows the new state.
   }
 }
 
