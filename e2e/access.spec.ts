@@ -37,6 +37,8 @@ const PROBES = [
   // investComments.ts). Who may read them depends on the offering's status on the branch.
   '/api/member/invest/ctori-4',
   '/api/member/invest/ctori-4/documents/deck/comments',
+  // The committee's page for it (server/utils/investCommittee.ts): current-komite only.
+  '/api/member/invest/ctori-4/komite',
 ]
 
 /** What a no row may carry (DeclinedRow): never a blurb, a round or the committee's notes. */
@@ -318,6 +320,10 @@ for (const spec of PERSONAS) {
     expect
       .soft(s('/api/member/invest/ctori-4/documents/deck/comments'), `${p.key} ctori-4 deck comments`)
       .toBe(retired ? 403 : seesCtori4 && ctori4.hasDeck ? 200 : 404)
+    // Its committee page: the committee only, never the board alone; the same 404 otherwise.
+    expect
+      .soft(s('/api/member/invest/ctori-4/komite'), `${p.key} ctori-4 committee page`)
+      .toBe(retired ? 403 : seesCtori4 && isCommittee(p) ? 200 : 404)
 
     // Cases: for a member the overview and the no list (/member/caser/nei) and the case page agree, and
     // nobody opens a case the committee cannot. The committee's own list is the member

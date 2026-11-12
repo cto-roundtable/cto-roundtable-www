@@ -23,6 +23,8 @@
     "dealsMember": "Som medlem",
     "dealsCommittee": "Kommittén",
     "invest": "CTORI 4",
+    "investMember": "Som medlem",
+    "investCommittee": "Kommittésidan",
     "expand": "Visa undermenyn för {item}",
     "collapse": "Dölj undermenyn för {item}",
     "generalMeeting": "Årsmöte"
@@ -956,9 +958,10 @@
       "answerLabel": "Ditt svar",
       "answer": {
         "yes": "Ja, jag är med",
-        "maybe": "Kanske, vill veta mer",
+        "maybe": "Kanske",
         "no": "Nej tack"
       },
+      "maybeHint": "Osäker? Anmäl dig till onlinemötet högst upp på sidan.",
       "amountLabel": "Ungefär hur mycket?",
       "amountLabelMaybe": "Om du är med, ungefär hur mycket? (valfritt)",
       "otherAmount": "Annat belopp",
@@ -971,7 +974,6 @@
         "personal": "Personligen",
         "unsure": "Vet inte än"
       },
-      "wantsInfo": "Jag vill gärna veta mer före teckningen",
       "wantsToHelp": "Vill du bidra? (valfritt)",
       "wantsToHelpPlaceholder": "Till exempel kommittéarbete, bedöma case, ta in dealflow",
       "notes": "Något vi bör veta? (valfritt)",
@@ -983,6 +985,7 @@
     },
     "banner": {
       "title": "{name}: är du med?",
+      "titleOpen": "{name} är öppen för intresse nu",
       "titlePreview": "{name} (förhandsvisning för kommittén)",
       "body": "Se presentationen och säg om du är med, eller anmäl dig till ett onlinemöte först. Inte bindande.",
       "cta": "Svara"
@@ -1102,12 +1105,19 @@
         "intro": "Bara kommittén ser den här listan. Medlemmarna ser bara sin egen anmälan.",
         "empty": "Ingen har anmält sig ännu.",
         "emailsLabel": "E-postadresser ({n})",
-        "copy": "Kopiera e-postadresserna",
+        "copy": "Kopiera alla e-postadresser",
         "copied": "Kopierade {n} adresser.",
         "copyFailed": "Kunde inte kopiera. Tryck i fältet och kopiera adresserna därifrån.",
         "noEmail": "{n} utan e-postadress i registret.",
         "missingEmail": "Ingen e-postadress",
         "signedUpAt": "Anmäld {date}",
+        "col": {
+          "name": "Namn",
+          "email": "E-post",
+          "note": "Anteckning",
+          "signedUpAt": "Anmäld",
+          "answer": "Svar"
+        },
         "answer": {
           "yes": "Svarat: ja",
           "maybe": "Svarat: kanske",
@@ -1115,6 +1125,41 @@
           "committed": "Har tecknat",
           "none": "Inte svarat"
         }
+      }
+    },
+    "committee": {
+      "link": "Kommittésidan",
+      "linkSub": "Anmälda till onlinemötet: {n}. Alla svar och summorna.",
+      "bottomLink": "Anmälda till onlinemötet: {n}. Se listan på kommittésidan.",
+      "back": "Tillbaka till {name}",
+      "title": "{name}: kommittésidan",
+      "intro": "Bara kommittén ser den här sidan: vem som vill vara med på ett onlinemöte, och vad alla har svarat.",
+      "answer": {
+        "yes": "Ja",
+        "maybe": "Kanske",
+        "no": "Nej",
+        "committed": "Har tecknat",
+        "none": "Inte svarat"
+      },
+      "answers": {
+        "heading": "Svaren ({n})",
+        "totalYes": "Ja",
+        "totalMaybe": "Kanske",
+        "totalNo": "Nej",
+        "empty": "Ingen har svarat ännu.",
+        "col": {
+          "name": "Namn",
+          "answer": "Svar",
+          "amount": "Belopp",
+          "vehicle": "Hur",
+          "wantsInfo": "Vill veta mer",
+          "wantsToHelp": "Vill bidra",
+          "notes": "Anteckning",
+          "updatedAt": "Uppdaterad"
+        },
+        "wantsInfoYes": "Ja",
+        "helpLine": "Vill bidra: {text}",
+        "updatedLine": "Uppdaterad {date}"
       }
     }
   },

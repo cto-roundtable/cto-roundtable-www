@@ -569,8 +569,12 @@ binds nobody.
 - **Amounts are data**: `amount_options` (50/100/200/300k for ctori-4, dc-32), plus
   `amount_min` / `amount_step` for "annet beløp" (ctori-4: at least 50 000, in whole
   10 000s). `parseInterestInput` validates every write against the offering; nothing is
-  hard-coded. "Kanskje" is interest with `interest_level = 'maybe'` and always asks for
-  information; "Nei takk" is phase `declined`.
+  hard-coded. "Kanskje" is interest with `interest_level = 'maybe'`; "Nei takk" is phase
+  `declined`. Wanting to know more is the online session (below), not part of the answer
+  (Snorre 2026-11-12): picking "Kanskje" shows a line pointing at the session card. The form
+  no longer asks "vil vite mer" and sends no `wantsInfo`; `parseWantsInfo` turns anything
+  but a boolean into null and the upsert keeps the saved `wants_info` (COALESCE), so old
+  answers keep it. Pinned by `tests/unit/invest-committee.test.ts`.
 - **Prefill** comes from the CTORI1-3 import (hq `backfill/import-ctori-subscribers.mjs`):
   "last time" (offering, amount, holding name) and the holdings the member owns. A
   holding is linked to the answer only when they own exactly one. Names only: no org
@@ -623,8 +627,8 @@ binds nobody.
   opens the thread beside the deck (a bottom sheet on a phone). Every new comment starts
   at "bare komiteen", whatever was chosen last.
 - **Online info session sign-up** (hq migration 049, `invest_session_signups`; all SQL in
-  `server/utils/investSessions.ts`, UI `InvestSessionSignup` first on the page and
-  `InvestSessionSignupList` last). There is no fixed info meeting: a member asks for one
+  `server/utils/investSessions.ts`, UI `InvestSessionSignup` first on the page; the
+  committee's list `InvestSessionSignupList` is on the committee page). There is no fixed info meeting: a member asks for one
   ("Ja, jeg vil være med på et nettmøte"), and Snorre finds a time with everyone who signed
   up (2026-11-11). It is NOT an answer to the offering: a member who has not answered, or
   said yes, maybe or no, can sign up, and nothing here writes `invest_subscriptions` (a row
@@ -632,15 +636,28 @@ binds nobody.
   One row per offering and person, an optional note (at most 280, "når passer best"), undo
   deletes it (audit_log keeps it). Open while the offering is `interest` or `committing`,
   and in `draft` for the committee preview. A member sees only their own; the committee
-  (`current-komite`, never `styret`) gets `sessionSignups` on `GET /api/member/invest/:slug`:
-  name, e-mail, when, the note, and what they answered, plus a copyable line of e-mails.
+  (`current-komite`, never `styret`) gets the list on its page (below): name, e-mail, when,
+  the note, and what they answered, plus "Kopier alle e-poster" (comma separated, for a
+  calendar invite). `GET /api/member/invest/:slug` gives the committee only the count
+  (`committee.sessionSignups`).
   No times are shown or stored.
 - **The answer is said back**: a saved yes gets a green success callout at the top of the
   form (Vuetify `type="success"`, tonal), a maybe a softer one (outlined).
-- **Entry points**: `InvestOfferingBanner` on `/member` and `/member/sweden` until the
+- **The committee page** (`/member/invest/:slug/komite`, `GET /api/member/invest/:slug/komite`,
+  `server/utils/investCommittee.ts`, Snorre 2026-11-12): the session sign-ups and every
+  interest answer (name, answer, amount, vehicle, wants to help, note, updated; "vil vite
+  mer" only while some row has it) with the totals on top, the same numbers as
+  `invest-offering.mjs show` (`interestTotals`). `current-komite` only
+  (`getCommitteePage`): a member, the board alone, anyone else gets the 404, and nothing is
+  read before the gate. Reached from a "Komitésiden" link at the top of the offering page
+  (and one line where the list used to be), and a "Komitésiden" sub-item under "CTORI 4"
+  in the menu for the committee. Tables on a wide screen, a card per row on a phone.
+  e2e: `e2e/committee-page.spec.ts`.
+- **Entry points**: `InvestOfferingBanner` on `/member` and `/member/sweden` ("{name} er
+  åpen for interesse nå" while the status is `interest`) until the
   member has answered, and a nav item from `session.investOffering`. A magic-link
   sign-in lands on `/member`, not on the deep link; the banner is what bridges that.
-- **Operating it from a box** until the committee's view exists (step 4):
+- **Operating it from a box** (the committee reads answers on its page now):
   `scripts/invest-offering.mjs show|publish|status` with `DATABASE_URL`. `publish`
   writes a new document version (same bytes write nothing). `status <slug> interest`
   is the launch, so it changes nothing without `--confirm`.

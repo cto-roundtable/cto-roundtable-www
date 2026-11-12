@@ -3,7 +3,7 @@
     <v-icon color="white" size="22">mdi-hand-coin-outline</v-icon>
     <div class="flex-grow-1">
       <p class="font-weight-bold mb-0" style="color: #fff;">
-        {{ offering.status === 'draft' ? t('invest.banner.titlePreview', { name: offering.name }) : t('invest.banner.title', { name: offering.name }) }}
+        {{ t(titleKey, { name: offering.name }) }}
       </p>
       <p class="mb-0" style="color: #ccc; font-size: 14px;">{{ t('invest.banner.body') }}</p>
     </div>
@@ -12,7 +12,8 @@
 </template>
 
 <script setup lang="ts">
-// "CTORI 4: er du med?" on /member and /member/sweden, until the member has answered.
+// "CTORI 4 er åpen for interesse nå" on /member and /member/sweden, until the member has
+// answered: an announcement that it is open (Snorre 2026-11-12).
 // Self-contained: its own route, so a failure hides the banner and nothing else.
 interface CurrentOffering {
   slug: string
@@ -23,6 +24,14 @@ interface CurrentOffering {
 
 const { t } = useI18n()
 const offering = ref<CurrentOffering | null>(null)
+// The title per status: a draft is the committee's preview, interest the announcement;
+// committing keeps the question until tegning has its own wording.
+const titleKey = computed(() => {
+  const status = offering.value?.status
+  if (status === 'draft') return 'invest.banner.titlePreview'
+  if (status === 'interest') return 'invest.banner.titleOpen'
+  return 'invest.banner.title'
+})
 
 onMounted(async () => {
   try {

@@ -23,6 +23,8 @@
     "dealsMember": "Som medlem",
     "dealsCommittee": "Komiteen",
     "invest": "CTORI 4",
+    "investMember": "Som medlem",
+    "investCommittee": "Komitésiden",
     "expand": "Vis undermenyen for {item}",
     "collapse": "Skjul undermenyen for {item}",
     "generalMeeting": "Årsmøte"
@@ -956,9 +958,10 @@
       "answerLabel": "Ditt svar",
       "answer": {
         "yes": "Ja, jeg er med",
-        "maybe": "Kanskje, vil vite mer",
+        "maybe": "Kanskje",
         "no": "Nei takk"
       },
+      "maybeHint": "Usikker? Meld deg på nettmøtet øverst på siden.",
       "amountLabel": "Omtrent hvor mye?",
       "amountLabelMaybe": "Hvis du blir med, omtrent hvor mye? (valgfritt)",
       "otherAmount": "Annet beløp",
@@ -971,7 +974,6 @@
         "personal": "Personlig",
         "unsure": "Vet ikke ennå"
       },
-      "wantsInfo": "Jeg vil gjerne vite mer før tegningen",
       "wantsToHelp": "Vil du bidra? (valgfritt)",
       "wantsToHelpPlaceholder": "For eksempel komitéarbeid, vurdere caser, skaffe dealflow",
       "notes": "Noe vi bør vite? (valgfritt)",
@@ -983,6 +985,7 @@
     },
     "banner": {
       "title": "{name}: er du med?",
+      "titleOpen": "{name} er åpen for interesse nå",
       "titlePreview": "{name} (forhåndsvisning for komiteen)",
       "body": "Se presentasjonen og si om du er med, eller meld deg på et nettmøte først. Ikke bindende.",
       "cta": "Svar"
@@ -1102,12 +1105,19 @@
         "intro": "Bare komiteen ser denne listen. Medlemmene ser bare sin egen påmelding.",
         "empty": "Ingen har meldt seg på ennå.",
         "emailsLabel": "E-postadresser ({n})",
-        "copy": "Kopier e-postadressene",
+        "copy": "Kopier alle e-poster",
         "copied": "Kopierte {n} adresser.",
         "copyFailed": "Kunne ikke kopiere. Trykk i feltet og kopier adressene derfra.",
         "noEmail": "{n} uten e-postadresse i registeret.",
         "missingEmail": "Ingen e-postadresse",
         "signedUpAt": "Påmeldt {date}",
+        "col": {
+          "name": "Navn",
+          "email": "E-post",
+          "note": "Notat",
+          "signedUpAt": "Påmeldt",
+          "answer": "Svar"
+        },
         "answer": {
           "yes": "Svart: ja",
           "maybe": "Svart: kanskje",
@@ -1115,6 +1125,41 @@
           "committed": "Har tegnet",
           "none": "Ikke svart"
         }
+      }
+    },
+    "committee": {
+      "link": "Komitésiden",
+      "linkSub": "Påmeldt nettmøtet: {n}. Alle svarene og summene.",
+      "bottomLink": "Påmeldt nettmøtet: {n}. Se listen på komitésiden.",
+      "back": "Tilbake til {name}",
+      "title": "{name}: komitésiden",
+      "intro": "Bare komiteen ser denne siden: hvem som vil være med på et nettmøte, og hva alle har svart.",
+      "answer": {
+        "yes": "Ja",
+        "maybe": "Kanskje",
+        "no": "Nei",
+        "committed": "Har tegnet",
+        "none": "Ikke svart"
+      },
+      "answers": {
+        "heading": "Svarene ({n})",
+        "totalYes": "Ja",
+        "totalMaybe": "Kanskje",
+        "totalNo": "Nei",
+        "empty": "Ingen har svart ennå.",
+        "col": {
+          "name": "Navn",
+          "answer": "Svar",
+          "amount": "Beløp",
+          "vehicle": "Hvordan",
+          "wantsInfo": "Vil vite mer",
+          "wantsToHelp": "Vil bidra",
+          "notes": "Notat",
+          "updatedAt": "Oppdatert"
+        },
+        "wantsInfoYes": "Ja",
+        "helpLine": "Vil bidra: {text}",
+        "updatedLine": "Oppdatert {date}"
       }
     }
   },

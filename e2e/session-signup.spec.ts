@@ -8,7 +8,8 @@ import { cookiesFor, persona, RUN_DIR } from './support/run'
 // the branch. Checks that it is apart from the investment answer (a member who has not
 // answered, and one who said no, can sign up, and nothing is written to
 // invest_subscriptions), that a member sees only their own, that only the committee
-// (never the board alone) gets the list, and that undo works. Screens at phone width.
+// (never the board alone) gets the list (on /komite since 2026-11-12, committee-page.spec.ts),
+// and that undo works. Screens at phone width.
 //
 // The offering's status is changed ON THE BRANCH only (draft for the committee preview,
 // then interest for members) and put back afterwards. Production is never touched.
@@ -100,8 +101,8 @@ test('draft: the committee previews it, a plain member and the board alone get t
 
   await button.click()
   await expect(page.getByText('Du er med. Vi tar kontakt når vi har funnet en tid.')).toBeVisible()
-  // The committee's own list now has the committee member in it.
-  await expect(page.getByRole('heading', { name: 'Påmeldt nettmøte (1)' })).toBeVisible()
+  // The committee's link to its page now counts the committee member (the list is on /komite).
+  await expect(page.getByText('Påmeldt nettmøtet: 1. Se listen på komitésiden.')).toBeVisible()
   await page.screenshot({ path: `${DIR}/2-committee-signed-up.png` })
   expect(await subscriptionRows(persona('committee-board').personId)).toEqual(answerBefore)
   expect(errors).toEqual([])
@@ -144,6 +145,7 @@ test('interest: a member who has not answered signs up, adds a note, and nothing
   const body = await (await api.get(`/api/member/invest/${SLUG}`)).json()
   expect(body.session.note).toBe(NOTE)
   expect(body.sessionSignups).toBeUndefined()
+  expect(body.committee).toBeUndefined()
   // At most 280 characters; and only text.
   expect((await api.post(`/api/member/invest/${SLUG}/session`, { data: { note: 'x'.repeat(281) } })).status()).toBe(400)
   expect((await api.post(`/api/member/invest/${SLUG}/session`, { data: { note: 42 } })).status()).toBe(400)
@@ -169,12 +171,13 @@ test('a member who said no can sign up, and stays a no', async () => {
 test('the committee sees everyone with e-mail and answer; the board alone sees nothing', async ({ browser }) => {
   const board = await apiAs('board')
   const boardBody = await (await board.get(`/api/member/invest/${SLUG}`)).json()
-  expect(boardBody.sessionSignups).toBeUndefined()
+  expect(boardBody.committee).toBeUndefined()
   expect(boardBody.session).toBeNull()
+  expect((await board.get(`/api/member/invest/${SLUG}/komite`)).status()).toBe(404)
   await board.dispose()
 
   const api = await apiAs('committee-board')
-  const { sessionSignups } = await (await api.get(`/api/member/invest/${SLUG}`)).json()
+  const { sessionSignups } = await (await api.get(`/api/member/invest/${SLUG}/komite`)).json()
   await api.dispose()
   const byName = Object.fromEntries(sessionSignups.map((r: any) => [r.name, r]))
   const m = byName[persona('member').name]
@@ -186,12 +189,12 @@ test('the committee sees everyone with e-mail and answer; the board alone sees n
   expect(sessionSignups).toHaveLength(3)
 
   const { page, errors, close } = await phonePage(browser, 'committee-board')
-  await page.goto(`/member/invest/${SLUG}`)
+  await page.goto(`/member/invest/${SLUG}/komite`)
   const list = page.locator('#invest-session-list')
   await expect(list.getByRole('heading', { name: 'Påmeldt nettmøte (3)' })).toBeVisible({ timeout: 20_000 })
   await expect(list.getByText('Svart: nei')).toBeVisible()
   await expect(list.getByText(`«${NOTE}»`)).toBeVisible()
-  await expect(list.getByRole('button', { name: 'Kopier e-postadressene' })).toBeVisible()
+  await expect(list.getByRole('button', { name: 'Kopier alle e-poster' })).toBeVisible()
   await list.scrollIntoViewIfNeeded()
   // Real members' e-mails stay out of the published screenshot.
   await list.screenshot({
