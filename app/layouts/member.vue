@@ -326,6 +326,7 @@ const navItems = computed(() => {
       key: 'nav.invest',
       icon: 'mdi-hand-coin-outline',
       exact: false,
+      children: investChildren.value,
     })
   }
   // Investor-updates: any member of an investment cohort (invest-*).
@@ -373,6 +374,19 @@ const casesChildren = computed<NavSub[] | undefined>(() => {
   return [
     { to: '/member/caser', key: 'nav.dealsMember', active: route.path.startsWith('/member/caser') },
     { to: '/member/komite', key: 'nav.dealsCommittee', active: route.path.startsWith('/member/komite') },
+  ]
+})
+
+// Under CTORI 4, for the committee only: the offering as members see it, and the
+// committee's page (who wants a session, every answer; Snorre 2026-11-12).
+const investChildren = computed<NavSub[] | undefined>(() => {
+  const offering = session.value.investOffering
+  if (!offering || !session.value.isCommittee) return undefined
+  const base = `/member/invest/${offering.slug}`
+  const committee = `${base}/komite`
+  return [
+    { to: base, key: 'nav.investMember', active: route.path.startsWith(base) && !route.path.startsWith(committee) },
+    { to: committee, key: 'nav.investCommittee', active: route.path.startsWith(committee) },
   ]
 })
 

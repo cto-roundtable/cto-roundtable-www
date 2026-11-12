@@ -16,12 +16,26 @@
         :slug="data.offering.slug"
         :open="data.sessionOpen"
         :initial="data.session"
-        @changed="refreshSignups"
+        @changed="refreshCommittee"
       />
 
       <v-alert v-if="data.preview" type="info" variant="outlined" class="mb-6 text-left">
         {{ t('invest.preview') }}
       </v-alert>
+
+      <!-- The committee's own page: who wants a session, every answer and the totals -->
+      <NuxtLink
+        v-if="data.committee"
+        :to="`/member/invest/${data.offering.slug}/komite`"
+        class="committee-link mb-6"
+      >
+        <v-icon color="white" size="20">mdi-account-group-outline</v-icon>
+        <span class="flex-grow-1">
+          <span class="font-weight-bold" style="color: #fff;">{{ t('invest.committee.link') }}</span>
+          <span class="committee-link-sub">{{ t('invest.committee.linkSub', { n: data.committee.sessionSignups }) }}</span>
+        </span>
+        <v-icon color="white" size="20">mdi-chevron-right</v-icon>
+      </NuxtLink>
 
       <!-- The deck and any other documents, behind login -->
       <section v-if="data.documents.length" class="mb-8">
@@ -99,6 +113,10 @@
                 {{ a.label }}
               </v-btn>
             </div>
+            <!-- Unsure: the online session is the way to learn more (Snorre 2026-11-12) -->
+            <p v-if="form.answer === 'maybe' && (data.sessionOpen || data.session)" class="maybe-hint mt-n3 mb-5">
+              <a href="#invest-session" @click.prevent="toSession">{{ t('invest.form.maybeHint') }}</a>
+            </p>
 
             <template v-if="form.answer === 'yes' || form.answer === 'maybe'">
               <p class="field-label">
@@ -146,14 +164,6 @@
                 <v-radio value="unsure" :label="t('invest.form.vehicle.unsure')" />
               </v-radio-group>
 
-              <v-checkbox
-                v-if="form.answer === 'yes'"
-                v-model="form.wantsInfo"
-                :label="t('invest.form.wantsInfo')"
-                hide-details
-                density="comfortable"
-                class="mb-2"
-              />
               <v-text-field
                 v-model="form.wantsToHelp"
                 :label="t('invest.form.wantsToHelp')"
@@ -195,8 +205,12 @@
         </v-card>
       </section>
 
-      <!-- The committee only: who wants the info session, to invite them -->
-      <InvestSessionSignupList v-if="data.sessionSignups" :rows="data.sessionSignups" />
+      <!-- The committee only: the list of who wants the session moved to the committee page -->
+      <p v-if="data.committee" class="last-time">
+        <NuxtLink :to="`/member/invest/${data.offering.slug}/komite`" class="inline-link">
+          {{ t('invest.committee.bottomLink', { n: data.committee.sessionSignups }) }}
+        </NuxtLink>
+      </p>
     </template>
   </div>
 </template>
@@ -235,14 +249,8 @@ interface InvestPage {
   // The member's own sign-up for an online info session, and whether it can change now
   session: { note: string | null; signedUpAt: string; updatedAt: string } | null
   sessionOpen: boolean
-  // Everyone signed up for the info session (committee only)
-  sessionSignups?: {
-    name: string
-    email: string | null
-    signedUpAt: string
-    note: string | null
-    answer: 'yes' | 'maybe' | 'no' | 'committed' | null
-  }[]
+  // Committee only: how many want the info session (the list is on the committee page)
+  committee?: { sessionSignups: number }
   lastTime: { offering: string; amountNok: number | null; vehicle: Vehicle; holding: string | null } | null
   holdings: string[]
   aggregate: { yes: number; maybe: number; yesNok: number } | null
@@ -265,10 +273,9 @@ const form = ref<{
   answer: Answer | null
   amountNok: number | null
   vehicle: Vehicle | null
-  wantsInfo: boolean
   wantsToHelp: string
   notes: string
-}>({ answer: null, amountNok: null, vehicle: null, wantsInfo: false, wantsToHelp: '', notes: '' })
+}>({ answer: null, amountNok: null, vehicle: null, wantsToHelp: '', notes: '' })
 
 const answers = computed(() => [
   { value: 'yes' as const, label: t('invest.form.answer.yes') },
@@ -335,7 +342,6 @@ function prefill(page: InvestPage) {
       answer: mine.answer,
       amountNok: mine.amountNok,
       vehicle: mine.vehicle,
-      wantsInfo: Boolean(mine.wantsInfo),
       wantsToHelp: mine.wantsToHelp ?? '',
       notes: mine.notes ?? '',
     }
@@ -360,15 +366,19 @@ async function load() {
   }
 }
 
-// A sign-up changed: the committee's list may now include (or lose) the caller.
-async function refreshSignups() {
-  if (!data.value?.sessionSignups) return
+// A sign-up changed: the committee's count may now include (or lose) the caller.
+async function refreshCommittee() {
+  if (!data.value?.committee) return
   try {
     const page = await $fetch<InvestPage>(`/api/member/invest/${data.value.offering.slug}`)
-    data.value.sessionSignups = page.sessionSignups
+    data.value.committee = page.committee
   } catch {
-    // The list stays as it was; a reload shows the new state.
+    // The count stays as it was; a reload shows the new state.
   }
+}
+
+function toSession() {
+  document.getElementById('invest-session')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 async function save() {
@@ -380,6 +390,7 @@ async function save() {
       `/api/member/invest/${data.value.offering.slug}/interest`,
       {
         method: 'POST',
+        // No wantsInfo: the form does not ask, so the server leaves a saved one as it is.
         body: { ...form.value, amountNok: form.value.answer === 'no' ? null : form.value.amountNok },
       },
     )
@@ -434,6 +445,39 @@ watchEffect(() => {
   color: #ccc;
   font-size: 14px;
   margin-bottom: 6px;
+}
+.maybe-hint {
+  font-size: 13px;
+  line-height: 1.5;
+}
+.maybe-hint a,
+.inline-link {
+  color: #aaa;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.maybe-hint a:hover,
+.inline-link:hover {
+  color: #fff;
+}
+.committee-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.committee-link:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+}
+.committee-link-sub {
+  display: block;
+  color: #aaa;
+  font-size: 13px;
 }
 .doc-card {
   display: flex;

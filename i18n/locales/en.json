@@ -23,6 +23,8 @@
     "dealsMember": "As a member",
     "dealsCommittee": "The committee",
     "invest": "CTORI 4",
+    "investMember": "As a member",
+    "investCommittee": "Committee page",
     "expand": "Show the {item} submenu",
     "collapse": "Hide the {item} submenu",
     "generalMeeting": "General meeting"
@@ -956,9 +958,10 @@
       "answerLabel": "Your answer",
       "answer": {
         "yes": "Yes, I am in",
-        "maybe": "Maybe, tell me more",
+        "maybe": "Maybe",
         "no": "No thanks"
       },
+      "maybeHint": "Not sure? Sign up for the online session at the top of the page.",
       "amountLabel": "Roughly how much?",
       "amountLabelMaybe": "If you join, roughly how much? (optional)",
       "otherAmount": "Other amount",
@@ -971,7 +974,6 @@
         "personal": "Personally",
         "unsure": "Not sure yet"
       },
-      "wantsInfo": "I would like to know more before subscribing",
       "wantsToHelp": "Would you like to help? (optional)",
       "wantsToHelpPlaceholder": "For example committee work, assessing cases, bringing dealflow",
       "notes": "Anything we should know? (optional)",
@@ -983,6 +985,7 @@
     },
     "banner": {
       "title": "{name}: are you in?",
+      "titleOpen": "{name} is open for interest now",
       "titlePreview": "{name} (committee preview)",
       "body": "See the presentation and tell us whether you are in, or sign up for an online meeting first. Not binding.",
       "cta": "Answer"
@@ -1102,12 +1105,19 @@
         "intro": "Only the committee sees this list. Members see only their own sign-up.",
         "empty": "Nobody has signed up yet.",
         "emailsLabel": "Email addresses ({n})",
-        "copy": "Copy the email addresses",
+        "copy": "Copy all emails",
         "copied": "Copied {n} addresses.",
         "copyFailed": "Could not copy. Tap the field and copy the addresses from there.",
         "noEmail": "{n} without an email address on file.",
         "missingEmail": "No email address",
         "signedUpAt": "Signed up {date}",
+        "col": {
+          "name": "Name",
+          "email": "Email",
+          "note": "Note",
+          "signedUpAt": "Signed up",
+          "answer": "Answer"
+        },
         "answer": {
           "yes": "Answered: yes",
           "maybe": "Answered: maybe",
@@ -1115,6 +1125,41 @@
           "committed": "Has subscribed",
           "none": "Not answered"
         }
+      }
+    },
+    "committee": {
+      "link": "Committee page",
+      "linkSub": "Signed up for the online session: {n}. Every answer and the totals.",
+      "bottomLink": "Signed up for the online session: {n}. See the list on the committee page.",
+      "back": "Back to {name}",
+      "title": "{name}: committee page",
+      "intro": "Only the committee sees this page: who wants to join an online session, and what everyone has answered.",
+      "answer": {
+        "yes": "Yes",
+        "maybe": "Maybe",
+        "no": "No",
+        "committed": "Has subscribed",
+        "none": "Not answered"
+      },
+      "answers": {
+        "heading": "Answers ({n})",
+        "totalYes": "Yes",
+        "totalMaybe": "Maybe",
+        "totalNo": "No",
+        "empty": "Nobody has answered yet.",
+        "col": {
+          "name": "Name",
+          "answer": "Answer",
+          "amount": "Amount",
+          "vehicle": "How",
+          "wantsInfo": "Wants to know more",
+          "wantsToHelp": "Wants to help",
+          "notes": "Note",
+          "updatedAt": "Updated"
+        },
+        "wantsInfoYes": "Yes",
+        "helpLine": "Wants to help: {text}",
+        "updatedLine": "Updated {date}"
       }
     }
   },

@@ -1,5 +1,5 @@
 <template>
-  <section id="invest-session-list" class="mb-8">
+  <section id="invest-session-list" class="mb-10">
     <h2 class="section-title">{{ t('invest.session.list.heading', { n: rows.length }) }}</h2>
     <p class="intro mb-4">{{ t('invest.session.list.intro') }}</p>
 
@@ -33,11 +33,42 @@
         <p v-if="withoutEmail" class="muted mt-2 mb-0">{{ t('invest.session.list.noEmail', { n: withoutEmail }) }}</p>
       </v-card>
 
-      <ul class="signups">
+      <!-- Wide screens: one row per person. Phones: a card each, nothing to scroll sideways. -->
+      <div v-if="!smAndDown" class="table-wrap">
+        <v-table density="comfortable" class="committee-table">
+          <thead>
+            <tr>
+              <th>{{ t('invest.session.list.col.name') }}</th>
+              <th>{{ t('invest.session.list.col.email') }}</th>
+              <th>{{ t('invest.session.list.col.note') }}</th>
+              <th>{{ t('invest.session.list.col.signedUpAt') }}</th>
+              <th>{{ t('invest.session.list.col.answer') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(r, i) in rows" :key="`${r.name}-${i}`" class="signup">
+              <td class="font-weight-bold">{{ r.name }}</td>
+              <td>
+                <a v-if="r.email" :href="`mailto:${r.email}`" class="email">{{ r.email }}</a>
+                <span v-else class="muted">{{ t('invest.session.list.missingEmail') }}</span>
+              </td>
+              <td class="note">{{ r.note ?? '' }}</td>
+              <td class="nowrap">{{ formatDate(r.signedUpAt, 'short') }}</td>
+              <td>
+                <v-chip size="small" variant="outlined" :color="positive(r.answer) ? 'success' : undefined">
+                  {{ t(`invest.session.list.answer.${r.answer ?? 'none'}`) }}
+                </v-chip>
+              </td>
+            </tr>
+          </tbody>
+        </v-table>
+      </div>
+
+      <ul v-else class="signups">
         <li v-for="(r, i) in rows" :key="`${r.name}-${i}`" class="signup">
           <div class="d-flex flex-wrap align-center" style="gap: 6px 10px;">
             <span class="font-weight-bold" style="color: #fff;">{{ r.name }}</span>
-            <v-chip size="small" variant="outlined" :color="r.answer === 'yes' || r.answer === 'committed' ? 'success' : undefined">
+            <v-chip size="small" variant="outlined" :color="positive(r.answer) ? 'success' : undefined">
               {{ t(`invest.session.list.answer.${r.answer ?? 'none'}`) }}
             </v-chip>
           </div>
@@ -53,8 +84,11 @@
 
 <script setup lang="ts">
 // The committee's list of who wants an online info session (current-komite only: the
-// API leaves it out for everyone else). Name, e-mail, when, the note, and whether they
-// also answered the offering. The e-mails copy as one line for the To field of a mail.
+// API gives it to nobody else), on /member/invest/:slug/komite. Name, e-mail, the note,
+// when, and whether they also answered the offering. The e-mails copy as one
+// comma-separated line, ready for the guests of a calendar invite.
+import { useDisplay } from 'vuetify'
+
 interface Row {
   name: string
   email: string | null
@@ -66,11 +100,13 @@ interface Row {
 const props = defineProps<{ rows: Row[] }>()
 const { t } = useI18n()
 const { formatDate } = useLocaleDate()
+const { smAndDown } = useDisplay()
 const copied = ref('')
 
 const emails = computed(() => props.rows.map((r) => r.email).filter((e): e is string => Boolean(e)))
 const emailText = computed(() => emails.value.join(', '))
 const withoutEmail = computed(() => props.rows.length - emails.value.length)
+const positive = (a: Row['answer']) => a === 'yes' || a === 'committed'
 
 async function copy() {
   try {
@@ -104,12 +140,40 @@ async function copy() {
   color: #888;
   font-size: 13px;
 }
+.table-wrap {
+  overflow-x: auto;
+}
+/* The portal's Vuetify theme is light; dark tables set their own colours (as on /member). */
+.committee-table {
+  background: transparent !important;
+  color: #fff !important;
+  font-size: 14px;
+}
+.committee-table :deep(th) {
+  color: #aaa !important;
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+.committee-table :deep(td) {
+  color: #fff !important;
+  vertical-align: top;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+.committee-table :deep(tr:hover td) {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+.nowrap {
+  white-space: nowrap;
+}
 .signups {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-.signup {
+li.signup {
   padding: 12px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;

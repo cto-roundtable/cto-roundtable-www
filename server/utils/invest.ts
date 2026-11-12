@@ -201,9 +201,16 @@ export interface InterestInput {
   answer: InterestAnswer
   amountNok: number | null
   vehicle: Vehicle | null
-  wantsInfo: boolean
+  /** null = leave wants_info as it is. The form no longer asks (Snorre 2026-11-12: "want to
+   *  know more" is the online session now), so only a client that sends a boolean sets it. */
+  wantsInfo: boolean | null
   wantsToHelp: string | null
   notes: string | null
+}
+
+/** wants_info from a request body: only an explicit boolean; anything else leaves it untouched. */
+export function parseWantsInfo(body: any): boolean | null {
+  return typeof body?.wantsInfo === 'boolean' ? body.wantsInfo : null
 }
 
 function cleanText(v: unknown, max: number): string | null {
@@ -223,7 +230,7 @@ export function parseInterestInput(offering: Offering, body: any): InterestInput
       answer,
       amountNok: null,
       vehicle: null,
-      wantsInfo: false,
+      wantsInfo: parseWantsInfo(body),
       wantsToHelp: null,
       notes: cleanText(body.notes, 2000),
     }
@@ -241,8 +248,7 @@ export function parseInterestInput(offering: Offering, body: any): InterestInput
     answer,
     amountNok,
     vehicle,
-    // "Kanskje" means "tell me more", so it always asks for information.
-    wantsInfo: answer === 'maybe' ? true : Boolean(body.wantsInfo),
+    wantsInfo: parseWantsInfo(body),
     wantsToHelp: cleanText(body.wantsToHelp, 500),
     notes: cleanText(body.notes, 2000),
   }
@@ -251,6 +257,7 @@ export function parseInterestInput(offering: Offering, body: any): InterestInput
 /**
  * Save the member's interest. Upserts the one row per (offering, person), but only
  * while it is still interest or declined; a row that has moved on is a 409.
+ * wants_info is written only when the input carries a boolean: a null keeps what is there.
  * The holding is linked only when the member owns exactly one and says holding;
  * with none or several, it is asked at tegning.
  */
@@ -280,7 +287,7 @@ export async function saveInterest(offering: Offering, personId: string, input: 
       amount_nok      = EXCLUDED.amount_nok,
       vehicle         = EXCLUDED.vehicle,
       organization_id = EXCLUDED.organization_id,
-      wants_info      = EXCLUDED.wants_info,
+      wants_info      = COALESCE(EXCLUDED.wants_info, invest_subscriptions.wants_info),
       wants_to_help   = EXCLUDED.wants_to_help,
       notes           = EXCLUDED.notes
     WHERE invest_subscriptions.phase IN ('interest', 'declined')

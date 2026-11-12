@@ -92,6 +92,13 @@ add `invest-4`; if nobody is in it yet, make it synthetic.
   `invest_subscriptions` is unchanged by it; a member sees only their own; the committee
   gets the list with e-mails, the board alone gets nothing; undo deletes the row. Phone
   screens in `.run/session-signup/` (the committee list with e-mails masked).
+- `committee-page.spec.ts`: CTORI4 after 2026-11-12, on the branch (status set to interest
+  and put back, every touched row restored). The Oversikt banner reads "… er åpen for
+  interesse nå"; the form has "Kanskje" with the hint to the session and no "vil vite mer"
+  checkbox, and saving an answer leaves a saved `wants_info` alone; `/komite` is the
+  committee's (committee with and without the board), a plain member, an investor and the
+  board alone get the 404; its totals equal `invest-offering.mjs show`'s SQL. Desktop and
+  390 px screens in `.run/committee-page/` (names, e-mails and notes masked).
 - `deal-vote.spec.ts`: REGRESSION for the deal vote, end to end on the branch: the admin
   API publishes a document and a draft round, the committee opens it (the board cannot),
   SPV members vote with the bundle hash, no early close, the committee closes after the

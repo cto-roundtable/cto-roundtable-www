@@ -1,8 +1,9 @@
 // GET /api/member/invest/:slug
 // The offering, the member's own answer, what we already know about them (last time,
 // their holdings, names only) and the anonymous totals. Also the member's own sign-up
-// for an online info session, and for the committee the list of everyone signed up. 404 for an offering they may
-// not see (server/utils/invest.ts: requireVisibleOffering).
+// for an online info session, and for the committee how many have signed up (the list
+// itself is on GET .../komite). 404 for an offering they may not see
+// (server/utils/invest.ts: requireVisibleOffering).
 export default defineEventHandler(async (event) => {
   const { personId } = event.context.session
   const slug = getRouterParam(event, 'slug') ?? ''
@@ -18,7 +19,7 @@ export default defineEventHandler(async (event) => {
   ])
   // The committee answers comments on the documents: how many wait on it, per document.
   const unanswered = isCommittee ? await unansweredDocumentThreads(offering.id) : null
-  // Who wants an online info session, with name and e-mail: the committee invites them.
+  // The committee's link to its page says how many want an online session.
   const sessionSignups = isCommittee ? await listSessionSignups(offering.id) : null
 
   return {
@@ -36,7 +37,7 @@ export default defineEventHandler(async (event) => {
     mine,
     session,
     sessionOpen: sessionSignupOpen(offering.status, preview),
-    ...(sessionSignups ? { sessionSignups } : {}),
+    ...(sessionSignups ? { committee: { sessionSignups: sessionSignups.length } } : {}),
     lastTime: known.lastTime,
     holdings: known.holdings.map((h) => h.name),
     aggregate,
