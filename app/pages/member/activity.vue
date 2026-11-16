@@ -2,14 +2,15 @@
   <div class="activity text-left">
     <header class="mb-6">
       <div class="d-flex align-center mb-2" style="gap: 12px;">
-        <h1 class="font-weight-bold mb-0" style="font-size: 1.6rem;">Aktivitet</h1>
+        <h1 class="font-weight-bold mb-0" style="font-size: 1.6rem;">Medlemmer og aktivitet</h1>
         <v-chip color="#7e57c2" variant="flat" size="small" class="text-uppercase font-weight-bold" style="letter-spacing: 0.05em;">
           Kun for styret
         </v-chip>
       </div>
       <p style="color: #aaa; font-size: 14px;">
-        Medlemsaktivitet fra Slack (meldinger + reaksjoner) og Luma (oppmøte + hosting).
-        Sortert med de minst aktive øverst, for å flagge inaktive.
+        Hvem som er pensjonert og når, hvem som sitter i styret, komiteen og CTORI, og
+        medlemsaktivitet fra Slack (meldinger + reaksjoner) og Luma (oppmøte + hosting).
+        Aktive medlemmer er sortert med de minst aktive øverst, for å flagge inaktive.
       </p>
     </header>
 
@@ -70,7 +71,54 @@
           <v-chip color="#4caf50" variant="flat" size="small">{{ data.summary.active }} aktive</v-chip>
           <v-chip color="#ff9800" variant="flat" size="small">{{ data.summary.low }} lav</v-chip>
           <v-chip color="#ef5350" variant="flat" size="small">{{ data.summary.dormant }} sovende</v-chip>
+          <v-chip color="#9e9e9e" variant="flat" size="small">{{ data.summary.retired }} pensjonert</v-chip>
+          <v-chip v-if="data.summary.otherStatus" color="#9e9e9e" variant="outlined" size="small">
+            {{ data.summary.otherStatus }} annen status
+          </v-chip>
         </div>
+
+        <!-- Not active, first: who has retired and when. Newest retirement on top. -->
+        <h2 class="section-title">Pensjonert</h2>
+        <p v-if="!data.former.length" style="color: #888; font-size: 13px;" class="mb-6">
+          Ingen pensjonerte i denne avdelingen.
+        </p>
+        <v-table v-else density="comfortable" class="activity-table mb-8">
+          <thead>
+            <tr>
+              <th>Medlem</th>
+              <th>Pensjonert</th>
+              <th class="d-none d-sm-table-cell">Medlem siden</th>
+              <th class="d-none d-md-table-cell">Sist aktiv</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="f in data.former" :key="f.personId" class="row-click" @click="openDetail(f)">
+              <td>
+                <div>{{ f.name }}</div>
+                <div class="d-flex mt-1" style="gap: 4px; flex-wrap: wrap;">
+                  <v-chip v-if="f.personStatus !== 'retired'" size="x-small" variant="outlined">
+                    {{ personStatusLabel(f.personStatus) }}
+                  </v-chip>
+                  <v-chip v-for="r in f.roles" :key="r" size="x-small" variant="outlined" class="role-chip">{{ r }}</v-chip>
+                  <v-chip v-if="f.rejoinRequestedAt" size="x-small" color="#4caf50" variant="flat">
+                    Søkt om å komme tilbake {{ formatDate(f.rejoinRequestedAt) }}
+                  </v-chip>
+                </div>
+              </td>
+              <td style="white-space: nowrap;">
+                <template v-if="f.retiredAt">
+                  {{ formatDate(f.retiredAt) }}
+                  <div style="color: #888; font-size: 12px;">{{ ago(f.retiredAt) }}</div>
+                </template>
+                <span v-else style="color: #888;">–</span>
+              </td>
+              <td class="d-none d-sm-table-cell" style="color: #aaa;">{{ formatJoined(f.joinedAt) }}</td>
+              <td class="d-none d-md-table-cell" style="color: #aaa;">{{ f.lastEver ? formatDate(f.lastEver) : 'aldri' }}</td>
+            </tr>
+          </tbody>
+        </v-table>
+
+        <h2 class="section-title">Aktive medlemmer</h2>
 
         <v-alert type="info" variant="tonal" density="compact" class="mb-4" style="font-size: 12.5px;">
           {{ data.coverageNote }}
@@ -81,6 +129,7 @@
             <tr>
               <th>Medlem</th>
               <th>Status</th>
+              <th class="d-none d-md-table-cell">Medlem siden</th>
               <th class="text-right">Poster</th>
               <th class="text-right">Oppmøte</th>
               <th class="text-right">Hosting</th>
@@ -90,12 +139,18 @@
           </thead>
           <tbody>
             <tr v-for="m in visibleMembers" :key="m.personId" class="row-click" @click="openDetail(m)">
-              <td>{{ m.name }}</td>
+              <td>
+                <div>{{ m.name }}</div>
+                <div v-if="m.roles.length" class="d-flex mt-1" style="gap: 4px; flex-wrap: wrap;">
+                  <v-chip v-for="r in m.roles" :key="r" size="x-small" variant="outlined" class="role-chip">{{ r }}</v-chip>
+                </div>
+              </td>
               <td>
                 <v-chip :color="statusColor(m.status)" variant="flat" size="x-small" class="text-uppercase font-weight-bold" style="letter-spacing: 0.04em;">
                   {{ statusLabel(m.status) }}
                 </v-chip>
               </td>
+              <td class="d-none d-md-table-cell" style="color: #aaa; white-space: nowrap;">{{ formatJoined(m.joinedAt) }}</td>
               <td class="text-right">{{ m.slackTotal }}</td>
               <td class="text-right">{{ m.attended }}</td>
               <td class="text-right">{{ m.hosted }}</td>
@@ -193,6 +248,27 @@ function statusColor(status: string): string {
 function statusLabel(status: string): string {
   return { active: 'Aktiv', low: 'Lav', dormant: 'Sovende' }[status] || status
 }
+function personStatusLabel(status: string): string {
+  return { retired: 'Pensjonert', prospect: 'Prospekt', inactive: 'Inaktiv', rejected: 'Avslått' }[status] || status
+}
+function formatDate(d: string): string {
+  return new Date(d).toLocaleDateString('nb-NO', { year: 'numeric', month: 'short', day: 'numeric' })
+}
+// The original member list was imported on 2023-06-12, so that date means
+// "joined then or earlier", not the day they joined.
+function formatJoined(d: string | null): string {
+  if (!d) return 'ukjent'
+  if (d.startsWith('2023-06-12')) return 'jun. 2023 eller før'
+  return new Date(d).toLocaleDateString('nb-NO', { year: 'numeric', month: 'short' })
+}
+function ago(d: string): string {
+  const days = Math.floor((Date.now() - new Date(d).getTime()) / 86_400_000)
+  if (days < 1) return 'i dag'
+  if (days === 1) return 'i går'
+  if (days < 60) return `${days} dager siden`
+  const months = Math.round(days / 30.4)
+  return months < 24 ? `${months} mnd siden` : `${Math.floor(days / 365)} år siden`
+}
 function formatLast(lastSeen: string | null, lastEver: string | null): string {
   const d = lastSeen || lastEver
   if (!d) return 'aldri'
@@ -204,6 +280,15 @@ onMounted(load)
 </script>
 
 <style scoped>
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.role-chip {
+  color: #ccc !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
 .activity-table {
   background: transparent !important;
   color: #fff !important;

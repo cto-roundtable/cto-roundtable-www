@@ -188,7 +188,7 @@ The network has two chapters, and a chapter is a group, not a column (`server/ut
 - **Never add a Swede to `cto-roundtable`.** The public directory (`/api/members`), the `alle@` alias, the `#roundtable` Slack sync and the `/sweden` "sitting CTOs" count key on that group and must stay Norwegian.
 - **The session** carries `chapters`. The `/api/member/` middleware puts them on `event.context.chapters` and refuses `NORWAY_ONLY_API_PREFIXES` (AI onboarding) to a session without `no`.
 - **A Swedish-only member** gets the Swedish nav and `/member/sweden` (overview: the chapter's evenings by `events.group_id`, its surveys, its channel) and `/member/sweden/faq`; `/member`, `/member/faq` and `/member/onboarding` redirect there. A member in both chapters gets the Norwegian portal plus a "Sverige" entry.
-- **Shared pages, per chapter**: a hosting offer carries its chapter (`event_locations.group_id`, hq migration 025; a two-chapter member picks); the open-to-work list spans both chapters and marks Swedes; the board activity report has a chapter switch (Norway default).
+- **Shared pages, per chapter**: a hosting offer carries its chapter (`event_locations.group_id`, hq migration 025; a two-chapter member picks); the open-to-work list spans both chapters and marks Swedes; the board member report (`/member/activity`, nav "Medlemmer (styret)": pensjonister with their `retired_at` first, then active members with roles, member since and activity) has a chapter switch (Norway default).
 - **Data that is Snorre's, not code's**: who is `active`, Oliver's Swedish membership, `roundtable-sweden.slack_channel`, a Sweden email alias, the Stockholm `events` rows.
 
 ### Undersøkelser etter arrangement (`/member/surveys`)
@@ -312,7 +312,7 @@ and `decisions/2026-10-22-vote-model.md` in the ctori-4 project (huddle). Schema
   Visibility comes from the person's own memberships only (`viewer.groupIds`). The
   board (`styret`) adds nothing to what anyone sees of investments, anywhere in the
   portal (Snorre, 2026-10-29 and 10-30); board-only are the admin pages (styremøter,
-  protocols, Aktivitet (styret), API tokens). A case you may not see is
+  protocols, Medlemmer (styret), formerly Aktivitet, API tokens). A case you may not see is
   the same 404 as one that does not exist. Seeing a case
   is not seeing its material: the blurb and the documents are shared only once the
   committee marks it investor-visible or a round has opened (`materialSharedSql`);
