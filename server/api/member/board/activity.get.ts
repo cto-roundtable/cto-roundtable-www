@@ -3,8 +3,12 @@
 // Feeds the styret's "flag inactive members" work. Reads the activity_events
 // signal layer (Slack messages/reactions + Luma attendance/hosting).
 //
-// Universe = all ACTIVE members of one chapter (LEFT JOIN activity), so members
-// with zero signals in the window are included: those are the ones to flag.
+// Universe = everyone in one chapter group (LEFT JOIN activity), so members with
+// zero signals in the window are included: those are the ones to flag. Active
+// members are scored; everyone else (pensjonister first of all, with the date
+// they retired) comes back in `former`, so the board sees every status in one
+// place. Each row also carries who the person is to us: member since, and the
+// board, committee and SPV groups they sit in.
 // chapter=no (default) is cto-roundtable, chapter=se the Swedish chapter; the
 // two are kept apart because they run separately (vedtak 6).
 //
@@ -42,9 +46,21 @@ export default defineEventHandler(async (event) => {
     ever AS (
       SELECT person_id, max(occurred_at) AS last_ever
       FROM activity_events WHERE person_id IS NOT NULL GROUP BY person_id
+    ),
+    groups AS (
+      SELECT m.person_id, array_agg(g.slug ORDER BY g.slug) AS slugs
+      FROM memberships m JOIN network_groups g ON g.id = m.group_id
+      GROUP BY m.person_id
+    ),
+    rejoin AS (
+      SELECT DISTINCT ON (person_id) person_id, created_at
+      FROM join_requests WHERE status = 'pending'
+      ORDER BY person_id, created_at DESC
     )
     SELECT
-      p.id, p.name,
+      p.id, p.name, p.status, p.retired_at, m.joined_at,
+      COALESCE(gr.slugs, '{}')  AS slugs,
+      rj.created_at             AS rejoin_requested_at,
       COALESCE(a.posts, 0)     AS posts,
       COALESCE(a.replies, 0)   AS replies,
       COALESCE(a.reactions, 0) AS reactions,
@@ -57,43 +73,70 @@ export default defineEventHandler(async (event) => {
     FROM persons p
     JOIN memberships m    ON m.person_id = p.id
     JOIN network_groups g ON g.id = m.group_id AND g.slug = ${CHAPTER_GROUPS[chapter]}
-    LEFT JOIN act a  ON a.person_id = p.id
-    LEFT JOIN ever e ON e.person_id = p.id
-    WHERE p.status = 'active'
+    LEFT JOIN act a     ON a.person_id = p.id
+    LEFT JOIN ever e    ON e.person_id = p.id
+    LEFT JOIN groups gr ON gr.person_id = p.id
+    LEFT JOIN rejoin rj ON rj.person_id = p.id
     ORDER BY score ASC, e.last_ever ASC NULLS FIRST, p.name
   `
 
-  const members = rows.map((r: any) => {
-    const posts = Number(r.posts)
-    const replies = Number(r.replies)
-    const reactions = Number(r.reactions)
-    const attended = Number(r.attended)
-    const hosted = Number(r.hosted)
-    const score = Number(r.score)
-    const showsUp = attended + hosted
-    const status = score === 0 ? 'dormant' : showsUp === 0 && score < LOW_SCORE ? 'low' : 'active'
-    return {
+  const members = rows
+    .filter((r: any) => r.status === 'active')
+    .map((r: any) => {
+      const posts = Number(r.posts)
+      const replies = Number(r.replies)
+      const reactions = Number(r.reactions)
+      const attended = Number(r.attended)
+      const hosted = Number(r.hosted)
+      const score = Number(r.score)
+      const showsUp = attended + hosted
+      const status = score === 0 ? 'dormant' : showsUp === 0 && score < LOW_SCORE ? 'low' : 'active'
+      return {
+        personId: r.id,
+        name: r.name,
+        roles: rolesOf(r.slugs),
+        joinedAt: r.joined_at,
+        posts,
+        replies,
+        reactions,
+        attended,
+        hosted,
+        slackTotal: posts + replies + reactions,
+        showsUp,
+        score,
+        status,
+        lastSeen: r.last_seen,
+        lastEver: r.last_ever,
+      }
+    })
+
+  // Not active: pensjonister (newest retirement first), then any other status
+  // (prospect, inactive) so nothing in the chapter group is invisible.
+  const former = rows
+    .filter((r: any) => r.status !== 'active')
+    .map((r: any) => ({
       personId: r.id,
       name: r.name,
-      posts,
-      replies,
-      reactions,
-      attended,
-      hosted,
-      slackTotal: posts + replies + reactions,
-      showsUp,
-      score,
-      status,
-      lastSeen: r.last_seen,
+      personStatus: r.status as string,
+      roles: rolesOf(r.slugs),
+      joinedAt: r.joined_at,
+      retiredAt: r.retired_at,
       lastEver: r.last_ever,
-    }
-  })
+      rejoinRequestedAt: r.rejoin_requested_at,
+    }))
+    .sort((a: any, b: any) => {
+      if ((a.personStatus === 'retired') !== (b.personStatus === 'retired'))
+        return a.personStatus === 'retired' ? -1 : 1
+      return time(b.retiredAt) - time(a.retiredAt) || a.name.localeCompare(b.name, 'nb')
+    })
 
   const summary = {
     total: members.length,
     dormant: members.filter((m) => m.status === 'dormant').length,
     low: members.filter((m) => m.status === 'low').length,
     active: members.filter((m) => m.status === 'active').length,
+    retired: former.filter((f) => f.personStatus === 'retired').length,
+    otherStatus: former.filter((f) => f.personStatus !== 'retired').length,
   }
 
   return {
@@ -109,5 +152,26 @@ export default defineEventHandler(async (event) => {
       'Slack er komplett fra 2026-06-30 (live webhook). Eldre Slack finnes til 2026-03-01, med et hull mar-jun. Oppmøte/hosting er komplett. Flagg er retningsgivende inntil vinduet er fullt dekket.',
     summary,
     members,
+    former,
   }
 })
+
+// A timestamp column as epoch ms (the driver hands back Date objects); 0 for none.
+function time(d: Date | string | null): number {
+  return d ? new Date(d).getTime() : 0
+}
+
+// Who the person is to us, from their groups: the board, the investment
+// committee (current or former) and each CTORI SPV they are in. The chapter
+// groups and mailing groups say nothing here and are left out.
+function rolesOf(slugs: string[]): string[] {
+  const roles: string[] = []
+  if (slugs.includes('styret')) roles.push('Styret')
+  if (slugs.includes('current-komite')) roles.push('Komité')
+  else if (slugs.includes('ex-komite')) roles.push('Tidl. komité')
+  for (const slug of slugs) {
+    const spv = /^invest-(\d+)$/.exec(slug)
+    if (spv) roles.push(`CTORI ${spv[1]}`)
+  }
+  return roles
+}
