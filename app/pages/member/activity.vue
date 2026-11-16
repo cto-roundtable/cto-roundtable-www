@@ -20,6 +20,53 @@
     </div>
 
     <template v-else>
+      <!-- Search and filters: narrow both lists (pensjonister and active) at once. -->
+      <v-text-field
+        v-model="search"
+        placeholder="Søk på navn eller rolle (Styret, Komité, CTORI 3 …)"
+        prepend-inner-icon="mdi-magnify"
+        variant="outlined"
+        density="compact"
+        clearable
+        hide-details
+        class="mb-3"
+        style="max-width: 520px;"
+      />
+      <div class="d-flex align-center mb-2" style="gap: 8px; flex-wrap: wrap;">
+        <span style="color: #888; font-size: 13px;">Vis:</span>
+        <v-chip
+          v-for="opt in showOptions"
+          :key="opt.value"
+          :variant="show === opt.value ? 'flat' : 'outlined'"
+          :color="show === opt.value ? 'white' : undefined"
+          size="small"
+          @click="show = opt.value"
+        >
+          {{ opt.title }}
+        </v-chip>
+      </div>
+      <div v-if="roleOptions.length" class="d-flex align-center mb-2" style="gap: 8px; flex-wrap: wrap;">
+        <span style="color: #888; font-size: 13px;">Rolle:</span>
+        <v-chip
+          :variant="role === null ? 'flat' : 'outlined'"
+          :color="role === null ? 'white' : undefined"
+          size="small"
+          @click="role = null"
+        >
+          Alle
+        </v-chip>
+        <v-chip
+          v-for="r in roleOptions"
+          :key="r"
+          :variant="role === r ? 'flat' : 'outlined'"
+          :color="role === r ? 'white' : undefined"
+          size="small"
+          @click="role = role === r ? null : r"
+        >
+          {{ r }}
+        </v-chip>
+      </div>
+
       <!-- Chapter: Norway and the Swedish chapter run separately (vedtak 6), so
            they are counted apart. Norway is the default. -->
       <div class="d-flex align-center mb-2" style="gap: 8px; flex-wrap: wrap;">
@@ -78,9 +125,16 @@
         </div>
 
         <!-- Not active, first: who has retired and when. Newest retirement on top. -->
-        <h2 class="section-title">Pensjonert</h2>
+        <template v-if="show !== 'active'">
+        <h2 class="section-title">
+          Pensjonert
+          <span v-if="filtering" class="section-count">{{ visibleFormer.length }} av {{ data.former.length }}</span>
+        </h2>
         <p v-if="!data.former.length" style="color: #888; font-size: 13px;" class="mb-6">
           Ingen pensjonerte i denne avdelingen.
+        </p>
+        <p v-else-if="!visibleFormer.length" style="color: #888; font-size: 13px;" class="mb-6">
+          Ingen treff blant pensjonerte.
         </p>
         <v-table v-else density="comfortable" class="activity-table mb-8">
           <thead>
@@ -92,7 +146,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="f in data.former" :key="f.personId" class="row-click" @click="openDetail(f)">
+            <tr v-for="f in visibleFormer" :key="f.personId" class="row-click" @click="openDetail(f)">
               <td>
                 <div>{{ f.name }}</div>
                 <div class="d-flex mt-1" style="gap: 4px; flex-wrap: wrap;">
@@ -117,14 +171,22 @@
             </tr>
           </tbody>
         </v-table>
+        </template>
 
-        <h2 class="section-title">Aktive medlemmer</h2>
+        <template v-if="show !== 'retired'">
+        <h2 class="section-title">
+          Aktive medlemmer
+          <span v-if="filtering" class="section-count">{{ visibleMembers.length }} av {{ data.members.length }}</span>
+        </h2>
 
         <v-alert type="info" variant="tonal" density="compact" class="mb-4" style="font-size: 12.5px;">
           {{ data.coverageNote }}
         </v-alert>
 
-        <v-table density="comfortable" class="activity-table">
+        <p v-if="!visibleMembers.length" style="color: #888; font-size: 13px;">
+          Ingen treff blant aktive medlemmer.
+        </p>
+        <v-table v-else density="comfortable" class="activity-table">
           <thead>
             <tr>
               <th>Medlem</th>
@@ -163,6 +225,7 @@
         <p style="color: #666; font-size: 12px;" class="mt-3">
           Vekting: post = 3, tråd-svar = 2, reaksjon = 1, oppmøte = 5, hosting = 8. Vindu: siste {{ data.windowDays }} dager.
         </p>
+        </template>
       </template>
     </template>
 
@@ -201,6 +264,14 @@ const chapterOptions = [
 ] as const
 const chapter = ref<'no' | 'se'>('no')
 const onlyFlagged = ref(false)
+const search = ref<string | null>('')
+const showOptions = [
+  { value: 'all', title: 'Alle' },
+  { value: 'active', title: 'Aktive' },
+  { value: 'retired', title: 'Pensjonert' },
+] as const
+const show = ref<'all' | 'active' | 'retired'>('all')
+const role = ref<string | null>(null)
 const loading = ref(true)
 const forbidden = ref(false)
 const data = ref<any>(null)
@@ -228,6 +299,7 @@ async function load() {
 function setChapter(c: 'no' | 'se') {
   if (c === chapter.value) return
   chapter.value = c
+  role.value = null
   load()
 }
 
@@ -237,9 +309,43 @@ function setDays(d: number) {
   load()
 }
 
+// Case- and accent-insensitive, so "ijas" finds Ijäs and "komite" finds Komité.
+function fold(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+}
+
+// Search matches the name or any role; the role chips pick one role exactly.
+function matches(p: { name: string; roles: string[] }): boolean {
+  if (role.value && !p.roles.includes(role.value)) return false
+  const q = fold((search.value ?? '').trim())
+  if (!q) return true
+  return [p.name, ...p.roles].some((text) => fold(text).includes(q))
+}
+
+const filtering = computed(() => Boolean((search.value ?? '').trim() || role.value || onlyFlagged.value))
+
+// Every role someone in this chapter holds, board and committee first, then the SPVs.
+const roleOptions = computed(() => {
+  if (!data.value) return []
+  const order = ['Styret', 'Komité', 'Tidl. komité']
+  const all = new Set<string>([...data.value.members, ...data.value.former].flatMap((p: any) => p.roles))
+  return [...all].sort((a, b) => {
+    const ia = order.indexOf(a)
+    const ib = order.indexOf(b)
+    if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib)
+    return a.localeCompare(b, 'nb', { numeric: true })
+  })
+})
+
+const visibleFormer = computed(() => (data.value ? data.value.former.filter(matches) : []))
+
 const visibleMembers = computed(() => {
   if (!data.value) return []
-  return onlyFlagged.value ? data.value.members.filter((m: any) => m.status !== 'active') : data.value.members
+  const members = onlyFlagged.value ? data.value.members.filter((m: any) => m.status !== 'active') : data.value.members
+  return members.filter(matches)
 })
 
 function statusColor(status: string): string {
@@ -284,6 +390,12 @@ onMounted(load)
   font-size: 1.1rem;
   font-weight: 700;
   margin-bottom: 8px;
+}
+.section-count {
+  color: #888;
+  font-size: 13px;
+  font-weight: 400;
+  margin-left: 8px;
 }
 .role-chip {
   color: #ccc !important;
