@@ -3,46 +3,75 @@
     <v-row justify="center">
       <v-col cols="12" md="8" lg="7" class="content">
         <p class="eyebrow">CTO Roundtable Sweden</p>
-        <h1 class="headline">A small, tight-knit network of Stockholm CTOs</h1>
+        <h1 class="headline">The Stockholm chapter is up and running</h1>
         <p class="lead">
-          We are starting a Swedish chapter of the CTO Roundtable, built on the same model we
-          have run in Norway for years. The first meeting is booked: Tuesday 17 November, an
-          evening in Stockholm, hosted by Endform. Invites go out from this page, so leave your
-          details below and Snorre gets back to you personally. The room is small and picked, so
-          signing up is how you get considered, not a guaranteed seat.
+          A small, tight-knit network of Stockholm CTOs, built on the model we have run in Norway
+          for eight years. {{ firstEvening }}One room,
+          no audience, real problems shared openly. Now we keep going.
         </p>
 
-        <section v-if="status" class="numbers" aria-label="Where the Stockholm chapter stands">
+        <section
+          v-if="status"
+          class="numbers"
+          :style="{ '--stats': latest?.ctos != null ? 4 : 3 }"
+          aria-label="Where the Stockholm chapter stands">
+          <div class="stat">
+            <span class="stat-n">{{ status.members }}</span>
+            <span class="stat-l">CTOs in the Stockholm chapter</span>
+          </div>
+          <div class="stat">
+            <span class="stat-n">{{ status.evenings.length }}</span>
+            <span class="stat-l">{{ status.evenings.length === 1 ? 'evening held so far' : 'evenings held so far' }}</span>
+          </div>
+          <div v-if="latest?.ctos != null" class="stat">
+            <span class="stat-n">{{ latest.ctos }}</span>
+            <span class="stat-l">CTOs around the table on {{ formatDay(latest.date, false) }}</span>
+          </div>
           <div class="stat">
             <span class="stat-n">{{ status.signups }}</span>
-            <span class="stat-l">Stockholm CTOs have raised their hand</span>
-          </div>
-          <div class="stat">
-            <span class="stat-n">17 Nov</span>
-            <span class="stat-l">first meeting, an evening hosted by Endform</span>
-          </div>
-          <div class="stat">
-            <span class="stat-n">{{ status.firstRound }}</span>
-            <span class="stat-l">seats in the first round, with more rounds to follow</span>
+            <span class="stat-l">
+              signed up through this page<template v-if="status.signupsSince"> since {{ formatMonth(status.signupsSince) }}</template>
+            </span>
           </div>
           <p class="numbers-note">
-            <strong>The first date is set.</strong>
-            <template v-if="status.recent > 0">
-              {{ status.recent }} of the {{ status.signups }} came in the last 30 days.
+            Live from our member database.
+            <template v-if="status.pool > 0">
+              {{ status.pool }} {{ status.pool === 1 ? 'is' : 'are' }} in the pool right now.
             </template>
-            The first round is picked from the pool for the mix, not filled in order. The pool
-            stays open, and more rounds follow.
+            <template v-if="status.recent > 0">
+              {{ status.recent }} signed up in the last 30 days.
+            </template>
           </p>
         </section>
 
-        <section class="block">
-          <h2>What we are building</h2>
+        <section class="limited" aria-label="Signup period">
+          <p class="limited-title">Open signup is for a limited period.</p>
           <p>
-            A room of CTOs who meet to talk shop and share knowledge, roughly six times a year.
-            One company hosts (a meeting room with space for 8 to 12 people is enough, no big
-            budget needed), someone puts their own tech on the grill, and the rest of us ask
-            questions and help work through the hard problems. It is low-threshold show and tell,
-            not a polished sales pitch. No panels, no audience. Just peers.
+            We take signups directly here while the chapter grows to critical mass. After that it
+            grows through the network itself: members bringing in peers they trust, and the
+            investment side.
+          </p>
+        </section>
+
+        <section v-if="status?.evenings.length" class="block">
+          <h2>Evenings so far</h2>
+          <ul class="evenings">
+            <li v-for="e in status.evenings" :key="e.date" class="evening">
+              <span class="evening-date">{{ formatDay(e.date) }}</span>
+              <span class="evening-what">{{ eveningLine(e) }}</span>
+              <span v-if="e.ctos != null" class="evening-n">{{ e.ctos }} {{ e.ctos === 1 ? 'CTO' : 'CTOs' }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="block">
+          <h2>What an evening is</h2>
+          <p>
+            CTOs who meet to talk shop and share knowledge, roughly six times a year. One company
+            hosts (a meeting room with space for 8 to 12 people is enough, no big budget needed),
+            someone puts their own tech on the grill, and the rest of us ask questions and help
+            work through the hard problems. It is low-threshold show and tell, not a polished sales
+            pitch. No panels, no audience. Just peers.
           </p>
           <p>
             And it is about half social, half technical. The dinner and the beer (or something
@@ -85,19 +114,12 @@
         </section>
 
         <section class="block">
-          <h2>What happens next</h2>
+          <h2>How you get in</h2>
           <p>
-            The first meeting is Tuesday 17 November, in the evening, hosted by Endform in
-            Stockholm. Snorre comes over from Oslo to run it. The first round is 10 CTOs,
-            picked from the pool for the mix: stage, sector, the problems people are carrying. So
-            signing up puts you in the pool, not in the room, and we say that plainly because the
-            room is small on purpose.
-          </p>
-          <p>
-            Invites go out from Snorre personally, not from a mailing list, and you hear from him
-            either way. The first round is not the last: more rounds follow, and the pool stays
-            open for them. So: leave
-            your details below if you want in. That is the whole ask.
+            Leave your details below and Snorre gets back to you himself, not a mailing list. You
+            hear from him either way. The room is small on purpose and picked for the mix:
+            stage, sector, the problems people are carrying. So signing up is how you get
+            considered, not a guaranteed seat. We say that plainly.
           </p>
           <p>
             Wondering about anything before you sign up? Mail Snorre directly at
@@ -121,13 +143,16 @@
 
         <section class="block form-block">
           <h2>Register your interest</h2>
+          <p v-if="!submitted" class="form-intro">
+            Open while the chapter grows to critical mass, so now is a good time.
+          </p>
 
           <div v-if="submitted" class="success">
             <p class="success-title">Thanks, you are in the pool.</p>
             <p>
-              Snorre will be in touch personally about the first meeting on 17 November. The room
-              is picked for the mix, so the most useful thing you can do right now is point a peer
-              you would want in the room to this page.
+              Snorre gets back to you personally. The room is picked for the mix, so the most
+              useful thing you can do right now is point a peer you would want in the room to this
+              page.
             </p>
             <p>
               Anything you wonder about in the meantime, mail Snorre at
@@ -191,23 +216,55 @@ useHead({
   titleTemplate: '%s',
 })
 
+const DESCRIPTION =
+  'A small, tight-knit network of Stockholm CTOs, up and running on the Norwegian CTO Roundtable model. Open signup for a limited period.'
+
 useSeoMeta({
   title: 'CTO Roundtable Sweden',
   ogTitle: 'CTO Roundtable Sweden',
-  description:
-    'Register your interest in a small, tight-knit network of Stockholm CTOs. A Swedish chapter built on the Norwegian CTO Roundtable model.',
-  ogDescription:
-    'Register your interest in a small, tight-knit network of Stockholm CTOs. A Swedish chapter built on the Norwegian CTO Roundtable model.',
+  description: DESCRIPTION,
+  ogDescription: DESCRIPTION,
   ogType: 'website',
   ogUrl: 'https://www.ctoroundtable.no/sweden',
   twitterCard: 'summary',
   twitterTitle: 'CTO Roundtable Sweden',
-  twitterDescription:
-    'Register your interest in a small, tight-knit network of Stockholm CTOs. A Swedish chapter built on the Norwegian CTO Roundtable model.',
+  twitterDescription: DESCRIPTION,
 })
 
-// Live numbers from Neon (counts only). The page still renders without them.
+// Live numbers from Neon (counts, past evenings, no people). The page still renders without them.
 const { data: status } = await useFetch('/api/sweden/status')
+const latest = computed(() => status.value?.evenings[0] ?? null)
+
+// Dates arrive as YYYY-MM-DD; formatted at noon UTC so server and browser agree.
+const atNoon = (ymd: string) => new Date(`${ymd}T12:00:00Z`)
+function formatDay(ymd: string, withYear = true) {
+  return atNoon(ymd).toLocaleDateString('en-GB', {
+    weekday: withYear ? 'short' : undefined,
+    day: 'numeric',
+    month: 'short',
+    year: withYear ? 'numeric' : undefined,
+    timeZone: 'UTC',
+  })
+}
+function formatMonth(ymd: string) {
+  return atNoon(ymd).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+}
+const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
+
+// "Agent setups, hosted by Endform"
+function eveningLine(e: { host: string | null; theme: string | null }) {
+  const host = e.host ? `hosted by ${e.host}` : ''
+  return e.theme ? [e.theme, host].filter(Boolean).join(', ') : host.charAt(0).toUpperCase() + host.slice(1)
+}
+
+// "The first evening was Tue 17 Nov 2026 at Endform, on agent setups. " (the oldest one).
+const firstEvening = computed(() => {
+  const e = status.value?.evenings.at(-1)
+  if (!e) return ''
+  const host = e.host ? ` at ${e.host}` : ''
+  const theme = e.theme ? `, on ${lowerFirst(e.theme)}` : ''
+  return `The first evening was ${formatDay(e.date)}${host}${theme}. `
+})
 
 const form = reactive({
   name: '',
@@ -273,7 +330,7 @@ async function submit() {
 
 .numbers {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--stats, 3), minmax(0, 1fr));
   gap: 1rem;
   margin: 0 0 2.5rem;
   padding: 1.5rem 1.5rem 1.25rem;
@@ -310,10 +367,92 @@ async function submit() {
   color: rgba(255, 255, 255, 0.85);
 }
 
+/* A phone: one stat per row, the number beside its label. */
 @media (max-width: 600px) {
   .numbers {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 1.25rem 1.1rem 1rem;
   }
+
+  .stat {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.85rem;
+  }
+
+  .stat-n {
+    min-width: 2.6rem;
+    font-size: 1.9rem;
+  }
+
+  .stat-l {
+    margin-top: 0;
+  }
+}
+
+.limited {
+  margin: 0 0 2.5rem;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid #fff;
+  background: #161616;
+}
+
+.limited-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #fff;
+  margin-bottom: 0.35rem;
+}
+
+.limited p:last-child {
+  margin: 0;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.evenings {
+  list-style: none;
+  margin: 0 !important;
+  padding: 0;
+  border-top: 1px solid #2a2a2a;
+}
+
+.evening {
+  display: grid;
+  grid-template-columns: 9.5rem 1fr auto;
+  gap: 0.25rem 1rem;
+  align-items: baseline;
+  padding: 0.75rem 0;
+  margin: 0 !important;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.evening-date {
+  color: #bbb;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.evening-n {
+  color: #bbb;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .evening {
+    grid-template-columns: 1fr auto;
+  }
+
+  .evening-what {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+.form-intro {
+  margin-top: -0.25rem;
 }
 
 .block {
