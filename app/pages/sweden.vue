@@ -10,7 +10,11 @@
           no audience, real problems shared openly. Now we keep going.
         </p>
 
-        <section v-if="status" class="numbers" aria-label="Where the Stockholm chapter stands">
+        <section
+          v-if="status"
+          class="numbers"
+          :style="{ '--stats': latest?.ctos != null ? 4 : 3 }"
+          aria-label="Where the Stockholm chapter stands">
           <div class="stat">
             <span class="stat-n">{{ status.members }}</span>
             <span class="stat-l">CTOs in the Stockholm chapter</span>
@@ -19,7 +23,7 @@
             <span class="stat-n">{{ status.evenings.length }}</span>
             <span class="stat-l">{{ status.evenings.length === 1 ? 'evening held so far' : 'evenings held so far' }}</span>
           </div>
-          <div v-if="latest" class="stat">
+          <div v-if="latest?.ctos != null" class="stat">
             <span class="stat-n">{{ latest.ctos }}</span>
             <span class="stat-l">CTOs around the table on {{ formatDay(latest.date, false) }}</span>
           </div>
@@ -55,7 +59,7 @@
             <li v-for="e in status.evenings" :key="e.date" class="evening">
               <span class="evening-date">{{ formatDay(e.date) }}</span>
               <span class="evening-what">{{ eveningLine(e) }}</span>
-              <span v-if="e.ctos" class="evening-n">{{ e.ctos }} {{ e.ctos === 1 ? 'CTO' : 'CTOs' }}</span>
+              <span v-if="e.ctos != null" class="evening-n">{{ e.ctos }} {{ e.ctos === 1 ? 'CTO' : 'CTOs' }}</span>
             </li>
           </ul>
         </section>
@@ -326,7 +330,7 @@ async function submit() {
 
 .numbers {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--stats, 3), minmax(0, 1fr));
   gap: 1rem;
   margin: 0 0 2.5rem;
   padding: 1.5rem 1.5rem 1.25rem;
@@ -363,10 +367,27 @@ async function submit() {
   color: rgba(255, 255, 255, 0.85);
 }
 
+/* A phone: one stat per row, the number beside its label. */
 @media (max-width: 600px) {
   .numbers {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
     padding: 1.25rem 1.1rem 1rem;
+  }
+
+  .stat {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.85rem;
+  }
+
+  .stat-n {
+    min-width: 2.6rem;
+    font-size: 1.9rem;
+  }
+
+  .stat-l {
+    margin-top: 0;
   }
 }
 

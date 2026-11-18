@@ -24,3 +24,31 @@ export function eventLabel(title: string | null, location: string | null): Event
   const generic = /^cto roundtable( stockholm| sweden)?$/i.test(theme)
   return { host: fromLocation, theme: theme && !generic ? theme : null }
 }
+
+// How many came to an evening is not shown while the chapter is small: the
+// evenings are about a good conversation around the table, not a headcount.
+// Snorre on PR #111 (2026-11-18): "We can start recording numbers when we pass
+// 11 members." So the attendance number appears only when the Stockholm group
+// has MORE than 11 members; below that it is left out of the public response.
+export const ATTENDANCE_SHOWN_ABOVE_MEMBERS = 11
+
+export const showAttendance = (members: number): boolean => members > ATTENDANCE_SHOWN_ABOVE_MEMBERS
+
+export interface PublicEvening extends EventLabel {
+  date: string
+  /** Chapter CTOs at the evening. Present only when showAttendance(members). */
+  ctos?: number
+}
+
+/** The evenings as the public page gets them: date, host, theme, and attendance only above the threshold. */
+export function publicEvenings(
+  rows: { date: string; title: string | null; location: string | null; ctos: number }[],
+  members: number,
+): PublicEvening[] {
+  const withCount = showAttendance(members)
+  return rows.map((r) => ({
+    date: r.date,
+    ...eventLabel(r.title, r.location),
+    ...(withCount ? { ctos: r.ctos } : {}),
+  }))
+}

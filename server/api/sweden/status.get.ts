@@ -1,7 +1,7 @@
-import { eventLabel } from '../../utils/swedenEvents'
+import { publicEvenings } from '../../utils/swedenEvents'
 
 // Live numbers for the public /sweden page: how many CTOs the Stockholm chapter
-// has, the evenings it has held and how many came, and the signups from the page.
+// has, the evenings it has held, and the signups from the page.
 // Public and read-only: counts, dates, host companies and themes. No names, no
 // emails, no people.
 //
@@ -12,6 +12,8 @@ import { eventLabel } from '../../utils/swedenEvents'
 // - ctos per evening: chapter members with an `event_attended` or `event_hosted`
 //   Luma row for it (the house convention: an approved guest counts as attended,
 //   see server/utils/surveys.ts). Snorre's host row is not a chapter member's.
+//   Left out of the response until the chapter has more than 11 members
+//   (showAttendance in server/utils/swedenEvents.ts, Snorre on PR #111).
 // - signups: join_requests to the group from the form, pending or accepted;
 //   pool: the pending ones, not yet in.
 
@@ -68,17 +70,16 @@ export default defineCachedEventHandler(
     `
 
     return {
-      members: chapter?.members ?? 0,
-      signups: signups?.signups ?? 0,
-      pool: signups?.pool ?? 0,
-      recent: signups?.recent ?? 0,
+      members: Number(chapter?.members ?? 0),
+      signups: Number(signups?.signups ?? 0),
+      pool: Number(signups?.pool ?? 0),
+      recent: Number(signups?.recent ?? 0),
       signupsSince: (signups?.since as string | null) ?? null,
-      evenings: events.map((e) => ({
-        date: e.date as string,
-        ...eventLabel(e.title, e.location),
-        ctos: e.ctos as number,
-      })),
-      norwayMembers: norway?.members ?? 0,
+      evenings: publicEvenings(
+        events.map((e) => ({ date: e.date, title: e.title, location: e.location, ctos: e.ctos })),
+        Number(chapter?.members ?? 0),
+      ),
+      norwayMembers: Number(norway?.members ?? 0),
     }
   },
   { maxAge: 60, name: 'sweden-status', getKey: () => 'sweden-status' },
