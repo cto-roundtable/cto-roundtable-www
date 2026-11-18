@@ -51,6 +51,36 @@ const swedenRequests = (personId: string) => sql`
 
 test.describe.configure({ mode: 'serial' })
 
+// First, before the tests below add and remove signups (the status is cached for 60 s).
+// GET /api/sweden/status is public: counts, past evenings with host and theme, nothing
+// about a person, and never an upcoming date (the page does not promote the next one).
+test('the public status is counts and past evenings only, and the page shows them', async ({ page }) => {
+  const res = await fetch(`${env.baseUrl}/api/sweden/status`)
+  expect(res.status).toBe(200)
+  const status = await res.json()
+  expect(Object.keys(status).sort()).toEqual(
+    ['evenings', 'members', 'norwayMembers', 'pool', 'recent', 'signups', 'signupsSince'].sort(),
+  )
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Stockholm' })
+  for (const e of status.evenings) {
+    expect(Object.keys(e).sort()).toEqual(['ctos', 'date', 'host', 'theme'])
+    expect(e.date < today).toBe(true)
+  }
+  expect(JSON.stringify(status)).not.toMatch(/@|linkedin/i)
+
+  const [db] = await sql`
+    SELECT count(*)::int AS n FROM memberships m
+    JOIN network_groups ng ON ng.id = m.group_id JOIN persons p ON p.id = m.person_id
+    WHERE ng.slug = 'roundtable-sweden' AND p.status = 'active'
+  `
+  expect(status.members).toBe(db!.n)
+
+  await page.goto(`${env.baseUrl}/sweden`)
+  await expect(page.locator('.numbers .stat').first()).toContainText(`${status.members}`)
+  await expect(page.locator('.limited')).toContainText('limited period')
+  await expect(page.locator('.evening')).toHaveCount(status.evenings.length)
+})
+
 test('a real member email changes nothing on the member, the request carries the submission', async () => {
   const member = persona('member')
   const email = await emailOf(member.personId)
