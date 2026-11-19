@@ -71,19 +71,12 @@ function html(id: string, md: string): string {
 const open = ref<Record<string, boolean>>({})
 
 /**
- * Default state, which is the whole point of this component: a section that
- * holds saker opens so you can see the list of them, and every sak inside it
- * starts closed. A section that is content rather than a container (Til stede,
- * Vedtak, Referanser) starts closed too. So the first screen is the agenda,
- * not the agenda's text.
+ * Default state, which is the whole point of this component: the first screen
+ * is the agenda, not the agenda's text. See defaultOpenState for the rule, and
+ * for why a Kortversjon wins over the list of saker.
  */
 function defaults() {
-  const next: Record<string, boolean> = {}
-  for (const s of outline.value.sections) {
-    next[s.id] = s.children.length > 0
-    for (const c of s.children) next[c.id] = false
-  }
-  open.value = next
+  open.value = defaultOpenState(outline.value)
 }
 
 watch(() => props.markdown, defaults, { immediate: true })
