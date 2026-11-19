@@ -337,3 +337,20 @@ export function outlineMarkdown(md: string): DocOutline {
 
   return { preamble: preamble.join('\n').trim(), sections }
 }
+
+/**
+ * Which sections a board document opens with. A section that holds saker opens
+ * so you see the list of them, and every sak inside starts closed. When the
+ * agenda has a Kortversjon, that is the first screen instead: it opens alone
+ * and everything else, the details included, starts closed. People read it on
+ * the way to the meeting, often on a phone.
+ */
+export function defaultOpenState(outline: DocOutline): Record<string, boolean> {
+  const short = outline.sections.find((s) => /^kortversjon\b/i.test(s.title))
+  const next: Record<string, boolean> = {}
+  for (const s of outline.sections) {
+    next[s.id] = short ? s === short : s.children.length > 0
+    for (const c of s.children) next[c.id] = false
+  }
+  return next
+}
