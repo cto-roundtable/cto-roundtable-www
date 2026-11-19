@@ -213,6 +213,7 @@ import { useDisplay } from 'vuetify'
 
 const route = useRoute()
 const { session, loading, checkSession, loginWithPasskey, requestMagicLink, logout } = useAuthSession()
+const admissions = useAdmissionsFlag()
 const { mobile } = useDisplay()
 const { t, locale } = useI18n()
 const { applyDefault: applyLocale } = useMemberLocale()
@@ -337,6 +338,12 @@ const navItems = computed(() => {
   // /member banner once one is announced, and the page is open to every Norwegian member.
   if (session.value.isBoard || (!limited.value && route.path.startsWith('/member/arsmote'))) {
     items.push({ to: '/member/arsmote', key: 'nav.generalMeeting', icon: 'mdi-account-group-outline', exact: false })
+  }
+  // Member admission (vedtekter § 4.1): the board starts a vote from the list, every
+  // Norwegian member votes. The forening is Norway's, so a Swedish-only member has no vote.
+  // Behind the admissions flag (useAdmissionsFlag): off, only styret sees it, labelled on the page.
+  if (session.value.isBoard || (admissions.enabled.value && !limited.value && !swedenOnly.value)) {
+    items.push({ to: '/member/opptak', key: 'nav.admission', icon: 'mdi-account-plus-outline', exact: false })
   }
   if (session.value.isBoard) {
     items.push({ to: '/member/board', key: 'nav.boardMeetings', icon: 'mdi-gavel', exact: false })

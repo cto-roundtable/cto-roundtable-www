@@ -101,6 +101,10 @@ export default defineNuxtConfig({
     // NUXT_SITE_URL (Cloud Run); left empty locally so dev falls back to the
     // request origin. Never derive auth link hosts from the request Host header.
     siteUrl: process.env.NUXT_SITE_URL || process.env.SITE_URL || '',
+    // Feature flag: member admission votes (server/utils/admissionsFlag.ts). Off unless
+    // NUXT_ADMISSIONS_ENABLED is 'true' on the server; read per request, so flipping the
+    // Cloud Run env (infrastructure/tofu/main.tf) needs no rebuild.
+    admissionsEnabled: process.env.NUXT_ADMISSIONS_ENABLED || '',
     public: {
       posthogToken: process.env.POSTHOG_TOKEN || '',
       posthogHost: process.env.POSTHOG_HOST || 'https://eu.i.posthog.com',

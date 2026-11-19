@@ -552,6 +552,43 @@ ctori-4 memory `votes/meeting-votes-design.md`; rules from the vedtekter § 5 an
 - i18n keys live under `meetings.*` (and `nav.generalMeeting`, board only; members come
   in through the `/member` banner).
 
+### Opptak: member admission votes (`/member/opptak`, `/bli-medlem`)
+
+**Ships dark behind a feature flag** (Snorre, 2026-11-19), the repo's first:
+`runtimeConfig.admissionsEnabled` from env `NUXT_ADMISSIONS_ENABLED`, off unless `true`
+(`server/utils/admissionsFlag.ts`, client `useAdmissionsFlag()` via `admissionsEnabled` on
+`/api/auth/session`). Off: every admission route and page is 404 for everyone but `styret`,
+`/bli-medlem` and `/api/apply/**` are 404, no nav item for members; styret can look (labelled
+"Ikke synlig for medlemmer ennå") and close/cancel/lot, but starting a vote, opening
+admission or casting a ballot is a 409 with that text. On: as below. Every route calls
+`requireAdmissions(isBoard, 'read' | 'act' | 'manage')` first, pinned by
+`tests/unit/admissions-flag.test.ts`. A new flag copies this file. Switch it on with an `env`
+block in `infrastructure/tofu/main.tf` (next to `NUXT_SITE_URL`), applied with
+`infrastructure/tofu/box-tofu.sh`.
+
+Vedtekter § 4.1: the board assesses a candidate, the members vote. hq migration 050. All SQL
+in `server/utils/admission.ts`; the rules are pure in `server/utils/admissionRules.ts` on top of
+`voteRules.ts` (preset `majority` § 5.5, blank not cast, tie by the board's lot), pinned by
+`tests/unit/admission.test.ts`. Its own tables (`admission_votes`, `admission_ballot_receipts`,
+`admission_secret_ballots`); the årsmøte and deal tables are not touched.
+
+- **The list is the existing register**, not a new table: `persons.status = 'prospect'` plus
+  pending `join_requests`, oldest first. A vote hangs off a join_request; for a prospect with
+  none, starting the vote creates one (`source 'manual'`, `invited_by` = the board member).
+  Sweden candidates and a pensjonist's rejoin (§ 4.4) are listed but get no member vote.
+- **Board** (`styret`): opens/closes admission per group (`network_groups.admission_status`),
+  starts a vote for ONE candidate with a note to the members and a window (7 days default),
+  can close early, cancel, and record the lot on a tie. **Members**: the active members of
+  `cto-roundtable` frozen at start (sha256) vote yes/no/blank, secret and final (receipt +
+  choice with no person). Nobody sees a tally while it runs, only the turnout.
+- **The result**: counted when the window passes (on the next read, `finalizeDue`) or when
+  the board closes it. Passed: join_request `accepted` + `resolved_at`; the person stays a
+  prospect until the add-new-member step makes them active. Failed or no votes: `rejected`.
+- **Apply while closed**: `/bli-medlem` (`POST /api/apply`, the /sweden form's shapes and
+  rate limit) always stores the application; closed only changes what the page says.
+- Nothing here sends mail or Slack. i18n keys under `admission.*` (and `nav.admission`).
+  e2e: `e2e/admission.spec.ts` (needs hq 050 on the branch).
+
 ### CTORI signup (`/member/invest/<slug>`)
 
 A CTORI cohort is an **offering** (`invest_offerings`: `ctori-1` … `ctori-4`) and a
@@ -672,6 +709,7 @@ binds nobody.
 |----------|-------|---------|
 | `DATABASE_URL` | Server only | Neon Postgres connection string |
 | `POSTHOG_TOKEN` | Public | PostHog analytics |
+| `NUXT_ADMISSIONS_ENABLED` | Server only | Feature flag: member admission votes (`true` = on; unset = hidden) |
 
 See `.env.example` for template.
 
