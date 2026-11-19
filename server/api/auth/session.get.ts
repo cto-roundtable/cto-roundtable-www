@@ -40,5 +40,8 @@ export default defineEventHandler(async (event) => {
     access: access.level,
     // Chapters (`no`, `se`) pick the nav and the default language.
     chapters: access.chapters,
+    // Feature flag: member admission votes (server/utils/admissionsFlag.ts). Off: the
+    // nav hides Opptak from members, and styret sees it labelled as not visible yet.
+    admissionsEnabled: admissionsEnabled(),
   }
 })

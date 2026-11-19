@@ -1,6 +1,9 @@
 <template>
   <div class="admission-vote text-left">
     <NuxtLink to="/member/opptak" class="back">← {{ t('admission.title') }}</NuxtLink>
+    <v-alert v-if="preview" type="warning" variant="tonal" class="mt-3 text-left" style="max-width: 640px;" data-test="admission-preview">
+      <strong>{{ t('admission.preview.label') }}.</strong> {{ t('admission.preview.hint') }}
+    </v-alert>
 
     <div v-if="loading" class="text-center py-6"><v-progress-circular indeterminate color="white" /></div>
     <div v-else-if="loadError" style="color: #aaa;">{{ loadError }}</div>
@@ -44,7 +47,7 @@
       <p v-if="vote.state === 'cancelled'" class="panel mb-6 meta">{{ t('admission.vote.cancelled') }}</p>
 
       <!-- Ballot -->
-      <section v-if="vote.state === 'open' && vote.onRoster" class="panel mb-6" data-test="admission-ballot">
+      <section v-if="vote.state === 'open' && vote.onRoster && !preview" class="panel mb-6" data-test="admission-ballot">
         <template v-if="!vote.hasVoted">
           <h2 class="section-title">{{ t('admission.vote.question', { name: vote.candidate.name }) }}</h2>
           <div class="choices mb-3">
@@ -161,6 +164,7 @@ interface Vote {
 const { t } = useI18n()
 const { formatDate } = useLocaleDate()
 const { session, checked } = useAuthSession()
+const { visible, preview } = useAdmissionsFlag()
 const route = useRoute()
 
 const choices: Choice[] = ['yes', 'no', 'blank']
@@ -230,8 +234,15 @@ async function lot(outcome: 'passed' | 'failed') {
   }
 }
 
+// Flag off (server/utils/admissionsFlag.ts): the page does not exist for members.
 watchEffect(() => {
-  if (checked.value && session.value.authenticated) load()
+  if (checked.value && session.value.authenticated && !visible.value) {
+    showError({ statusCode: 404, statusMessage: 'Not found' })
+  }
+})
+
+watchEffect(() => {
+  if (checked.value && session.value.authenticated && visible.value) load()
 })
 </script>
 

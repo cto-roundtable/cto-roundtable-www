@@ -1,5 +1,8 @@
 <template>
   <div class="admission text-left">
+    <v-alert v-if="preview" type="warning" variant="tonal" class="mb-6 text-left" style="max-width: 760px;" data-test="admission-preview">
+      <strong>{{ t('admission.preview.label') }}.</strong> {{ t('admission.preview.hint') }}
+    </v-alert>
     <header class="mb-6">
       <h1 class="font-weight-bold mb-2" style="font-size: 1.6rem;">{{ t('admission.title') }}</h1>
       <p class="intro">{{ t('admission.intro') }}</p>
@@ -58,6 +61,7 @@
                 variant="outlined"
                 size="small"
                 :loading="savingGroup === g.slug"
+                :disabled="preview && g.status === 'closed'"
                 :data-test="`admission-toggle-${g.slug}`"
                 @click="toggleGroup(g)"
               >
@@ -103,6 +107,7 @@
                   variant="outlined"
                   size="small"
                   prepend-icon="mdi-vote-outline"
+                  :disabled="preview"
                   data-test="admission-start"
                   @click="openStart(c.personId)"
                 >
@@ -193,6 +198,7 @@ interface Candidate {
 const { t } = useI18n()
 const { formatDate } = useLocaleDate()
 const { session, checked } = useAuthSession()
+const { visible, preview } = useAdmissionsFlag()
 
 const loading = ref(true)
 const loadError = ref('')
@@ -271,8 +277,15 @@ async function toggleGroup(g: Group) {
   }
 }
 
+// Flag off (server/utils/admissionsFlag.ts): the page does not exist for members.
 watchEffect(() => {
-  if (checked.value && session.value.authenticated) load()
+  if (checked.value && session.value.authenticated && !visible.value) {
+    showError({ statusCode: 404, statusMessage: 'Not found' })
+  }
+})
+
+watchEffect(() => {
+  if (checked.value && session.value.authenticated && visible.value) load()
 })
 </script>
 

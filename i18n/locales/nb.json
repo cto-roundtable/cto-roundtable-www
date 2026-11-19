@@ -1442,6 +1442,10 @@
       "load": "Kunne ikke laste opptak.",
       "action": "Det gikk ikke. Prøv igjen.",
       "notFound": "Fant ikke avstemningen."
+    },
+    "preview": {
+      "label": "Ikke synlig for medlemmer ennå",
+      "hint": "Opptak er slått av (NUXT_ADMISSIONS_ENABLED). Styret kan se sidene, men ikke starte en avstemning eller åpne opptaket, og /bli-medlem finnes ikke."
     }
   }
 }

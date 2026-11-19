@@ -42,6 +42,8 @@ const clean = (value: unknown, max: number) => (typeof value === 'string' ? valu
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 export default defineEventHandler(async (event) => {
+  // Flag off (server/utils/admissionsFlag.ts): the route does not exist. Public, so never 'board'.
+  requireAdmissions(false, 'act')
   if (overLimit(clientKey(event))) {
     setResponseHeader(event, 'Retry-After', Math.ceil(WINDOW_MS / 1000))
     throw createError({ statusCode: 429, message: 'For mange søknader herfra akkurat nå. Prøv igjen senere.' })

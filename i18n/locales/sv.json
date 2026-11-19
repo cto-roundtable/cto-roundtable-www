@@ -1442,6 +1442,10 @@
       "load": "Kunde inte ladda antagning.",
       "action": "Det gick inte. Försök igen.",
       "notFound": "Hittade inte omröstningen."
+    },
+    "preview": {
+      "label": "Inte synligt för medlemmar ännu",
+      "hint": "Antagning är avstängd (NUXT_ADMISSIONS_ENABLED). Styrelsen kan titta, men inte starta en omröstning eller öppna antagningen, och /bli-medlem finns inte."
     }
   }
 }

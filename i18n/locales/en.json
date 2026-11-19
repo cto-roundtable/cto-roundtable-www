@@ -1442,6 +1442,10 @@
       "load": "Could not load admission.",
       "action": "That did not work. Try again.",
       "notFound": "Vote not found."
+    },
+    "preview": {
+      "label": "Not visible to members yet",
+      "hint": "Admission is switched off (NUXT_ADMISSIONS_ENABLED). The board can look, but cannot start a vote or open admission, and /bli-medlem does not exist."
     }
   }
 }

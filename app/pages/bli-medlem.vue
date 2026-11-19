@@ -66,7 +66,9 @@
 useHead({ title: 'Bli medlem: CTO Roundtable', titleTemplate: '%s' })
 
 // Admission status (hq 050, network_groups.admission_status). Closed still takes the application.
-const { data } = await useFetch<{ status: 'open' | 'closed' }>('/api/apply/status')
+// 404 from the API = the admissions flag is off (server/utils/admissionsFlag.ts): no page.
+const { data, error: statusError } = await useFetch<{ status: 'open' | 'closed' }>('/api/apply/status')
+if (statusError.value) throw createError({ statusCode: 404, statusMessage: 'Not found', fatal: true })
 const status = computed(() => data.value?.status ?? null)
 
 const form = reactive({ name: '', email: '', linkedin: '', company: '', why: '', website: '' })

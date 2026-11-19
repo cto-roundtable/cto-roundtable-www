@@ -18,6 +18,8 @@ interface Session {
   // Chapter codes (`no`, `se`) the member belongs to (server/utils/chapter.ts). They pick
   // the nav (the Swedish area for a Swedish-only member) and the default language.
   chapters?: ('no' | 'se')[]
+  // Member admission votes are switched on (server/utils/admissionsFlag.ts).
+  admissionsEnabled?: boolean
 }
 
 export function useAuthSession() {

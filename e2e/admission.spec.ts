@@ -8,6 +8,9 @@ import { anonymous, apiAs, db } from './support/meeting'
 // application follows the result. Who may do what: only the board starts, closes and
 // toggles admission; a Swedish-only member and an outsider never see the vote.
 //
+// Needs the admissions flag ON on the preview server (NUXT_ADMISSIONS_ENABLED=true);
+// with it off the whole spec is skipped (the off gate is tests/unit/admissions-flag.test.ts).
+//
 // Run: e2e/preview.sh test e2e/admission.spec.ts
 
 test.describe.configure({ mode: 'serial', timeout: 120_000 })
@@ -27,6 +30,8 @@ async function json(res: Awaited<ReturnType<Api['get']>>, want = 200) {
 test.beforeAll(async () => {
   for (const k of ['board', 'member', 'sweden', 'retired']) api[k] = await apiAs(k)
   anon = await anonymous()
+  const session = await (await api.member!.get('/api/auth/session')).json()
+  test.skip(session.admissionsEnabled !== true, 'admissions flag is off on this server')
   const [p] = await db()`
     INSERT INTO persons (name, status) VALUES (${`E2E kandidat ${Date.now()}`}, 'prospect') RETURNING id
   `
