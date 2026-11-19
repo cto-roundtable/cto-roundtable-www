@@ -27,7 +27,8 @@
     "investCommittee": "Komitésiden",
     "expand": "Vis undermenyen for {item}",
     "collapse": "Skjul undermenyen for {item}",
-    "generalMeeting": "Årsmøte"
+    "generalMeeting": "Årsmøte",
+    "admission": "Opptak"
   },
   "layout": {
     "signedInAs": "Innlogget som",
@@ -1328,6 +1329,119 @@
       "announced": "Årsmøte: {title}",
       "live": "Årsmøtet pågår nå: {title}",
       "cta": "Åpne"
+    }
+  },
+  "admission": {
+    "title": "Opptak",
+    "intro": "Nye medlemmer vurderes av styret og godkjennes gjennom en avstemning blant medlemmene (vedtektene § 4.1). Her stemmer du over kandidatene styret legger fram.",
+    "state": {
+      "open": "Pågår",
+      "due": "Telles opp",
+      "closed": "Avsluttet",
+      "cancelled": "Avbrutt"
+    },
+    "outcome": {
+      "passed": "Tatt opp",
+      "failed": "Ikke tatt opp",
+      "tie": "Stemmelikhet, styret trekker lodd",
+      "no_votes": "Ikke tatt opp, ingen avgitte stemmer"
+    },
+    "choice": {
+      "yes": "Ja",
+      "no": "Nei",
+      "blank": "Blankt"
+    },
+    "turnout": "{voted} av {roster} har stemt",
+    "votes": {
+      "title": "Avstemninger",
+      "none": "Ingen avstemninger om opptak ennå.",
+      "yourTurn": "Din stemme mangler",
+      "voted": "Du har stemt",
+      "closes": "Stenger {date}",
+      "closedOn": "Avsluttet {date}"
+    },
+    "result": {
+      "title": "Resultat",
+      "short": "ja {yes}, nei {no}, blankt {blank}",
+      "basis": "{cast} avgitte stemmer (ja og nei; blankt teller ikke som avgitt).",
+      "needed": "Det trengs minst {n} ja.",
+      "lot": "Avgjort ved loddtrekning ({note}), ført av {name}.",
+      "nextPassed": "Søknaden er godkjent. Styret legger personen inn som medlem."
+    },
+    "groups": {
+      "title": "Opptaksstatus",
+      "hint": "Stengt betyr ikke at folk ikke kan søke: de havner på listen, og siden sier at de venter til opptaket åpner igjen.",
+      "open": "Åpent",
+      "closed": "Stengt",
+      "close": "Steng opptaket",
+      "changed": "Endret {date} av {name}"
+    },
+    "candidates": {
+      "title": "Kandidater",
+      "hint": "Prospekter og søknader som venter, eldste først. Start en avstemning for én kandidat om gangen.",
+      "none": "Ingen kandidater på listen.",
+      "sweden": "Sverige",
+      "rejoin": "Gjenopptak",
+      "source": {
+        "form": "Skjema",
+        "manual": "Manuell",
+        "prospect": "Prospekt"
+      },
+      "since": "På listen siden {date}",
+      "invitedBy": "Foreslått av {name}",
+      "running": "Avstemning pågår, stenger {date}",
+      "rejoinHint": "Pensjonist som vil tilbake: styret avgjør selv (§ 4.4), ingen medlemsavstemning.",
+      "swedenHint": "Stockholm-avdelingen: ikke en del av foreningens opptak (§ 4.1).",
+      "accepted": "Godkjent",
+      "acceptedHint": "Medlemmene har sagt ja. Neste steg er å legge personen inn som medlem (add-new-member)."
+    },
+    "start": {
+      "button": "Start avstemning",
+      "note": "Styrets vurdering til medlemmene",
+      "noteHint": "Medlemmene ser dette sammen med navn, LinkedIn og hvorfor de vil bli med.",
+      "window": "Avstemningen varer",
+      "days": "{n} dag | {n} dager",
+      "rule": "Hemmelig avstemning blant alle aktive medlemmer i Norge. Vedtas med mer enn halvparten av de avgitte stemmene (§ 5.5). Ingen e-post eller Slack sendes herfra.",
+      "confirm": "Start avstemningen"
+    },
+    "vote": {
+      "eyebrow": "Avstemning om opptak",
+      "question": "Skal {name} tas opp som medlem?",
+      "secretFinal": "Hemmelig og endelig: stemmen lagres uten navnet ditt og kan ikke endres.",
+      "cast": "Avgi stemme",
+      "castAs": "Stem {choice}",
+      "thanks": "Takk, stemmen din er registrert.",
+      "votedSecret": "Det lagres at du har stemt, ikke hva du stemte.",
+      "notOnRoster": "Du er ikke i manntallet for denne avstemningen (aktive medlemmer i Norge da den startet).",
+      "boardNote": "Styrets vurdering",
+      "noBoardNote": "Styret har ikke skrevet noe.",
+      "whyJoin": "Hvorfor de vil bli med",
+      "startedBy": "Startet av {name} {date}",
+      "howTitle": "Slik telles det",
+      "how": "Hemmelig avstemning. Kandidaten tas opp med mer enn halvparten av de avgitte stemmene; blankt teller ikke som avgitt (§ 4.1, § 5.5). Ved stemmelikhet trekker styret lodd. Ingen ser stillingen mens avstemningen pågår, bare hvor mange som har stemt.",
+      "cancelled": "Styret avbrøt denne avstemningen. Ingenting ble telt."
+    },
+    "board": {
+      "title": "Styret",
+      "application": "Søknaden: {status}",
+      "join": {
+        "pending": "venter",
+        "accepted": "godkjent",
+        "rejected": "avslått",
+        "timed_out": "utløpt"
+      },
+      "closeNow": "Avslutt og tell opp nå",
+      "cancel": "Avbryt avstemningen",
+      "cancelConfirm": "Avbryte avstemningen? Ingenting blir telt.",
+      "lotHint": "Stemmelikhet: trekk lodd (§ 5.5) og før resultatet her, én gang.",
+      "lotNote": "Hvordan loddet ble trukket",
+      "lotPassed": "Loddet: tatt opp",
+      "lotFailed": "Loddet: ikke tatt opp"
+    },
+    "errors": {
+      "load": "Kunne ikke laste opptak.",
+      "action": "Det gikk ikke. Prøv igjen.",
+      "notFound": "Fant ikke avstemningen."
     }
   }
 }

@@ -27,7 +27,8 @@
     "investCommittee": "Committee page",
     "expand": "Show the {item} submenu",
     "collapse": "Hide the {item} submenu",
-    "generalMeeting": "General meeting"
+    "generalMeeting": "General meeting",
+    "admission": "Admission"
   },
   "layout": {
     "signedInAs": "Signed in as",
@@ -1328,6 +1329,119 @@
       "announced": "General meeting: {title}",
       "live": "The general meeting is on now: {title}",
       "cta": "Open"
+    }
+  },
+  "admission": {
+    "title": "Admission",
+    "intro": "New members are assessed by the board and approved by a vote among the members (articles § 4.1). Here you vote on the candidates the board puts forward.",
+    "state": {
+      "open": "Open",
+      "due": "Being counted",
+      "closed": "Closed",
+      "cancelled": "Cancelled"
+    },
+    "outcome": {
+      "passed": "Admitted",
+      "failed": "Not admitted",
+      "tie": "Tie, the board draws lots",
+      "no_votes": "Not admitted, no votes cast"
+    },
+    "choice": {
+      "yes": "Yes",
+      "no": "No",
+      "blank": "Blank"
+    },
+    "turnout": "{voted} of {roster} have voted",
+    "votes": {
+      "title": "Votes",
+      "none": "No admission votes yet.",
+      "yourTurn": "Your vote is missing",
+      "voted": "You voted",
+      "closes": "Closes {date}",
+      "closedOn": "Closed {date}"
+    },
+    "result": {
+      "title": "Result",
+      "short": "yes {yes}, no {no}, blank {blank}",
+      "basis": "{cast} votes cast (yes and no; blank does not count as cast).",
+      "needed": "At least {n} yes needed.",
+      "lot": "Settled by lot ({note}), recorded by {name}.",
+      "nextPassed": "The application is approved. The board adds the person as a member."
+    },
+    "groups": {
+      "title": "Admission status",
+      "hint": "Closed does not stop people applying: they land on the list, and the page tells them they wait until admission opens again.",
+      "open": "Open",
+      "closed": "Closed",
+      "close": "Close admission",
+      "changed": "Changed {date} by {name}"
+    },
+    "candidates": {
+      "title": "Candidates",
+      "hint": "Prospects and pending applications, oldest first. Start a vote for one candidate at a time.",
+      "none": "No candidates on the list.",
+      "sweden": "Sweden",
+      "rejoin": "Rejoin",
+      "source": {
+        "form": "Form",
+        "manual": "Manual",
+        "prospect": "Prospect"
+      },
+      "since": "On the list since {date}",
+      "invitedBy": "Proposed by {name}",
+      "running": "Vote running, closes {date}",
+      "rejoinHint": "A pensjonist coming back: the board decides alone (§ 4.4), no member vote.",
+      "swedenHint": "Stockholm chapter: not part of the forening's admission (§ 4.1).",
+      "accepted": "Approved",
+      "acceptedHint": "The members said yes. Next step: add the person as a member (add-new-member)."
+    },
+    "start": {
+      "button": "Start vote",
+      "note": "The board's assessment for the members",
+      "noteHint": "Members see this with the name, LinkedIn and why they want to join.",
+      "window": "The vote runs for",
+      "days": "{n} day | {n} days",
+      "rule": "Secret ballot among all active members in Norway. Passes with more than half of the votes cast (§ 5.5). No mail or Slack is sent from here.",
+      "confirm": "Start the vote"
+    },
+    "vote": {
+      "eyebrow": "Admission vote",
+      "question": "Should {name} be admitted as a member?",
+      "secretFinal": "Secret and final: your vote is stored without your name and cannot be changed.",
+      "cast": "Cast vote",
+      "castAs": "Vote {choice}",
+      "thanks": "Thanks, your vote is recorded.",
+      "votedSecret": "We store that you voted, not what you voted.",
+      "notOnRoster": "You are not on the roster for this vote (active members in Norway when it started).",
+      "boardNote": "The board's assessment",
+      "noBoardNote": "The board has not written anything.",
+      "whyJoin": "Why they want to join",
+      "startedBy": "Started by {name} {date}",
+      "howTitle": "How it is counted",
+      "how": "Secret ballot. The candidate is admitted with more than half of the votes cast; blank does not count as cast (§ 4.1, § 5.5). On a tie the board draws lots. Nobody sees the standing while the vote runs, only how many have voted.",
+      "cancelled": "The board cancelled this vote. Nothing was counted."
+    },
+    "board": {
+      "title": "Board",
+      "application": "Application: {status}",
+      "join": {
+        "pending": "pending",
+        "accepted": "accepted",
+        "rejected": "rejected",
+        "timed_out": "timed out"
+      },
+      "closeNow": "Close and count now",
+      "cancel": "Cancel the vote",
+      "cancelConfirm": "Cancel the vote? Nothing will be counted.",
+      "lotHint": "Tie: draw lots (§ 5.5) and record the outcome here, once.",
+      "lotNote": "How the lot was drawn",
+      "lotPassed": "Lot: admitted",
+      "lotFailed": "Lot: not admitted"
+    },
+    "errors": {
+      "load": "Could not load admission.",
+      "action": "That did not work. Try again.",
+      "notFound": "Vote not found."
     }
   }
 }

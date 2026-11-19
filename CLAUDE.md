@@ -552,6 +552,30 @@ ctori-4 memory `votes/meeting-votes-design.md`; rules from the vedtekter § 5 an
 - i18n keys live under `meetings.*` (and `nav.generalMeeting`, board only; members come
   in through the `/member` banner).
 
+### Opptak: member admission votes (`/member/opptak`, `/bli-medlem`)
+
+Vedtekter § 4.1: the board assesses a candidate, the members vote. hq migration 050. All SQL
+in `server/utils/admission.ts`; the rules are pure in `server/utils/admissionRules.ts` on top of
+`voteRules.ts` (preset `majority` § 5.5, blank not cast, tie by the board's lot), pinned by
+`tests/unit/admission.test.ts`. Its own tables (`admission_votes`, `admission_ballot_receipts`,
+`admission_secret_ballots`); the årsmøte and deal tables are not touched.
+
+- **The list is the existing register**, not a new table: `persons.status = 'prospect'` plus
+  pending `join_requests`, oldest first. A vote hangs off a join_request; for a prospect with
+  none, starting the vote creates one (`source 'manual'`, `invited_by` = the board member).
+  Sweden candidates and a pensjonist's rejoin (§ 4.4) are listed but get no member vote.
+- **Board** (`styret`): opens/closes admission per group (`network_groups.admission_status`),
+  starts a vote for ONE candidate with a note to the members and a window (7 days default),
+  can close early, cancel, and record the lot on a tie. **Members**: the active members of
+  `cto-roundtable` frozen at start (sha256) vote yes/no/blank, secret and final (receipt +
+  choice with no person). Nobody sees a tally while it runs, only the turnout.
+- **The result**: counted when the window passes (on the next read, `finalizeDue`) or when
+  the board closes it. Passed: join_request `accepted` + `resolved_at`; the person stays a
+  prospect until the add-new-member step makes them active. Failed or no votes: `rejected`.
+- **Apply while closed**: `/bli-medlem` (`POST /api/apply`, the /sweden form's shapes and
+  rate limit) always stores the application; closed only changes what the page says.
+- Nothing here sends mail or Slack. i18n keys under `admission.*` (and `nav.admission`).
+
 ### CTORI signup (`/member/invest/<slug>`)
 
 A CTORI cohort is an **offering** (`invest_offerings`: `ctori-1` … `ctori-4`) and a

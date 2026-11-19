@@ -27,7 +27,8 @@
     "investCommittee": "Kommittésidan",
     "expand": "Visa undermenyn för {item}",
     "collapse": "Dölj undermenyn för {item}",
-    "generalMeeting": "Årsmöte"
+    "generalMeeting": "Årsmöte",
+    "admission": "Antagning"
   },
   "layout": {
     "signedInAs": "Inloggad som",
@@ -1328,6 +1329,119 @@
       "announced": "Årsmöte: {title}",
       "live": "Årsmötet pågår nu: {title}",
       "cta": "Öppna"
+    }
+  },
+  "admission": {
+    "title": "Antagning",
+    "intro": "Nya medlemmar bedöms av styrelsen och godkänns genom en omröstning bland medlemmarna (stadgarna § 4.1). Här röstar du om kandidaterna styrelsen lägger fram.",
+    "state": {
+      "open": "Pågår",
+      "due": "Räknas",
+      "closed": "Avslutad",
+      "cancelled": "Avbruten"
+    },
+    "outcome": {
+      "passed": "Antagen",
+      "failed": "Inte antagen",
+      "tie": "Lika röstetal, styrelsen lottar",
+      "no_votes": "Inte antagen, inga avgivna röster"
+    },
+    "choice": {
+      "yes": "Ja",
+      "no": "Nej",
+      "blank": "Blankt"
+    },
+    "turnout": "{voted} av {roster} har röstat",
+    "votes": {
+      "title": "Omröstningar",
+      "none": "Inga omröstningar om antagning ännu.",
+      "yourTurn": "Din röst saknas",
+      "voted": "Du har röstat",
+      "closes": "Stänger {date}",
+      "closedOn": "Avslutad {date}"
+    },
+    "result": {
+      "title": "Resultat",
+      "short": "ja {yes}, nej {no}, blankt {blank}",
+      "basis": "{cast} avgivna röster (ja och nej; blankt räknas inte som avgivet).",
+      "needed": "Minst {n} ja behövs.",
+      "lot": "Avgjort genom lottning ({note}), förd av {name}.",
+      "nextPassed": "Ansökan är godkänd. Styrelsen lägger in personen som medlem."
+    },
+    "groups": {
+      "title": "Antagningsstatus",
+      "hint": "Stängt hindrar inte ansökningar: de hamnar på listan, och sidan säger att de väntar tills antagningen öppnar igen.",
+      "open": "Öppen",
+      "closed": "Stängd",
+      "close": "Stäng antagningen",
+      "changed": "Ändrad {date} av {name}"
+    },
+    "candidates": {
+      "title": "Kandidater",
+      "hint": "Prospekt och väntande ansökningar, äldst först. Starta en omröstning för en kandidat i taget.",
+      "none": "Inga kandidater på listan.",
+      "sweden": "Sverige",
+      "rejoin": "Återinträde",
+      "source": {
+        "form": "Formulär",
+        "manual": "Manuell",
+        "prospect": "Prospekt"
+      },
+      "since": "På listan sedan {date}",
+      "invitedBy": "Föreslagen av {name}",
+      "running": "Omröstning pågår, stänger {date}",
+      "rejoinHint": "Pensionär som vill tillbaka: styrelsen beslutar själv (§ 4.4), ingen medlemsomröstning.",
+      "swedenHint": "Stockholmsavdelningen: inte en del av föreningens antagning (§ 4.1).",
+      "accepted": "Godkänd",
+      "acceptedHint": "Medlemmarna har sagt ja. Nästa steg är att lägga in personen som medlem (add-new-member)."
+    },
+    "start": {
+      "button": "Starta omröstning",
+      "note": "Styrelsens bedömning till medlemmarna",
+      "noteHint": "Medlemmarna ser detta tillsammans med namn, LinkedIn och varför de vill gå med.",
+      "window": "Omröstningen pågår i",
+      "days": "{n} dag | {n} dagar",
+      "rule": "Sluten omröstning bland alla aktiva medlemmar i Norge. Antas med mer än hälften av de avgivna rösterna (§ 5.5). Ingen e-post eller Slack skickas härifrån.",
+      "confirm": "Starta omröstningen"
+    },
+    "vote": {
+      "eyebrow": "Omröstning om antagning",
+      "question": "Ska {name} antas som medlem?",
+      "secretFinal": "Sluten och slutgiltig: rösten sparas utan ditt namn och kan inte ändras.",
+      "cast": "Avge röst",
+      "castAs": "Rösta {choice}",
+      "thanks": "Tack, din röst är registrerad.",
+      "votedSecret": "Vi sparar att du har röstat, inte hur.",
+      "notOnRoster": "Du finns inte i röstlängden för denna omröstning (aktiva medlemmar i Norge när den startade).",
+      "boardNote": "Styrelsens bedömning",
+      "noBoardNote": "Styrelsen har inte skrivit något.",
+      "whyJoin": "Varför de vill gå med",
+      "startedBy": "Startad av {name} {date}",
+      "howTitle": "Så räknas det",
+      "how": "Sluten omröstning. Kandidaten antas med mer än hälften av de avgivna rösterna; blankt räknas inte som avgivet (§ 4.1, § 5.5). Vid lika röstetal lottar styrelsen. Ingen ser ställningen medan omröstningen pågår, bara hur många som har röstat.",
+      "cancelled": "Styrelsen avbröt denna omröstning. Inget räknades."
+    },
+    "board": {
+      "title": "Styrelsen",
+      "application": "Ansökan: {status}",
+      "join": {
+        "pending": "väntar",
+        "accepted": "godkänd",
+        "rejected": "avslagen",
+        "timed_out": "utgången"
+      },
+      "closeNow": "Avsluta och räkna nu",
+      "cancel": "Avbryt omröstningen",
+      "cancelConfirm": "Avbryta omröstningen? Inget räknas.",
+      "lotHint": "Lika röstetal: lotta (§ 5.5) och för in resultatet här, en gång.",
+      "lotNote": "Hur lottningen gick till",
+      "lotPassed": "Lottning: antagen",
+      "lotFailed": "Lottning: inte antagen"
+    },
+    "errors": {
+      "load": "Kunde inte ladda antagning.",
+      "action": "Det gick inte. Försök igen.",
+      "notFound": "Hittade inte omröstningen."
     }
   }
 }
