@@ -575,6 +575,7 @@ in `server/utils/admission.ts`; the rules are pure in `server/utils/admissionRul
 - **Apply while closed**: `/bli-medlem` (`POST /api/apply`, the /sweden form's shapes and
   rate limit) always stores the application; closed only changes what the page says.
 - Nothing here sends mail or Slack. i18n keys under `admission.*` (and `nav.admission`).
+  e2e: `e2e/admission.spec.ts` (needs hq 050 on the branch).
 
 ### CTORI signup (`/member/invest/<slug>`)
 
