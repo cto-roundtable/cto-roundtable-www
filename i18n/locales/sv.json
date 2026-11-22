@@ -28,7 +28,8 @@
     "expand": "Visa undermenyn för {item}",
     "collapse": "Dölj undermenyn för {item}",
     "generalMeeting": "Årsmöte",
-    "admission": "Antagning"
+    "admission": "Antagning",
+    "swedenAdmission": "Antagning Sverige"
   },
   "layout": {
     "signedInAs": "Inloggad som",
@@ -1446,6 +1447,82 @@
     "preview": {
       "label": "Inte synligt för medlemmar ännu",
       "hint": "Antagning är avstängd (NUXT_ADMISSIONS_ENABLED). Styrelsen kan titta, men inte starta en omröstning eller öppna antagningen, och /bli-medlem finns inte."
+    }
+  },
+  "swedenAdmission": {
+    "title": "Antagning Sverige",
+    "intro": "Sökande till Stockholmskapitlet godkänns genom en omröstning bland dess grundare. Här röstar du om de sökande som Sverigeansvariga lägger fram.",
+    "preview": {
+      "label": "Inte synligt för medlemmar ännu",
+      "hint": "Antagning Sverige är avstängd. Bara de Sverigeansvariga ser den här sidan, och ingen omröstning kan startas eller avges förrän den slås på."
+    },
+    "votes": {
+      "title": "Omröstningar",
+      "none": "Inga omröstningar om antagning i Sverige ännu."
+    },
+    "manager": {
+      "badge": "Ansvariga",
+      "title": "Sverigeansvariga",
+      "application": "Ansökan: {status}",
+      "closeNow": "Stäng och räkna nu",
+      "cancel": "Ställ in omröstningen",
+      "cancelConfirm": "Ställa in den här omröstningen? Inget räknas och ansökan förblir öppen.",
+      "notesTitle": "Anteckningar från de som röstade",
+      "notesHint": "Visas med rösten de hörde till, utan namn, i slumpvis ordning.",
+      "notesNone": "Ingen skrev en anteckning.",
+      "notesLater": "Anteckningarna visas här när omröstningen är stängd."
+    },
+    "roles": {
+      "title": "Vem röstar",
+      "hint": "Listan är fast: grundarna som var med på den första kvällen i Stockholm (17 november 2026). Den fryses in i varje omröstning när den startar, så en ändring gäller från nästa omröstning.",
+      "voters": "Röstar",
+      "managers": "Ansvariga",
+      "inactive": "inte aktiv, utelämnad från nya omröstningar"
+    },
+    "candidates": {
+      "title": "Sökande",
+      "hint": "Öppna ansökningar till Stockholmskapitlet, äldst först. Starta en omröstning för en sökande i taget.",
+      "none": "Inga öppna ansökningar.",
+      "since": "Ansökte {date}",
+      "running": "Omröstning pågår, stänger {date}",
+      "rejoin": "Återvänder",
+      "rejoinHint": "En tidigare medlem som kommer tillbaka: de ansvariga avgör det själva, utan omröstning."
+    },
+    "start": {
+      "button": "Starta omröstning",
+      "note": "Din anteckning till de som röstar",
+      "noteHint": "De som röstar ser detta tillsammans med namn, LinkedIn och varför de vill gå med.",
+      "window": "Omröstningen pågår i",
+      "rule": "Sluten omröstning bland de {n} på listan. Godkänd med minst två tredjedelar ja av de avgivna rösterna (blankt räknas inte som avgivet). Var och en kan lägga till en anteckning, som bara de ansvariga läser, utan namn, när omröstningen är stängd. Inget postas i Slack eller skickas med e-post härifrån.",
+      "confirm": "Starta omröstningen"
+    },
+    "vote": {
+      "eyebrow": "Omröstning om antagning i Sverige",
+      "question": "Ska {name} gå med i Stockholmskapitlet?",
+      "note": "Anteckning till de ansvariga (valfritt)",
+      "noteHint": "Bara de Sverigeansvariga läser anteckningarna, efter att omröstningen stängt, utan ditt namn. Det du skriver kan ändå avslöja dig, så skriv det som du skulle säga det till dem.",
+      "secretFinal": "Sluten och slutgiltig: din röst och din anteckning sparas utan ditt namn och kan inte ändras.",
+      "cast": "Avge röst",
+      "castAs": "Rösta {choice}",
+      "thanks": "Tack, din röst är registrerad.",
+      "votedSecret": "Vi sparar att du har röstat, inte vad du röstade eller skrev.",
+      "notOnRoster": "Du står inte på listan för den här omröstningen.",
+      "managerNote": "De ansvarigas anteckning",
+      "noManagerNote": "De ansvariga har inte skrivit något.",
+      "whyJoin": "Varför de vill gå med",
+      "startedBy": "Startad av {name}, {date}",
+      "howTitle": "Så avgörs det",
+      "how": "Godkänd med minst två tredjedelar ja av de avgivna rösterna; en blank röst räknas inte som avgiven. Ingen ser hur det går medan den pågår, bara hur många som har röstat. Resultatet visas när den stänger.",
+      "cancelled": "Den här omröstningen ställdes in. Inget räknades."
+    },
+    "result": {
+      "needed": "Minst {n} ja behövs (två tredjedelar).",
+      "nextPassed": "Ansökan är godkänd. De ansvariga lägger till personen som medlem."
+    },
+    "errors": {
+      "notFound": "Den här omröstningen finns inte, eller så står du inte på listan.",
+      "load": "Kunde inte ladda. Försök igen.",
+      "action": "Det gick inte. Försök igen."
     }
   }
 }

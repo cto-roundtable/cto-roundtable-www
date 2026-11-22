@@ -20,6 +20,7 @@ interface Session {
   chapters?: ('no' | 'se')[]
   // Member admission votes are switched on (server/utils/admissionsFlag.ts).
   admissionsEnabled?: boolean
+  swedenAdmission?: { enabled: boolean; isManager: boolean; isVoter: boolean }
 }
 
 export function useAuthSession() {

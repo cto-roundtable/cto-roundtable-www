@@ -43,3 +43,25 @@ export function requireAdmissions(isBoard: boolean, action: AdmissionAction) {
   if (status === 404) throw createError({ statusCode: 404, message: 'Not found' })
   if (status === 409) throw createError({ statusCode: 409, message: HIDDEN_MESSAGE })
 }
+
+// ------------------------------------------------------------------ Sweden's switch
+// Sweden admission votes (roundtable-sweden, server/utils/swedenAdmission.ts) have their
+// OWN flag (Snorre 2026-11-22: Sweden can go live without Norway):
+// runtimeConfig.admissionsSwedenEnabled, from env NUXT_ADMISSIONS_SWEDEN_ENABLED, off
+// unless set. Same policy as Norway's (admissionAccess), with Sweden's managers in the
+// place of styret: off, only a manager sees the pages, labelled, and cannot start a vote
+// or cast a ballot. Neither flag reads the other.
+
+/** Whether Sweden admission votes are on in this process. */
+export function swedenAdmissionsEnabled(): boolean {
+  return isFlagOn(useRuntimeConfig().admissionsSwedenEnabled)
+}
+
+export const SWEDEN_HIDDEN_MESSAGE = 'Not visible to members yet'
+
+/** The first line of every Sweden admission route. `isManager`: a current Sweden manager. */
+export function requireSwedenAdmissions(isManager: boolean, action: AdmissionAction) {
+  const status = admissionAccess(swedenAdmissionsEnabled(), isManager, action)
+  if (status === 404) throw createError({ statusCode: 404, message: 'Not found' })
+  if (status === 409) throw createError({ statusCode: 409, message: SWEDEN_HIDDEN_MESSAGE })
+}

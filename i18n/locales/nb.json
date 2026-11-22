@@ -28,7 +28,8 @@
     "expand": "Vis undermenyen for {item}",
     "collapse": "Skjul undermenyen for {item}",
     "generalMeeting": "Årsmøte",
-    "admission": "Opptak"
+    "admission": "Opptak",
+    "swedenAdmission": "Opptak Sverige"
   },
   "layout": {
     "signedInAs": "Innlogget som",
@@ -1446,6 +1447,82 @@
     "preview": {
       "label": "Ikke synlig for medlemmer ennå",
       "hint": "Opptak er slått av (NUXT_ADMISSIONS_ENABLED). Styret kan se sidene, men ikke starte en avstemning eller åpne opptaket, og /bli-medlem finnes ikke."
+    }
+  },
+  "swedenAdmission": {
+    "title": "Opptak Sverige",
+    "intro": "Søkere til Stockholm-chapteret godkjennes ved en avstemning blant grunnleggerne der. Her stemmer du over søkerne Sverige-ansvarlige legger fram.",
+    "preview": {
+      "label": "Ikke synlig for medlemmer ennå",
+      "hint": "Opptak Sverige er skrudd av. Bare de Sverige-ansvarlige ser denne siden, og ingen avstemning kan startes eller avgis før det skrus på."
+    },
+    "votes": {
+      "title": "Avstemninger",
+      "none": "Ingen avstemninger om opptak i Sverige ennå."
+    },
+    "manager": {
+      "badge": "Ansvarlige",
+      "title": "Sverige-ansvarlige",
+      "application": "Søknaden: {status}",
+      "closeNow": "Steng og tell nå",
+      "cancel": "Avlys avstemningen",
+      "cancelConfirm": "Avlyse denne avstemningen? Ingenting telles, og søknaden står fortsatt åpen.",
+      "notesTitle": "Notater fra de som stemte",
+      "notesHint": "Vist med stemmen de fulgte, uten navn, i tilfeldig rekkefølge.",
+      "notesNone": "Ingen skrev et notat.",
+      "notesLater": "Notatene vises her når avstemningen er stengt."
+    },
+    "roles": {
+      "title": "Hvem stemmer",
+      "hint": "Listen er fast: grunnleggerne som var på den første kvelden i Stockholm (17. november 2026). Den fryses inn i hver avstemning når den starter, så en endring gjelder fra neste avstemning.",
+      "voters": "Stemmer",
+      "managers": "Ansvarlige",
+      "inactive": "ikke aktiv, utelatt fra nye avstemninger"
+    },
+    "candidates": {
+      "title": "Søkere",
+      "hint": "Åpne søknader til Stockholm-chapteret, eldste først. Start en avstemning for én søker om gangen.",
+      "none": "Ingen åpne søknader.",
+      "since": "Søkte {date}",
+      "running": "Avstemning pågår, stenger {date}",
+      "rejoin": "Kommer tilbake",
+      "rejoinHint": "Et tidligere medlem som kommer tilbake: de ansvarlige avgjør det selv, uten avstemning."
+    },
+    "start": {
+      "button": "Start avstemning",
+      "note": "Notatet ditt til de som stemmer",
+      "noteHint": "De som stemmer ser dette sammen med navn, LinkedIn og hvorfor de vil bli med.",
+      "window": "Avstemningen varer i",
+      "rule": "Hemmelig avstemning blant de {n} på listen. Vedtatt med minst to tredjedeler ja av de avgitte stemmene (blankt regnes ikke som avgitt). Hver kan legge ved et notat, som bare de ansvarlige leser, uten navn, når avstemningen er stengt. Ingenting postes i Slack eller sendes på e-post herfra.",
+      "confirm": "Start avstemningen"
+    },
+    "vote": {
+      "eyebrow": "Avstemning om opptak i Sverige",
+      "question": "Skal {name} bli med i Stockholm-chapteret?",
+      "note": "Notat til de ansvarlige (valgfritt)",
+      "noteHint": "Bare de Sverige-ansvarlige leser notatene, etter at avstemningen er stengt, uten navnet ditt. Det du skriver kan likevel avsløre deg, så skriv det som du ville sagt det til dem.",
+      "secretFinal": "Hemmelig og endelig: stemmen og notatet lagres uten navnet ditt og kan ikke endres.",
+      "cast": "Avgi stemme",
+      "castAs": "Stem {choice}",
+      "thanks": "Takk, stemmen din er registrert.",
+      "votedSecret": "Vi lagrer at du har stemt, ikke hva du stemte eller skrev.",
+      "notOnRoster": "Du står ikke på listen for denne avstemningen.",
+      "managerNote": "Notat fra de ansvarlige",
+      "noManagerNote": "De ansvarlige har ikke skrevet noe.",
+      "whyJoin": "Hvorfor de vil bli med",
+      "startedBy": "Startet av {name}, {date}",
+      "howTitle": "Slik avgjøres det",
+      "how": "Vedtatt med minst to tredjedeler ja av de avgitte stemmene; blankt regnes ikke som avgitt. Ingen ser hvordan det går mens den pågår, bare hvor mange som har stemt. Resultatet vises når den stenger.",
+      "cancelled": "Denne avstemningen ble avlyst. Ingenting ble telt."
+    },
+    "result": {
+      "needed": "Det trengs minst {n} ja (to tredjedeler).",
+      "nextPassed": "Søknaden er godkjent. De ansvarlige legger personen til som medlem."
+    },
+    "errors": {
+      "notFound": "Denne avstemningen finnes ikke, eller du står ikke på listen.",
+      "load": "Kunne ikke laste. Prøv igjen.",
+      "action": "Det gikk ikke. Prøv igjen."
     }
   }
 }

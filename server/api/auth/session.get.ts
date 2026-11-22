@@ -43,5 +43,20 @@ export default defineEventHandler(async (event) => {
     // Feature flag: member admission votes (server/utils/admissionsFlag.ts). Off: the
     // nav hides Opptak from members, and styret sees it labelled as not visible yet.
     admissionsEnabled: admissionsEnabled(),
+    // Sweden admission votes (server/utils/swedenAdmission.ts), on their own flag. The nav
+    // shows them to a Sweden manager (labelled while off) and, once on, to a Sweden voter.
+    swedenAdmission: { enabled: swedenAdmissionsEnabled(), ...(await swedenAdmissionSessionRoles(session.personId)) },
   }
 })
+
+// The session must never fail on Sweden admission: before hq migration 051 is in a
+// database (admission_roles missing), or on any other error here, the member is simply
+// no Sweden voter or manager, and sign-in works as before.
+async function swedenAdmissionSessionRoles(personId: string) {
+  try {
+    return await swedenAdmissionRoles(personId)
+  } catch (err: any) {
+    console.error(JSON.stringify({ warn: 'sweden-admission-roles', code: err?.code ?? null }))
+    return { isManager: false, isVoter: false }
+  }
+}

@@ -77,9 +77,10 @@ test('a member votes once, secretly; nobody sees a tally while it runs', async (
   const board = await json(await api.board!.get(`/api/member/admission/votes/${voteId}`))
   expect(board.result).toBeNull()
   expect(board.turnout.voted).toBe(2)
-  // The secret half has no person in it.
+  // The secret half has no person in it (hq 051 added Sweden's `note`; Norway never writes it).
   const rows = await db()`SELECT * FROM admission_secret_ballots WHERE vote_id = ${voteId}`
-  expect(Object.keys(rows[0]!).sort()).toEqual(['choice', 'id', 'vote_id'])
+  expect(Object.keys(rows[0]!).sort()).toEqual(['choice', 'id', 'note', 'vote_id'])
+  expect(rows.every((r) => r.note === null)).toBe(true)
 })
 
 test('outside the roster: 404 to read, refused to vote; no session: 401', async () => {

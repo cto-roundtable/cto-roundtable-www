@@ -214,6 +214,7 @@ import { useDisplay } from 'vuetify'
 const route = useRoute()
 const { session, loading, checkSession, loginWithPasskey, requestMagicLink, logout } = useAuthSession()
 const admissions = useAdmissionsFlag()
+const swedenAdmission = useSwedenAdmissionFlag()
 const { mobile } = useDisplay()
 const { t, locale } = useI18n()
 const { applyDefault: applyLocale } = useMemberLocale()
@@ -344,6 +345,17 @@ const navItems = computed(() => {
   // Behind the admissions flag (useAdmissionsFlag): off, only styret sees it, labelled on the page.
   if (session.value.isBoard || (admissions.enabled.value && !limited.value && !swedenOnly.value)) {
     items.push({ to: '/member/opptak', key: 'nav.admission', icon: 'mdi-account-plus-outline', exact: false })
+  }
+  // Sweden admission votes (server/utils/swedenAdmission.ts): Sweden's voters and its
+  // managers, whatever their chapter (Snorre votes from the Norwegian portal). Own flag:
+  // off, only a manager sees it, labelled on the page.
+  if (!limited.value && swedenAdmission.visible.value) {
+    items.push({
+      to: '/member/sweden/admission',
+      key: 'nav.swedenAdmission',
+      icon: 'mdi-account-plus-outline',
+      exact: false,
+    })
   }
   if (session.value.isBoard) {
     items.push({ to: '/member/board', key: 'nav.boardMeetings', icon: 'mdi-gavel', exact: false })

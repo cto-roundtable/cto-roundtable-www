@@ -105,6 +105,10 @@ export default defineNuxtConfig({
     // NUXT_ADMISSIONS_ENABLED is 'true' on the server; read per request, so flipping the
     // Cloud Run env (infrastructure/tofu/main.tf) needs no rebuild.
     admissionsEnabled: process.env.NUXT_ADMISSIONS_ENABLED || '',
+    // Feature flag: Sweden admission votes (roundtable-sweden, server/utils/swedenAdmission.ts).
+    // Its own switch, so Sweden can go live without Norway and the other way round. Off
+    // unless NUXT_ADMISSIONS_SWEDEN_ENABLED is 'true'.
+    admissionsSwedenEnabled: process.env.NUXT_ADMISSIONS_SWEDEN_ENABLED || '',
     public: {
       posthogToken: process.env.POSTHOG_TOKEN || '',
       posthogHost: process.env.POSTHOG_HOST || 'https://eu.i.posthog.com',
