@@ -19,6 +19,11 @@
 //     prospect: making them active with a membership is the add-new-member step.
 //   - No (or nobody voted yes/no): 'rejected'. A tie stays pending until the lot.
 // Nothing here sends mail or Slack.
+//
+// SWEDEN (hq 051) shares these tables with its own rule and roster
+// (server/utils/swedenAdmission.ts). Every query here is scoped to roster_group
+// 'cto-roundtable', so a Sweden vote is never listed, counted, closed or cancelled by
+// this file, and nothing below changes for Norway.
 import { createHash } from 'node:crypto'
 import type { H3Event } from 'h3'
 import {
@@ -107,7 +112,7 @@ export async function setAdmissionStatus(v: AdmissionViewer, slug: unknown, stat
 
 // -------------------------------------------------------------------- the list
 
-const candidateFields = (sql: ReturnType<typeof useDatabase>) => sql`
+export const candidateFields = (sql: ReturnType<typeof useDatabase>) => sql`
   (SELECT ci.value FROM contact_infos ci WHERE ci.person_id = p.id AND ci.type = 'linkedin'
      ORDER BY ci.is_primary DESC NULLS LAST LIMIT 1) AS linkedin,
   (SELECT o.name FROM person_organizations po JOIN organizations o ON o.id = po.organization_id
@@ -140,6 +145,7 @@ export async function listCandidates(v: AdmissionViewer) {
     LEFT JOIN network_groups ng ON ng.id = jr.group_id
     LEFT JOIN persons inv ON inv.id = jr.invited_by
     LEFT JOIN admission_votes av ON av.join_request_id = jr.id AND av.closed_at IS NULL AND av.cancelled_at IS NULL
+      AND av.roster_group = ${ADMISSION_ROSTER_GROUP}
     WHERE (p.status = 'prospect' AND (jr.status IS NULL OR jr.status IN ('pending', 'accepted', 'timed_out')))
        OR jr.status = 'pending'
     ORDER BY COALESCE(jr.status = 'accepted', false), COALESCE(jr.created_at, p.created_at), p.name
@@ -260,12 +266,14 @@ async function closeVote(id: string, by: string | null) {
   await sql`
     UPDATE admission_votes SET closes_at = LEAST(closes_at, clock_timestamp())
     WHERE id = ${id} AND closed_at IS NULL AND cancelled_at IS NULL AND closes_at > clock_timestamp()
+      AND roster_group = ${ADMISSION_ROSTER_GROUP}
   `
   const [v] = (await sql`
     SELECT v.roster, v.join_request_id,
       COALESCE((SELECT array_agg(person_id::text) FROM admission_ballot_receipts WHERE vote_id = v.id), '{}') AS receipts,
       COALESCE((SELECT array_agg(choice) FROM admission_secret_ballots WHERE vote_id = v.id), '{}') AS choices
     FROM admission_votes v WHERE v.id = ${id} AND v.closed_at IS NULL AND v.cancelled_at IS NULL
+      AND v.roster_group = ${ADMISSION_ROSTER_GROUP}
   `) as any[]
   if (!v) return false
   const rosterIds = (v.roster as any[]).map((r) => r.person_id)
@@ -277,7 +285,7 @@ async function closeVote(id: string, by: string | null) {
       UPDATE admission_votes
       SET closed_at = NOW(), closed_by = ${by}, yes = ${counts.yes}, no = ${counts.no}, blank = ${counts.blank},
         result = ${decision.outcome}
-      WHERE id = ${id} AND closed_at IS NULL AND cancelled_at IS NULL
+      WHERE id = ${id} AND closed_at IS NULL AND cancelled_at IS NULL AND roster_group = ${ADMISSION_ROSTER_GROUP}
       RETURNING id
     `,
     sql`
@@ -294,6 +302,7 @@ export async function finalizeDue() {
   const sql = useDatabase()
   const due = (await sql`
     SELECT id FROM admission_votes WHERE closed_at IS NULL AND cancelled_at IS NULL AND closes_at <= NOW()
+      AND roster_group = ${ADMISSION_ROSTER_GROUP}
   `) as any[]
   for (const d of due) await closeVote(d.id, null)
 }
@@ -313,7 +322,7 @@ export async function cancelAdmissionVote(v: AdmissionViewer, id: string | undef
     setActor(sql, `portal:${v.personId}`),
     sql`
       UPDATE admission_votes SET cancelled_at = NOW(), cancelled_by = ${v.personId}
-      WHERE id = ${id} AND closed_at IS NULL AND cancelled_at IS NULL RETURNING id
+      WHERE id = ${id} AND closed_at IS NULL AND cancelled_at IS NULL AND roster_group = ${ADMISSION_ROSTER_GROUP} RETURNING id
     `,
   ])) as [unknown, any[]]
   if (!rows.length) throw createError({ statusCode: 409, message: 'The vote is not running' })
@@ -335,7 +344,7 @@ export async function recordAdmissionLot(v: AdmissionViewer, id: string | undefi
     setActor(sql, `portal:${v.personId}`),
     sql`
       UPDATE admission_votes SET lot_outcome = ${outcome}, lot_by = ${v.personId}, lot_note = ${note}
-      WHERE id = ${id} AND result = 'tie' AND lot_outcome IS NULL RETURNING join_request_id
+      WHERE id = ${id} AND result = 'tie' AND lot_outcome IS NULL AND roster_group = ${ADMISSION_ROSTER_GROUP} RETURNING join_request_id
     `,
     sql`
       UPDATE join_requests SET status = ${jrStatus}, resolved_at = NOW()
@@ -382,7 +391,7 @@ async function loadVote(id: string | undefined) {
     LEFT JOIN persons cb ON cb.id = av.closed_by
     LEFT JOIN persons lb ON lb.id = av.lot_by
     LEFT JOIN persons inv ON inv.id = jr.invited_by
-    WHERE av.id = ${id}
+    WHERE av.id = ${id} AND av.roster_group = ${ADMISSION_ROSTER_GROUP}
   `) as any[]
   return rows[0] ?? null
 }
@@ -434,7 +443,8 @@ export async function listAdmissionVotes(v: AdmissionViewer) {
   const rows = (await sql`
     SELECT av.*, (SELECT count(*)::int FROM admission_ballot_receipts r WHERE r.vote_id = av.id) AS turnout
     FROM admission_votes av
-    WHERE ${v.isBoard} OR av.roster @> ${JSON.stringify([{ person_id: v.personId }])}::jsonb
+    WHERE av.roster_group = ${ADMISSION_ROSTER_GROUP}
+      AND (${v.isBoard} OR av.roster @> ${JSON.stringify([{ person_id: v.personId }])}::jsonb)
     ORDER BY (av.closed_at IS NULL AND av.cancelled_at IS NULL) DESC, av.opened_at DESC
     LIMIT 100
   `) as any[]

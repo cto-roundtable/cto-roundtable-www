@@ -28,7 +28,8 @@
     "expand": "Show the {item} submenu",
     "collapse": "Hide the {item} submenu",
     "generalMeeting": "General meeting",
-    "admission": "Admission"
+    "admission": "Admission",
+    "swedenAdmission": "Sweden admission"
   },
   "layout": {
     "signedInAs": "Signed in as",
@@ -1446,6 +1447,82 @@
     "preview": {
       "label": "Not visible to members yet",
       "hint": "Admission is switched off (NUXT_ADMISSIONS_ENABLED). The board can look, but cannot start a vote or open admission, and /bli-medlem does not exist."
+    }
+  },
+  "swedenAdmission": {
+    "title": "Sweden admission",
+    "intro": "Applicants to the Stockholm chapter are approved by a vote among its founding members. Here you vote on the applicants the Sweden managers put forward.",
+    "preview": {
+      "label": "Not visible to members yet",
+      "hint": "Sweden admission is switched off. Only the Sweden managers see this page, and no vote can be started or cast until it is switched on."
+    },
+    "votes": {
+      "title": "Votes",
+      "none": "No Sweden admission votes yet."
+    },
+    "manager": {
+      "badge": "Managers",
+      "title": "Managers",
+      "application": "Application: {status}",
+      "closeNow": "Close and count now",
+      "cancel": "Cancel the vote",
+      "cancelConfirm": "Cancel this vote? Nothing is counted and the application stays pending.",
+      "notesTitle": "Notes from the voters",
+      "notesHint": "Shown with the vote they came with, without the author, in no particular order.",
+      "notesNone": "No voter left a note.",
+      "notesLater": "The notes show here once the vote is closed."
+    },
+    "roles": {
+      "title": "Who votes",
+      "hint": "The voter list is fixed: the founding members at the first Stockholm evening (17 November 2026). It is frozen into each vote when the vote starts, so a change counts from the next vote.",
+      "voters": "Voters",
+      "managers": "Managers",
+      "inactive": "not active, left out of new votes"
+    },
+    "candidates": {
+      "title": "Applicants",
+      "hint": "Pending applications to the Stockholm chapter, oldest first. Start a vote for one applicant at a time.",
+      "none": "No pending applications.",
+      "since": "Applied {date}",
+      "running": "Vote running, closes {date}",
+      "rejoin": "Returning",
+      "rejoinHint": "A former member coming back: the managers decide this themselves, no vote."
+    },
+    "start": {
+      "button": "Start vote",
+      "note": "Your note to the voters",
+      "noteHint": "Voters see this with the name, LinkedIn and why they want to join.",
+      "window": "The vote runs for",
+      "rule": "Secret ballot among the {n} voters on the list. Passes with at least two-thirds yes of the votes cast (blank does not count as cast). Each voter may add a note, which only the managers read, without the author, once the vote is closed. Nothing is posted to Slack or mailed from here.",
+      "confirm": "Start the vote"
+    },
+    "vote": {
+      "eyebrow": "Sweden admission vote",
+      "question": "Should {name} join the Stockholm chapter?",
+      "note": "Note to the managers (optional)",
+      "noteHint": "Only the Sweden managers read notes, after the vote closes, without your name. What you write can still give you away, so write it as you would say it to them.",
+      "secretFinal": "Secret and final: your vote and your note are stored without your name and cannot be changed.",
+      "cast": "Cast vote",
+      "castAs": "Vote {choice}",
+      "thanks": "Thanks, your vote is recorded.",
+      "votedSecret": "We store that you voted, not what you voted or wrote.",
+      "notOnRoster": "You are not on the voter list for this vote.",
+      "managerNote": "The managers' note",
+      "noManagerNote": "The managers have not written anything.",
+      "whyJoin": "Why they want to join",
+      "startedBy": "Started by {name}, {date}",
+      "howTitle": "How it is decided",
+      "how": "Passes with at least two-thirds yes of the votes cast; a blank vote does not count as cast. Nobody sees how it is going while it runs, only how many have voted. The result shows when it closes.",
+      "cancelled": "This vote was cancelled. Nothing was counted."
+    },
+    "result": {
+      "needed": "At least {n} yes needed (two-thirds).",
+      "nextPassed": "The application is approved. The managers add the person as a member."
+    },
+    "errors": {
+      "notFound": "This vote does not exist, or you are not on its voter list.",
+      "load": "Could not load. Try again.",
+      "action": "That did not work. Try again."
     }
   }
 }

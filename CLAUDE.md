@@ -589,6 +589,40 @@ in `server/utils/admission.ts`; the rules are pure in `server/utils/admissionRul
 - Nothing here sends mail or Slack. i18n keys under `admission.*` (and `nav.admission`).
   e2e: `e2e/admission.spec.ts` (needs hq 050 on the branch).
 
+### Opptak Sverige: Sweden admission votes (`/member/sweden/admission`)
+
+**Ships dark behind its OWN flag** (Snorre, 2026-11-22: Sweden can go live without Norway):
+`runtimeConfig.admissionsSwedenEnabled` from env `NUXT_ADMISSIONS_SWEDEN_ENABLED`
+(`swedenAdmissionsEnabled()` / `requireSwedenAdmissions(isManager, action)` in
+`server/utils/admissionsFlag.ts`, the same policy as Norway's with a Sweden manager in the place
+of styret; `swedenAdmission` on `/api/auth/session`, `useSwedenAdmissionFlag()`). Neither flag
+reads the other. hq migration 051, on top of 050's tables.
+
+- **Who**: an explicit list in `admission_roles` (group, person, role `voter` | `manager`, a
+  `valid_to` ends a row), not "every member" and never derived from `activity_events`. Voters:
+  the six founding members at the first Stockholm evening (2026-11-17); managers: Snorre and
+  Oliver. Snorre votes from the Norwegian portal (he is not in `roundtable-sweden`). Editing the
+  list is SQL for now (insert a row; set `valid_to` + `removed_by` to remove), audited.
+- **Managers, not styret**, see the applicants (pending `join_requests` to `roundtable-sweden`
+  from someone not in the group: membership decides, not `persons.status`), start a vote on one,
+  close it early or cancel it. The roster is the current voters, active persons only, frozen at
+  start (sha256), `admission_votes.roster_group = 'roundtable-sweden'`, `preset = 'two_thirds'`.
+- **Ballot**: yes/no/blank plus an optional note (at most 2000), secret and final. The note is
+  on the anonymous half (`admission_secret_ballots.note`: no person, no time). Managers read the
+  notes with their choice and without an author, and only once the vote is closed
+  (`notesVisible`); voters never. Nobody sees a tally while it runs.
+- **Rule** (pure, `server/utils/swedenAdmissionRules.ts`, `tests/unit/sweden-admission.test.ts`):
+  yes / (yes + no) >= 2/3, blank not cast, no quorum, no tie. Passed: join_request `accepted`;
+  failed or no votes: `rejected`. Becoming a member stays the add-new-member step.
+- **The wall**: all Sweden SQL is in `server/utils/swedenAdmission.ts`, every query scoped to
+  `roster_group = 'roundtable-sweden'`; every query in `admission.ts` is scoped to
+  `'cto-roundtable'`, so Norway's list, finalize, close, cancel and lot never see a Sweden vote.
+  The unit test pins both scopes and that each side's routes call only their own gate.
+- Nothing here sends mail or Slack. i18n keys under `swedenAdmission.*` (and
+  `nav.swedenAdmission`); shared words come from `admission.*`. e2e: `e2e/sweden-admission.spec.ts`
+  (needs hq 051 on the branch and `NUXT_ADMISSIONS_SWEDEN_ENABLED=true` exported before
+  `e2e/preview.sh up`).
+
 ### CTORI signup (`/member/invest/<slug>`)
 
 A CTORI cohort is an **offering** (`invest_offerings`: `ctori-1` … `ctori-4`) and a
@@ -710,6 +744,7 @@ binds nobody.
 | `DATABASE_URL` | Server only | Neon Postgres connection string |
 | `POSTHOG_TOKEN` | Public | PostHog analytics |
 | `NUXT_ADMISSIONS_ENABLED` | Server only | Feature flag: member admission votes (`true` = on; unset = hidden) |
+| `NUXT_ADMISSIONS_SWEDEN_ENABLED` | Server only | Feature flag: Sweden admission votes, independent of Norway's (`true` = on; unset = hidden) |
 
 See `.env.example` for template.
 
