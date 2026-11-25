@@ -2,6 +2,9 @@
 // Board-only (styret) member-activity picture over a rolling window.
 // Feeds the styret's "flag inactive members" work. Reads the activity_events
 // signal layer (Slack messages/reactions + Luma attendance/hosting).
+// Portal page views (source 'portal', server/utils/portalVisits.ts) are their own
+// column, `portalViews` and `lastPortal`; they add nothing to the score, the status or
+// "sist sett", which mean what they meant before the visit log.
 //
 // Universe = everyone in one chapter group (LEFT JOIN activity), so members with
 // zero signals in the window are included: those are the ones to flag. Active
@@ -39,13 +42,21 @@ export default defineEventHandler(async (event) => {
         count(*) FILTER (WHERE event_type = 'event_hosted')       AS hosted,
         max(occurred_at) AS last_seen
       FROM activity_events
-      WHERE person_id IS NOT NULL
+      WHERE person_id IS NOT NULL AND source <> ${VISIT_SOURCE}
         AND occurred_at >= now() - make_interval(days => ${days})
       GROUP BY person_id
     ),
     ever AS (
       SELECT person_id, max(occurred_at) AS last_ever
-      FROM activity_events WHERE person_id IS NOT NULL GROUP BY person_id
+      FROM activity_events WHERE person_id IS NOT NULL AND source <> ${VISIT_SOURCE} GROUP BY person_id
+    ),
+    portal AS (
+      SELECT person_id,
+        count(*) FILTER (WHERE occurred_at >= now() - make_interval(days => ${days})) AS views,
+        max(occurred_at) AS last_portal
+      FROM activity_events
+      WHERE person_id IS NOT NULL AND source = ${VISIT_SOURCE} AND event_type = ${VISIT_EVENT}
+      GROUP BY person_id
     ),
     groups AS (
       SELECT m.person_id, array_agg(g.slug ORDER BY g.slug) AS slugs
@@ -68,6 +79,8 @@ export default defineEventHandler(async (event) => {
       COALESCE(a.hosted, 0)    AS hosted,
       a.last_seen,
       e.last_ever,
+      COALESCE(pv.views, 0)    AS portal_views,
+      pv.last_portal,
       (COALESCE(a.posts,0) * 3 + COALESCE(a.replies,0) * 2 + COALESCE(a.reactions,0)
         + COALESCE(a.attended,0) * 5 + COALESCE(a.hosted,0) * 8) AS score
     FROM persons p
@@ -75,6 +88,7 @@ export default defineEventHandler(async (event) => {
     JOIN network_groups g ON g.id = m.group_id AND g.slug = ${CHAPTER_GROUPS[chapter]}
     LEFT JOIN act a     ON a.person_id = p.id
     LEFT JOIN ever e    ON e.person_id = p.id
+    LEFT JOIN portal pv ON pv.person_id = p.id
     LEFT JOIN groups gr ON gr.person_id = p.id
     LEFT JOIN rejoin rj ON rj.person_id = p.id
     ORDER BY score ASC, e.last_ever ASC NULLS FIRST, p.name
@@ -107,6 +121,8 @@ export default defineEventHandler(async (event) => {
         status,
         lastSeen: r.last_seen,
         lastEver: r.last_ever,
+        portalViews: Number(r.portal_views),
+        lastPortal: r.last_portal,
       }
     })
 
@@ -122,6 +138,8 @@ export default defineEventHandler(async (event) => {
       joinedAt: r.joined_at,
       retiredAt: r.retired_at,
       lastEver: r.last_ever,
+      portalViews: Number(r.portal_views),
+      lastPortal: r.last_portal,
       rejoinRequestedAt: r.rejoin_requested_at,
     }))
     .sort((a: any, b: any) => {

@@ -737,6 +737,34 @@ binds nobody.
 - **Members**: Neon Postgres (`persons`, `memberships`, `organizations` tables)
 - **Portfolio companies**: Coda API (migration pending)
 
+### Portal visits (who opened what, signed in)
+
+Snorre 2026-11-25 (ctori-4 dc-145 H14): "er du logget inn så ser vi besøk på nettsiden.
+Cookies er bare den ikke innlogget vei." A signed-in member is in the system and the board
+needs the feedback, so page views under `/member` are logged server-side against the
+person, whatever they answered in the cookie banner. PostHog stays for everything else.
+
+- **No new table**: one `activity_events` row (hq migration 014) per view, `source =
+  'portal'`, `event_type = 'page_view'`, `person_id`, `channel_id` = the page (lowercased,
+  no query or hash), `dedup_key` `portal:view:<person>:<path>:<10-minute bucket>`. The
+  same person and page within `VISIT_DEDUPE_MINUTES` (10) is one row (a NOT EXISTS plus
+  the UNIQUE key). Rules pure in `server/utils/portalVisitRules.ts`
+  (`tests/unit/portal-visits.test.ts`), SQL in `server/utils/portalVisits.ts`.
+- **Write**: `app/plugins/portal-visits.client.ts` posts the page on `app:mounted` (the
+  first page; Nuxt can finish that navigation before a plugin's `afterEach` exists) and on
+  every `afterEach`, so client navigation counts. `POST /api/member/visit` takes the person
+  from the session, never the body, answers 204 whatever the path, and every level may
+  call it (`RETIRED_API_PREFIXES`). `setActor` on the insert.
+- **Read**: the committee (`current-komite`, never the board alone: 404 like a missing
+  offering) sees `PortalOfferingVisits` on `/member/invest/:slug/komite`
+  (`GET /api/member/invest/:slug/visits`): who opened the offering's page and documents
+  (not `/komite`), how often, first and last, and what they answered. The board report
+  (`/member/activity`) has a "Portal" column (views in the window, last visit); the score,
+  the status and "Sist sett" leave `source 'portal'` out, as does the member detail
+  summary. The box loop: `DATABASE_URL=… node scripts/portal-visits.mjs ctori-4
+  [--json] [--not-answered]`.
+- `/privacy` says it (section 3 and Retention). e2e: `e2e/portal-visits.spec.ts`.
+
 ## Environment Variables
 
 | Variable | Scope | Purpose |

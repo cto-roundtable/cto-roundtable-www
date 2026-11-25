@@ -197,6 +197,7 @@
               <th class="text-right">Hosting</th>
               <th class="text-right">Score</th>
               <th class="d-none d-sm-table-cell">Sist sett</th>
+              <th class="text-right d-none d-sm-table-cell" title="Innloggede sidevisninger i portalen i vinduet (samme side innen 10 min teller én gang). Teller ikke i score.">Portal</th>
             </tr>
           </thead>
           <tbody>
@@ -218,12 +219,17 @@
               <td class="text-right">{{ m.hosted }}</td>
               <td class="text-right font-weight-bold">{{ m.score }}</td>
               <td class="d-none d-sm-table-cell" style="color: #aaa;">{{ formatLast(m.lastSeen, m.lastEver) }}</td>
+              <td class="text-right d-none d-sm-table-cell" style="white-space: nowrap;">
+                {{ m.portalViews }}
+                <div v-if="m.lastPortal" style="color: #888; font-size: 12px;">{{ ago(m.lastPortal) }}</div>
+              </td>
             </tr>
           </tbody>
         </v-table>
 
         <p style="color: #666; font-size: 12px;" class="mt-3">
           Vekting: post = 3, tråd-svar = 2, reaksjon = 1, oppmøte = 5, hosting = 8. Vindu: siste {{ data.windowDays }} dager.
+          Portal: innloggede sidevisninger, logget i portalen fra 25. november 2026. Teller ikke i score eller sist sett.
         </p>
         </template>
       </template>

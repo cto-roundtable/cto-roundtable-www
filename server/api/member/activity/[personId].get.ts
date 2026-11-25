@@ -11,6 +11,8 @@
 //
 // Score weights mirror the board list: post=3, reply=2, reaction=1, attended=5,
 // hosted=8. A Slack 'message' is a post unless payload.is_reply is true.
+// Portal page views (source 'portal', server/utils/portalVisits.ts) are left out of
+// the summary, so first/last seen mean Slack and Luma as before.
 const W = { post: 3, reply: 2, reaction: 1, attended: 5, hosted: 8 }
 const LOW_SCORE = 5
 
@@ -46,7 +48,7 @@ export default defineEventHandler(async (event) => {
       min(occurred_at) AS first_seen,
       max(occurred_at) AS last_seen
     FROM activity_events
-    WHERE person_id = ${personId}
+    WHERE person_id = ${personId} AND source <> ${VISIT_SOURCE}
       AND occurred_at >= now() - make_interval(days => ${days})
   `
 

@@ -58,7 +58,7 @@ describe('portalAccessOf', () => {
 })
 
 describe('levelMayCall', () => {
-  const profile = ['/api/member/info', '/api/member/rejoin']
+  const profile = ['/api/member/info', '/api/member/rejoin', '/api/member/visit']
   const investPart = [
     '/api/member/default-vote',
     '/api/member/deals',
@@ -82,6 +82,7 @@ describe('levelMayCall', () => {
     '/api/member/activity/x',
     '/api/member/infox',
     '/api/member/rejoins',
+    '/api/member/visits',
     '/api/member/dealsx',
     '/api/member/investor',
     '/api/member/updates-all',

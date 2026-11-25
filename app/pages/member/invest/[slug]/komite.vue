@@ -22,6 +22,7 @@
 
       <InvestSessionSignupList :rows="data.sessionSignups" />
       <InvestInterestAnswers :rows="data.answers" :totals="data.totals" />
+      <PortalOfferingVisits :slug="data.offering.slug" />
     </template>
   </div>
 </template>

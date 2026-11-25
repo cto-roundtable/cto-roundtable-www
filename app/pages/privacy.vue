@@ -4,7 +4,7 @@
       <v-col class="top-spacing" cols="12" md="8">
         <div class="privacy-content">
           <h1 class="font-weight-bold mb-4">Privacy Policy</h1>
-          <p class="text-muted mb-6"><strong>Last updated:</strong> 2026-10-30</p>
+          <p class="text-muted mb-6"><strong>Last updated:</strong> 2026-11-25</p>
 
           <section class="mb-6">
             <h2 class="font-weight-bold mb-3">1) Who we are</h2>
@@ -26,6 +26,7 @@
               <li><strong>Contact information (if you email us):</strong> Your email address and any details you include.</li>
               <li><strong>Usage analytics:</strong> Which pages you visit and what you click, plus browser, device and approximate location derived from your IP address. We use <strong>PostHog</strong> (EU cloud) for this.</li>
               <li><strong>Member portal:</strong> When you sign in, the analytics above are linked to your member profile (name and email), so we can see which parts of the portal members use.</li>
+              <li><strong>Member portal page visits:</strong> When you are signed in, the portal also logs which of its pages you open and when, on our own server and linked to your member profile. This needs no cookie beyond the sign-in one and happens whatever you answered in the cookie banner, so the board and the investment committee can see who has seen what and follow up.</li>
             </ul>
             <p class="mt-3">We do <strong>not</strong> use advertising or retargeting trackers on our site.</p>
           </section>
@@ -78,6 +79,7 @@
             <h2 class="font-weight-bold mb-3">8) Retention</h2>
             <ul class="text-left">
               <li><strong>Server logs:</strong> kept for up to <strong>90 days</strong> unless longer is needed to investigate security incidents.</li>
+              <li><strong>Member portal page visits:</strong> kept in our member database. You can ask us to delete yours at any time.</li>
               <li><strong>Analytics events:</strong> kept in PostHog according to our account's retention setting. You can ask us to delete yours at any time.</li>
               <li><strong>Contact emails:</strong> kept as long as needed to handle your request and for routine business archiving.</li>
             </ul>
