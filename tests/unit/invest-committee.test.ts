@@ -11,7 +11,15 @@ import { getCommitteePage, interestTotals } from '../../server/utils/investCommi
   Object.assign(new Error(o.message), { statusCode: o.statusCode })
 
 const OFFERING = { id: 'o-4', slug: 'ctori-4', name: 'CTORI 4', status: 'interest' }
-const SIGNUP = { name: 'Kari', email: 'kari@x.no', signedUpAt: '2026-11-12', note: null, answer: null }
+const SIGNUP = { name: 'Kari', email: 'kari@x.no', signedUpAt: '2026-11-12', note: null, answer: null, picks: 1 }
+const TIME = {
+  id: 't-1',
+  startsAt: '2026-12-03T18:00:00.000Z',
+  durationMinutes: 60,
+  meetingUrl: null,
+  chosen: false,
+  people: ['Kari'],
+}
 
 /** Deps that record what was read, so a refused caller can be shown to read nothing. */
 function deps(opts: { committee: boolean; visible?: boolean }) {
@@ -29,6 +37,10 @@ function deps(opts: { committee: boolean; visible?: boolean }) {
         reads.push('signups')
         return [SIGNUP]
       },
+      listSessionTimes: async () => {
+        reads.push('times')
+        return [TIME]
+      },
       listInterestAnswers: async () => {
         reads.push('answers')
         return { rows: [], totals: { yes: 0, yesNok: 0, maybe: 0, no: 0 } }
@@ -43,6 +55,8 @@ describe('getCommitteePage: the gate', () => {
     const page = await getCommitteePage('p1', 'ctori-4', d)
     assert.deepEqual(page.offering, { slug: 'ctori-4', name: 'CTORI 4', status: 'interest' })
     assert.deepEqual(page.sessionSignups, [SIGNUP])
+    assert.deepEqual(page.sessionTimes, [TIME])
+    assert.equal(page.sessionOpen, true)
     assert.deepEqual(page.totals, { yes: 0, yesNok: 0, maybe: 0, no: 0 })
   })
   test('anyone off the committee (a member, the board alone) gets a 404 and nothing is read', async () => {

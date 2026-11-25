@@ -9,7 +9,8 @@
 //   so does the committee for an offering it may not see (requireVisibleOffering).
 // - Read only. Names and e-mails, no national ID, address or phone.
 
-import type { InterestAnswerShown, SessionSignupRow } from './investSessions'
+import { type InterestAnswerShown, type SessionSignupRow, sessionSignupOpen } from './investSessions.ts'
+import type { CommitteeSessionTime } from './investSessionTimes'
 
 export interface InterestAnswerRow {
   name: string
@@ -92,6 +93,10 @@ export interface CommitteePage {
   offering: { slug: string; name: string; status: string }
   preview: boolean
   sessionSignups: SessionSignupRow[]
+  /** The candidate times for the online session, each with who can make it (hq 052). */
+  sessionTimes: CommitteeSessionTime[]
+  /** Whether the committee can change the times now (the sign-up is open). */
+  sessionOpen: boolean
   answers: InterestAnswerRow[]
   totals: InterestTotals
 }
@@ -104,6 +109,7 @@ export interface CommitteePageDeps {
   ) => Promise<{ offering: { id: string; slug: string; name: string; status: string }; preview: boolean }>
   isCommittee: (personId: string) => Promise<boolean>
   listSessionSignups: (offeringId: string) => Promise<SessionSignupRow[]>
+  listSessionTimes: (offeringId: string) => Promise<CommitteeSessionTime[]>
   listInterestAnswers: (offeringId: string) => Promise<{ rows: InterestAnswerRow[]; totals: InterestTotals }>
 }
 
@@ -120,19 +126,23 @@ export async function getCommitteePage(
     requireVisibleOffering: (p, s) => requireVisibleOffering(p, s),
     isCommittee: (p) => isDocumentCommentReader(p),
     listSessionSignups: (id) => listSessionSignups(id),
+    listSessionTimes: (id) => listSessionTimesWithPeople(id),
     listInterestAnswers: (id) => listInterestAnswers(id),
     ...deps,
   }
   const { offering, preview } = await d.requireVisibleOffering(personId, slug)
   if (!(await d.isCommittee(personId))) throw createError({ statusCode: 404, message: 'Not found' })
-  const [sessionSignups, answers] = await Promise.all([
+  const [sessionSignups, sessionTimes, answers] = await Promise.all([
     d.listSessionSignups(offering.id),
+    d.listSessionTimes(offering.id),
     d.listInterestAnswers(offering.id),
   ])
   return {
     offering: { slug: offering.slug, name: offering.name, status: offering.status },
     preview,
     sessionSignups,
+    sessionTimes,
+    sessionOpen: sessionSignupOpen(offering.status, preview),
     answers: answers.rows,
     totals: answers.totals,
   }
