@@ -43,6 +43,7 @@ export function portalAccessOf(status: string, groups: GroupRef[]): PortalAccess
 const RETIRED_API_PREFIXES = [
   '/api/member/info', // their own profile: status, groups, standing vote
   '/api/member/rejoin', // apply to become active again (the board decides)
+  '/api/member/visit', // the visit log: their own page views (portalVisits.ts)
 ]
 
 /**

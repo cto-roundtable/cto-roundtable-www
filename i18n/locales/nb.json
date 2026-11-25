@@ -1581,5 +1581,23 @@
       "load": "Kunne ikke laste. Prøv igjen.",
       "action": "Det gikk ikke. Prøv igjen."
     }
+  },
+  "portalVisits": {
+    "heading": "Hvem har åpnet siden ({n})",
+    "intro": "Innloggede besøk på denne siden og dokumentene, logget i portalen siden {date}. Samme side innen 10 minutter teller én gang. Gjelder også de som har sagt nei til informasjonskapsler.",
+    "introEmpty": "Innloggede besøk på denne siden og dokumentene. Ingen besøk er logget ennå.",
+    "empty": "Ingen har åpnet siden siden loggingen startet.",
+    "error": "Kunne ikke laste besøkene.",
+    "notAnswered": "{count} har åpnet siden uten å svare. | {count} har åpnet siden uten å svare.",
+    "col": {
+      "name": "Navn",
+      "answer": "Svar",
+      "visits": "Besøk",
+      "documentViews": "Herav dokument",
+      "first": "Første",
+      "last": "Siste"
+    },
+    "cardLine": "{visits} besøk, {documentViews} i dokumentene",
+    "cardDates": "Første {first}, siste {last}"
   }
 }

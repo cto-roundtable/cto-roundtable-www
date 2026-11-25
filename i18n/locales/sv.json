@@ -1581,5 +1581,23 @@
       "load": "Kunde inte ladda. Försök igen.",
       "action": "Det gick inte. Försök igen."
     }
+  },
+  "portalVisits": {
+    "heading": "Vem har öppnat sidan ({n})",
+    "intro": "Inloggade besök på den här sidan och dokumenten, loggade i portalen sedan {date}. Samma sida inom 10 minuter räknas en gång. Gäller även dem som har sagt nej till kakor.",
+    "introEmpty": "Inloggade besök på den här sidan och dokumenten. Inga besök loggade ännu.",
+    "empty": "Ingen har öppnat sidan sedan loggningen började.",
+    "error": "Kunde inte ladda besöken.",
+    "notAnswered": "{count} har öppnat sidan utan att svara. | {count} har öppnat sidan utan att svara.",
+    "col": {
+      "name": "Namn",
+      "answer": "Svar",
+      "visits": "Besök",
+      "documentViews": "Varav dokument",
+      "first": "Första",
+      "last": "Senaste"
+    },
+    "cardLine": "{visits} besök, {documentViews} i dokumenten",
+    "cardDates": "Första {first}, senaste {last}"
   }
 }

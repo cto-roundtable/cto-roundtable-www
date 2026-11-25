@@ -1581,5 +1581,23 @@
       "load": "Could not load. Try again.",
       "action": "That did not work. Try again."
     }
+  },
+  "portalVisits": {
+    "heading": "Who opened the page ({n})",
+    "intro": "Signed-in visits to this page and its documents, logged in the portal since {date}. The same page within 10 minutes counts once. Includes members who declined cookies.",
+    "introEmpty": "Signed-in visits to this page and its documents. No visits logged yet.",
+    "empty": "Nobody has opened the page since logging started.",
+    "error": "Could not load the visits.",
+    "notAnswered": "{count} opened the page without answering. | {count} opened the page without answering.",
+    "col": {
+      "name": "Name",
+      "answer": "Answer",
+      "visits": "Visits",
+      "documentViews": "Of which documents",
+      "first": "First",
+      "last": "Last"
+    },
+    "cardLine": "{visits} visits, {documentViews} in the documents",
+    "cardDates": "First {first}, last {last}"
   }
 }
