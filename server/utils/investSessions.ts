@@ -11,7 +11,8 @@
 //   while it is open to members (interest, committing) or, for the committee, a draft.
 // - A member reads and changes only their own row; undo deletes it.
 // - The investment committee (current-komite, never styret) reads every row with name
-//   and e-mail, to invite. No times are stored or shown: the committee picks the time.
+//   and e-mail, to invite. Candidate times and the ticks on them are
+//   server/utils/investSessionTimes.ts (hq 052); undoing the sign-up deletes the ticks.
 
 /** The longest note a member can leave ("når passer best"). The database CHECKs the same. */
 export const SESSION_NOTE_MAX = 280
@@ -97,6 +98,8 @@ export interface SessionSignupRow {
   note: string | null
   /** What they answered on the offering itself: null = not answered. */
   answer: InterestAnswerShown
+  /** How many candidate times they ticked (hq 052): 0 = signed up without ticking any. */
+  picks: number
 }
 
 /** Every sign-up with name and e-mail, oldest first. Committee only: the caller checks. */
@@ -107,7 +110,9 @@ export async function listSessionSignups(offeringId: string): Promise<SessionSig
            (SELECT ci.value FROM contact_infos ci
              WHERE ci.person_id = p.id AND ci.type = 'email'
              ORDER BY ci.is_primary DESC LIMIT 1) AS email,
-           ss.created_at, ss.note, s.phase, s.interest_level
+           ss.created_at, ss.note, s.phase, s.interest_level,
+           (SELECT count(*)::int FROM invest_session_time_picks tp
+             WHERE tp.offering_id = ss.offering_id AND tp.person_id = ss.person_id) AS picks
     FROM invest_session_signups ss
     JOIN persons p ON p.id = ss.person_id
     LEFT JOIN invest_subscriptions s ON s.offering_id = ss.offering_id AND s.person_id = ss.person_id
@@ -120,6 +125,7 @@ export async function listSessionSignups(offeringId: string): Promise<SessionSig
     signedUpAt: r.created_at,
     note: r.note,
     answer: answerShown(r.phase, r.interest_level),
+    picks: Number(r.picks ?? 0),
   }))
 }
 

@@ -20,6 +20,13 @@
         {{ t('invest.preview') }}
       </v-alert>
 
+      <InvestSessionTimesManager
+        :slug="data.offering.slug"
+        :open="data.sessionOpen"
+        :times="data.sessionTimes"
+        :signups="data.sessionSignups"
+        @changed="refresh"
+      />
       <InvestSessionSignupList :rows="data.sessionSignups" />
       <InvestInterestAnswers :rows="data.answers" :totals="data.totals" />
     </template>
@@ -27,8 +34,9 @@
 </template>
 
 <script setup lang="ts">
-// The committee's page for an offering (current-komite only, Snorre 2026-11-12): who
-// wants an online session, and every interest answer with the totals. Everything comes
+// The committee's page for an offering (current-komite only, Snorre 2026-11-12): the
+// candidate times for the online session and who can make each (2026-11-25), who wants a
+// session, and every interest answer with the totals. Everything comes
 // from GET /api/member/invest/:slug/komite, which is the 404 for anyone else.
 definePageMeta({ layout: 'member' })
 
@@ -41,7 +49,17 @@ interface CommitteePage {
     signedUpAt: string
     note: string | null
     answer: 'yes' | 'maybe' | 'no' | 'committed' | null
+    picks: number
   }[]
+  sessionTimes: {
+    id: string
+    startsAt: string
+    durationMinutes: number
+    meetingUrl: string | null
+    chosen: boolean
+    people: string[]
+  }[]
+  sessionOpen: boolean
   answers: {
     name: string
     answer: 'yes' | 'maybe' | 'no' | 'committed' | null
@@ -73,6 +91,15 @@ async function load() {
     loadError.value = true
   } finally {
     loading.value = false
+  }
+}
+
+// After a change to the times: read again without the spinner, so the page stays put.
+async function refresh() {
+  try {
+    data.value = await $fetch<CommitteePage>(`/api/member/invest/${route.params.slug}/komite`)
+  } catch {
+    // The page keeps what it showed; a reload shows the new state.
   }
 }
 

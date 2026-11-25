@@ -11,11 +11,12 @@
       </header>
 
       <!-- First thing on the page: ask for an online session, apart from the answer below
-           (no fixed meeting; Snorre finds a time with everyone who signs up, 2026-11-11) -->
+           (2026-11-11), and tick the committee's candidate times (2026-11-25). #nettmote. -->
       <InvestSessionSignup
         :slug="data.offering.slug"
         :open="data.sessionOpen"
         :initial="data.session"
+        :times="data.sessionTimes"
         @changed="refreshCommittee"
       />
 
@@ -115,7 +116,7 @@
             </div>
             <!-- Unsure: the online session is the way to learn more (Snorre 2026-11-12) -->
             <p v-if="form.answer === 'maybe' && (data.sessionOpen || data.session)" class="maybe-hint mt-n3 mb-5">
-              <a href="#invest-session" @click.prevent="toSession">{{ t('invest.form.maybeHint') }}</a>
+              <a href="#nettmote" @click.prevent="toSession">{{ t('invest.form.maybeHint') }}</a>
             </p>
 
             <template v-if="form.answer === 'yes' || form.answer === 'maybe'">
@@ -247,8 +248,10 @@ interface InvestPage {
     updatedAt: string
   } | null
   // The member's own sign-up for an online info session, and whether it can change now
-  session: { note: string | null; signedUpAt: string; updatedAt: string } | null
+  session: { note: string | null; signedUpAt: string; updatedAt: string; picks: string[] } | null
   sessionOpen: boolean
+  // The committee's candidate times for the session (the link only on the chosen one)
+  sessionTimes: { id: string; startsAt: string; durationMinutes: number; chosen: boolean; meetingUrl: string | null }[]
   // Committee only: how many want the info session (the list is on the committee page)
   committee?: { sessionSignups: number }
   lastTime: { offering: string; amountNok: number | null; vehicle: Vehicle; holding: string | null } | null
@@ -364,6 +367,11 @@ async function load() {
   } finally {
     loading.value = false
   }
+  // The shared link /member/invest/<slug>#nettmote: the card exists only after the load.
+  if (data.value && route.hash === '#nettmote') {
+    await nextTick()
+    document.getElementById('nettmote')?.scrollIntoView({ block: 'start' })
+  }
 }
 
 // A sign-up changed: the committee's count may now include (or lose) the caller.
@@ -378,7 +386,7 @@ async function refreshCommittee() {
 }
 
 function toSession() {
-  document.getElementById('invest-session')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  document.getElementById('nettmote')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 async function save() {

@@ -102,7 +102,8 @@ test('draft: the committee previews it, a plain member and the board alone get t
   await button.click()
   await expect(page.getByText('Du er med. Vi tar kontakt når vi har funnet en tid.')).toBeVisible()
   // The committee's link to its page now counts the committee member (the list is on /komite).
-  await expect(page.getByText('Påmeldt nettmøtet: 1. Se listen på komitésiden.')).toBeVisible()
+  // The count includes real sign-ups on the branch (a copy of production), so only its shape is checked.
+  await expect(page.getByText(/^Påmeldt nettmøtet: \d+\. Alle svarene og summene\.$/)).toBeVisible()
   await page.screenshot({ path: `${DIR}/2-committee-signed-up.png` })
   expect(await subscriptionRows(persona('committee-board').personId)).toEqual(answerBefore)
   expect(errors).toEqual([])
@@ -186,12 +187,16 @@ test('the committee sees everyone with e-mail and answer; the board alone sees n
   expect(n.answer).toBe('no')
   expect(n.note).toBeNull()
   for (const r of [m, n]) expect(r.email).toMatch(/@/)
-  expect(sessionSignups).toHaveLength(3)
+  // Ours (member, invest-3, committee-board) plus whoever really signed up (the branch copies production).
+  const [{ n: total }] = (await db()`SELECT count(*)::int AS n FROM invest_session_signups
+                                     WHERE offering_id = ${offeringId}`) as any[]
+  expect(sessionSignups).toHaveLength(total)
+  expect(total).toBeGreaterThanOrEqual(3)
 
   const { page, errors, close } = await phonePage(browser, 'committee-board')
   await page.goto(`/member/invest/${SLUG}/komite`)
   const list = page.locator('#invest-session-list')
-  await expect(list.getByRole('heading', { name: 'Påmeldt nettmøte (3)' })).toBeVisible({ timeout: 20_000 })
+  await expect(list.getByRole('heading', { name: `Påmeldt nettmøte (${total})` })).toBeVisible({ timeout: 20_000 })
   await expect(list.getByText('Svart: nei')).toBeVisible()
   await expect(list.getByText(`«${NOTE}»`)).toBeVisible()
   await expect(list.getByRole('button', { name: 'Kopier alle e-poster' })).toBeVisible()

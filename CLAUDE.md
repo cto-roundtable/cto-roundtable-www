@@ -627,7 +627,7 @@ reads the other. hq migration 051, on top of 050's tables.
 
 A CTORI cohort is an **offering** (`invest_offerings`: `ctori-1` … `ctori-4`) and a
 member's answer to it is one `invest_subscriptions` row per offering and person, moving
-interest → committed → signed → paid (or declined). Schema: hq migrations 031, 041, 043 and 049.
+interest → committed → signed → paid (or declined). Schema: hq migrations 031, 041, 043, 049 and 052.
 Design and plan: `research/portal-signup-mapping.md` in the ctori-4 project (huddle).
 Built so far: step 3, the **interest** phase ("er du med, og omtrent hvor mye"), which
 binds nobody.
@@ -711,7 +711,28 @@ binds nobody.
   the note, and what they answered, plus "Kopier alle e-poster" (comma separated, for a
   calendar invite). `GET /api/member/invest/:slug` gives the committee only the count
   (`committee.sessionSignups`).
-  No times are shown or stored.
+- **Finding the time, Doodle style** (hq migration 052, `invest_session_times` and
+  `invest_session_time_picks`; all SQL and the pure rules in `server/utils/investSessionTimes.ts`,
+  pinned by `tests/unit/invest-session-times.test.ts`; Snorre 2026-11-25, ctori-4 item
+  session-times). The committee (`current-komite` via `requireSessionTimeManager`, the committee
+  page's gate; everyone else the 404) adds up to 12 candidate times on `/komite`
+  (`InvestSessionTimesManager`: Oslo wall time from `datetime-local`, converted in SQL with
+  `AT TIME ZONE 'Europe/Oslo'`; 15 to 240 minutes, 60 default; an optional https Meet/Teams link),
+  sets or changes the link, removes one (its ticks go too), and marks at most ONE as chosen
+  (partial unique index). Members who see the offering tick every time that works on the card
+  (`POST .../session/times {timeIds}` replaces their ticks): ticking creates the sign-up in the
+  same transaction, and a composite FK refuses a tick without one, so undoing the sign-up
+  deletes the ticks. Nothing ticked is allowed only for someone already signed up. Members see
+  a time's link only once it is chosen; then the card shows that time and "Bli med i møtet"
+  instead of the ticks, and a change of ticks is a 409. The committee sees per time who can make
+  it (names) and "Påmeldt uten å krysse av". Writes only while the sign-up is open
+  (`sessionSignupOpen`), every one with `setActor`. The link to share is
+  `/member/invest/<slug>#nettmote` (the card's id; the page scrolls to it after it loads, and
+  the committee page shows it with a copy button). A magic-link sign-in still lands on
+  `/member`, so the hash only helps someone already signed in. Nothing here sends mail, Slack
+  or a calendar invite. Routes: `session/times.post.ts`, `session-times/index.post.ts`,
+  `session-times/[id].patch.ts|delete.ts`, `session-times/[id]/choose.post.ts`. i18n keys under
+  `invest.sessionTimes.*`. e2e: `e2e/session-times.spec.ts` (needs hq 052 on the branch).
 - **The answer is said back**: a saved yes gets a green success callout at the top of the
   form (Vuetify `type="success"`, tonal), a maybe a softer one (outlined).
 - **The committee page** (`/member/invest/:slug/komite`, `GET /api/member/invest/:slug/komite`,

@@ -2,16 +2,19 @@
 // The offering, the member's own answer, what we already know about them (last time,
 // their holdings, names only) and the anonymous totals. Also the member's own sign-up
 // for an online info session, and for the committee how many have signed up (the list
-// itself is on GET .../komite). 404 for an offering they may not see
+// itself is on GET .../komite), and the candidate times for that session with the
+// member's own ticks. 404 for an offering they may not see
 // (server/utils/invest.ts: requireVisibleOffering).
 export default defineEventHandler(async (event) => {
   const { personId } = event.context.session
   const slug = getRouterParam(event, 'slug') ?? ''
   const { offering, preview } = await requireVisibleOffering(personId, slug)
 
-  const [mine, session, known, aggregate, documents, isCommittee] = await Promise.all([
+  const [mine, session, picks, sessionTimes, known, aggregate, documents, isCommittee] = await Promise.all([
     getMyInterest(offering.id, personId),
     getMySessionSignup(offering.id, personId),
+    getMyPicks(offering.id, personId),
+    listSessionTimes(offering.id),
     getKnownForInterest(offering.id, personId),
     getInterestAggregate(offering.id),
     listOfferingDocuments(offering.id),
@@ -35,7 +38,10 @@ export default defineEventHandler(async (event) => {
     },
     preview,
     mine,
-    session,
+    // The member's own sign-up with the times they ticked, and the committee's candidate
+    // times (the link only on the chosen one: server/utils/investSessionTimes.ts).
+    session: session ? { ...session, picks } : null,
+    sessionTimes: memberView(sessionTimes),
     sessionOpen: sessionSignupOpen(offering.status, preview),
     ...(sessionSignups ? { committee: { sessionSignups: sessionSignups.length } } : {}),
     lastTime: known.lastTime,

@@ -92,6 +92,18 @@ add `invest-4`; if nobody is in it yet, make it synthetic.
   `invest_subscriptions` is unchanged by it; a member sees only their own; the committee
   gets the list with e-mails, the board alone gets nothing; undo deletes the row. Phone
   screens in `.run/session-signup/` (the committee list with e-mails masked).
+- `session-times.spec.ts`: finding the time for the online session, needs hq migration 052
+  on the branch. Sets ctori-4's status ON THE BRANCH (interest, then closed) and puts it back;
+  every time, tick and sign-up it made is deleted. Only the committee sets times (a member, a
+  Swede and the board alone get the 404); refusals (duplicate, past, http link, length, not a
+  date); stored as the Oslo time typed and named to the writer in `audit_log`; the shared link
+  `#nettmote` lands on the card; ticking signs a member up and changes nothing in
+  `invest_subscriptions`; no link on a candidate time; the committee sees who can make each time
+  and who signed up without ticking; choosing shows members the time and link and closes the
+  ticks (409); one chosen at most; removing a time and undoing a sign-up take their ticks.
+  Phone and desktop screens in `.run/session-times/` (names masked). Run it on its own
+  (`--workers=1`, or one spec at a time): it and `session-signup.spec.ts` both set ctori-4's
+  status.
 - `committee-page.spec.ts`: CTORI4 after 2026-11-12, on the branch (status set to interest
   and put back, every touched row restored). The Oversikt banner reads "… er åpen for
   interesse nå"; the form has "Kanskje" with the hint to the session and no "vil vite mer"
