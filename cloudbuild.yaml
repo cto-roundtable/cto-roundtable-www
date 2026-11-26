@@ -2,6 +2,14 @@
 # Triggered on push to main via Cloud Build GitHub trigger
 
 steps:
+  # When this build started. Builds start in push order, so this orders them; the deploy
+  # step refuses to replace a revision from a build that started later
+  # (scripts/cloudbuild-deploy.sh, scripts/deploy-order.sh).
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'started'
+    entrypoint: bash
+    args: ['-c', 'date -u +%s > /workspace/build_started && echo "build started $$(cat /workspace/build_started)"']
+
   # Build the Docker image
   - name: 'gcr.io/cloud-builders/docker'
     args:
@@ -16,27 +24,12 @@ steps:
       - 'push'
       - '${_IMAGE}'
 
-  # Deploy to Cloud Run
-  # --min-instances 1 keeps the Slack ingest webhook warm (Slack needs a <3s ack).
-  # --update-secrets adds the activity-ingest secrets without touching the
-  # existing bindings (database-url, posthog-token, resend-api-key, session-secret).
+  # Deploy to Cloud Run, unless a newer build is already live, and check it stayed live.
+  # The flags (min instances, NUXT_SITE_URL, the ingest secrets) are in the script.
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
-    args:
-      - 'run'
-      - 'deploy'
-      - 'cto-roundtable-www'
-      - '--image'
-      - '${_IMAGE}'
-      - '--region'
-      - 'europe-north1'
-      - '--min-instances'
-      - '1'
-      # Canonical origin for magic-link URLs (never trust the request Host header).
-      - '--update-env-vars'
-      - 'NUXT_SITE_URL=https://www.ctoroundtable.no'
-      - '--update-secrets'
-      - 'NUXT_SLACK_SIGNING_SECRET=www-slack-signing-secret:latest,NUXT_INGEST_API_KEY=www-ingest-api-key:latest'
+    id: 'deploy'
+    entrypoint: bash
+    args: ['-c', 'bash scripts/cloudbuild-deploy.sh "${_IMAGE}" "${COMMIT_SHA}" "$$(cat /workspace/build_started)"']
 
 substitutions:
   _IMAGE: 'europe-north1-docker.pkg.dev/cto-roundtable/ctoroundtable/www:${COMMIT_SHA}'
