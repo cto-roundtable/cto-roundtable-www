@@ -821,3 +821,14 @@ gcloud run revisions list --service cto-roundtable-www --region europe-north1
 **Note**: Nuxt runtime config reads env vars with `NUXT_` prefix in production. `DATABASE_URL` in `.env` becomes `NUXT_DATABASE_URL` in Cloud Run.
 
 **CI/CD**: Cloud Build auto-deploys on push to `main` (trigger: `www-deploy-on-push`). Render is legacy (still connected to main but has wrong secrets).
+
+**Deploy order** (`scripts/cloudbuild-deploy.sh`, `scripts/deploy-order.sh`,
+`tests/unit/deploy-order.test.ts`): each build records when it started and labels the service
+`build-started=<epoch>` and `commit-sha=<sha>`. A build refuses to deploy over a revision from a
+build that started later, and after deploying it checks it stayed live (it deploys once more if
+an older build slipped in, and fails red if it is still not live). Why: on 2026-11-25 #115 and
+#116 merged 21 s apart; #115's build of the older commit finished 30 s after #116's and rolled
+production back without a sound. So check what is live by label, not by a bundle you saw once:
+`gcloud run services describe cto-roundtable-www --region europe-north1 --format='value(metadata.labels.commit-sha)'`.
+A deliberate rollback is not a Cloud Build retry of an old commit any more (it is skipped): use
+`gcloud run services update-traffic` or a manual `gcloud run deploy` of the old image.
